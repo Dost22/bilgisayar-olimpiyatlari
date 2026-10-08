@@ -1,0 +1,646 @@
+\chapter[İçerme-Dışarma · \textit{Orta}]{İçerme-Dışarma}
+\chaptermark{İçerme-Dışarma}
+
+Bölüm 3'te ele aldığımız temel sayma kurallarından ilki toplama
+kuralıydı: Eğer iki küme birbirinden bütünüyle ayrıksa, bu iki kümenin
+birleşiminin eleman sayısı, kümelerin eleman sayıları toplamına eşittir. Ancak
+uygulamada ve algoritmik problemlerde karşımıza çıkan kümeler nadiren bu denli
+birbirinden yalıtılmıştır. Kümeler sıklıkla kesişir, ortak elemanlar barındırır
+ve bu ortak elemanlar üst üste biner.
+
+Birbirini kesen kümelerin birleşimini sayarken doğrudan toplama yapmak
+bizi hataya sürükler; çünkü ortak elemanları birden fazla kez saymış oluruz.
+Bu bölümde, üst üste binen kümelerin eleman sayısını hatasız bir şekilde
+belirlememizi sağlayan temel yöntemlerden birini, \textbf{içerme-dışarma}
+(inclusion--exclusion) ilkesini inşa edeceğiz.
+
+\section{İki ve Üç Küme}
+
+\subsection{İki Küme ve Çift Sayımı Düzeltme}
+
+İlkenin mantığını somut bir soru üzerinden görelim.
+
+\begin{example} 1'den 100'e kadar olan tam sayılar arasından 2 veya 3 ile
+bölünebilen kaç sayı vardır? \end{example}
+
+\begin{proof}[Çözüm]
+2'ye bölünen tam sayıların kümesine $A$, 3'e bölünen tam sayıların kümesine
+de $B$ diyelim. Amacımız bu iki kümenin birleşimi olan $A \cup B$ kümesinin eleman
+sayısını, yani $|A \cup B|$ değerini bulmaktır.
+
+1 ile 100 arasında 2'ye bölünen tam sayılar $2, 4, 6, \dots, 100$ biçimindedir. Bu
+sayıların adedi: \[ |A| = \left\lfloor \frac{100}{2} \right\rfloor = 50 \] Benzer
+biçimde, 3'e bölünen tam sayılar $3, 6, 9, \dots, 99$ biçimindedir ve adedi: \[ |B|
+= \left\lfloor \frac{100}{3} \right\rfloor = 33 \] Bu iki değeri doğrudan toplarsak
+$50 + 33 = 83$ buluruz; ancak bu toplam doğru sonucu vermez.
+
+Küçük bir sayıyı, örneğin 6'yı ele alalım. 6 sayısı çift olduğu için $A$ kümesinin
+içindedir; dolayısıyla 50'nin içinde bir kez sayılmıştır. Öte yandan 6 sayısı
+3'ün de katı olduğundan $B$ kümesinin içindedir ve 33'ün içinde de bir kez
+sayılmıştır. Demek ki 6 sayısı bu 83 toplamına bir değil, iki kez dahil
+edilmiştir. Yalnızca 6 değil; $12, 18, 24, \dots$ gibi hem 2'ye hem de 3'e bölünen
+tüm sayılar ikişer kez sayılmıştır.
+
+2 ve 3 aralarında asal olduğundan (Bölüm 11 ve 12'deki bölünebilme ilkeleri
+uyarınca), bir sayının hem 2'ye hem de 3'e bölünebilmesi o sayının 6'ya tam
+bölünmesi demektir. Bu ortak sayıların kümesi tam olarak $A \cap B$ kesişimidir.
+1 ile 100 arasında 6'ya bölünen tam sayıların adedi: \[ |A \cap B| = \left\lfloor
+\frac{100}{6} \right\rfloor = 16 \] Her bir ortak elemanı fazladan birer kez
+saydığımıza göre, bu fazlalığı gidermenin yolu kesişimdeki eleman sayısını
+toplamdan bir kez çıkarmaktır. O hâlde aranan yanıt: \[ |A \cup B| = |A| + |B| -
+|A \cap B| = 50 + 33 - 16 = 67 \] olarak elde edilir.
+\end{proof}
+
+Çözümü bir Venn şemasıyla özetleyelim; içerme-dışarmanın neyi düzelttiği
+şekilde tek bakışta görülür:
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \draw[kitap-cizgi, fill=black!3] (-2.6,-1.9) rectangle (2.6,1.9);
+  \node[etiket, anchor=north west] at (-2.5,1.83) {\itshape E};
+  \begin{scope}
+    \clip (0.65,0) circle (1.35);
+    \fill[kitapvurguacik] (-0.65,0) circle (1.35);
+  \end{scope}
+  \draw[kitap-cizgi] (0.65,0) circle (1.35);
+  \draw[kitap-cizgi] (-0.65,0) circle (1.35);
+  \node[etiket] at (-0.72,1.62) {$A$};
+  \node[etiket] at (0.72,1.62) {$B$};
+  \node[etiket] at (0,0.05) {16};
+  \node[etiket] at (-1.3,-0.2) {34};
+  \node[etiket] at (1.3,-0.2) {17};
+  \node[etiket] at (0,-1.55) {33};
+\end{tikzpicture}
+\caption{İki küme için içerme-dışarma: kesişimdeki 16 sayı, $50 + 33$ toplamında
+iki kez sayıldığı için bir kez çıkarılır; $|A \cup B| = 50 + 33 - 16 = 67$.
+Dışarıdaki 33 sayı ne 2'ye ne de 3'e bölünür.}
+\end{figure}
+
+Bu basit örnek genel kuralın özünü gösterir: Bir elemanı iki kez saydıysak,
+net sayımını 1'e indirmek için onu bir kez dışarı çıkarmalıyız (dışarma).
+
+\begin{theorem}[İki Küme İçin İçerme-Dışarma İlkesi] $A$ ve $B$ sonlu iki küme olmak
+üzere, \[ |A \cup B| = |A| + |B| - |A \cap B| \] eşitliği geçerlidir.
+\end{theorem}
+
+\begin{proof} $A \cup B$ kümesindeki herhangi bir $x$ elemanını ele alalım.
+Bu eleman için tam olarak üç durum söz konusudur:
+\begin{enumerate} \item $x \in A$ fakat $x \notin B$ (yalnızca $A$'da olanlar): Bu
+durumda $x$ elemanı $|A|$ içinde 1 kez, $|B|$ içinde 0 kez, $|A \cap B|$ içinde 0 kez
+sayılır. Eşitliğin sağ tarafındaki net katkısı $1 + 0 - 0 = 1$'dir. \item $x \in B$
+fakat $x \notin A$ (yalnızca $B$'de olanlar): Bu durumda $x$ elemanı $|A|$ içinde 0 kez,
+$|B|$ içinde 1 kez, $|A \cap B|$ içinde 0 kez sayılır. Eşitliğin sağ tarafındaki net
+katkısı $0 + 1 - 0 = 1$'dir. \item $x \in A$ ve $x \in B$ (ortak olanlar): Bu durumda
+$x$ elemanı $|A|$ içinde 1 kez, $|B|$ içinde 1 kez ve $|A \cap B|$ içinde 1 kez sayılır.
+Eşitliğin sağ tarafındaki net katkısı $1 + 1 - 1 = 1$'dir. \end{enumerate} Her
+durumda birleşime ait olan herhangi bir eleman sağ taraftaki formülde net olarak
+tam 1 kez sayılmaktadır. Dolayısıyla eşitlik her zaman doğrudur. \end{proof}
+
+\subsection{Üç Kümeye Geçiş: Dengeyi Kurmak}
+
+Şimdi üçüncü bir koşul ekleyerek adımları genişletelim.
+
+\begin{example} 1'den 100'e kadar olan tam sayılar arasından 2, 3 veya 5 ile
+bölünebilen kaç sayı vardır? \end{example}
+
+\begin{proof}[Çözüm]
+2'ye bölünenlerin kümesi $A$, 3'e bölünenlerin kümesi $B$ ve 5'e bölünenlerin kümesi
+$C$ olsun. Amacımız $|A \cup B \cup C|$ değerini bulmaktır.
+
+Önce her kümenin büyüklüğünü tek tek hesaplayalım: \begin{align*} |A| &=
+\left\lfloor \frac{100}{2} \right\rfloor = 50 \\ |B| &= \left\lfloor
+\frac{100}{3} \right\rfloor = 33 \\ |C| &= \left\lfloor \frac{100}{5}
+\right\rfloor = 20 \end{align*} Tüm bu elemanları doğrudan toplarsak: \[ |A| +
+|B| + |C| = 50 + 33 + 20 = 103 \] elde ederiz. 1'den 100'e kadar zaten 100 sayı
+varken sonucun 103 çıkması, kimi elemanların birden fazla kez sayıldığını gösterir.
+
+İkişerli ortak elemanları ele alalım: \begin{itemize} \item $2 \times 3 = 6$ ile
+bölünenler hem $A$'da hem $B$'dedir: $|A \cap B| = \lfloor 100/6 \rfloor = 16$. \item
+$2 \times 5 = 10$ ile bölünenler hem $A$'da hem $C$'dedir:
+$|A \cap C| = \lfloor 100/10 \rfloor = 10$. \item $3 \times 5 = 15$ ile bölünenler
+hem $B$'de hem $C$'dedir: $|B \cap C| = \lfloor 100/15 \rfloor = 6$. \end{itemize} İki
+küme probleminde yaptığımız gibi, ikişerli kesişimleri dışarı atalım: \[ 103 -
+(16 + 10 + 6) = 103 - 32 = 71 \] Peki işlem bu aşamada tamamlandı mı?
+
+30 sayısına bakalım. 30, $2 \times 3 \times 5 = 30$ olduğundan hem 2'ye, hem
+3'e, hem de 5'e tam bölünür; yani $30 \in A \cap B \cap C$ kümesindedir. 30'un
+yukarıdaki işlemlerde kaç kez hesaba katıldığını kontrol edelim:
+\begin{itemize} \item $|A|$, $|B|$ ve $|C|$ toplamında 3 kez eklendi (+3). \item
+$|A \cap B|$, $|A \cap C|$ ve $|B \cap C|$ çıkarılırken 3 kez çıkarıldı (-3).
+\end{itemize} Net durum: $+3 - 3 = 0$. Yani 30 sayısı (ve onun gibi 2, 3, 5'in ortak
+katları olan 60 ve 90), elde ettiğimiz 71 sonucunun içinde \textbf{hiç
+sayılmamıştır}. Birleşime ait bir elemanı bütünüyle dışarıda bırakmış olduk.
+
+Bu eksikliği gidermek ve bu elemanları doğru biçimde saymak için, üç kümenin
+kesişimini tekrar \textbf{içeri almalı}, yani eklemeliyiz: \[ |A \cap B \cap C| =
+\left\lfloor \frac{100}{30} \right\rfloor = 3 \] Böylece doğru sayım: \[ |A \cup B
+\cup C| = 71 + 3 = 74 \] olarak bulunur. \end{proof}
+
+Bu sayımın dengesini Venn şeması üzerinde de okuyabiliriz; şekildeki her
+bölgeye o bölgedeki sayı adedi yazılmıştır:
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \draw[kitap-cizgi, fill=black!3] (-1.8,-1.7) rectangle (3.4,3.1);
+  \node[etiket, anchor=north west] at (-1.7,3.03) {\itshape E};
+  \begin{scope}
+    \clip (0,0) circle (1.5);
+    \clip (1.6,0) circle (1.5);
+    \fill[kitapvurguacik] (0.8,1.4) circle (1.5);
+  \end{scope}
+  \draw[kitap-cizgi] (0,0) circle (1.5);
+  \draw[kitap-cizgi] (1.6,0) circle (1.5);
+  \draw[kitap-cizgi] (0.8,1.4) circle (1.5);
+  \node[etiket] at (-1.05,1.9) {$A$};
+  \node[etiket] at (2.65,1.9) {$B$};
+  \node[etiket] at (0.8,2.72) {$C$};
+  \node[etiket] at (0.8,0.55) {3};
+  \node[etiket] at (0.8,-0.95) {13};
+  \node[etiket] at (0.15,1.15) {7};
+  \node[etiket] at (1.45,1.15) {3};
+  \node[etiket] at (-1.0,0.25) {27};
+  \node[etiket] at (2.6,0.25) {14};
+  \node[etiket] at (0.8,2.32) {7};
+  \node[etiket] at (3.15,1.0) {26};
+\end{tikzpicture}
+\caption{Üç küme için içerme-dışarma: bölgelerin toplamı
+$27+14+7+13+3+7+3 = 74$'tür; aynı değer formülden
+$50+33+20-(16+10+6)+3=74$ olarak gelir. Üçlü kesişimdeki 3 sayı, son adımda
+geri eklenir.}
+\end{figure}
+
+Bu döngü içerme-dışarmanın temel mekanizmasıdır: Teklileri ekle (içerme),
+çiftlileri çıkar (dışarma), üçlüleri geri ekle (içerme).
+
+\begin{theorem}[Üç Küme İçin İçerme-Dışarma İlkesi] $A$, $B$ ve $C$ sonlu üç küme
+olmak üzere, \[ |A \cup B \cup C| = |A| + |B| + |C| - (|A \cap B| + |A \cap C| +
+|B \cap C|) + |A \cap B \cap C| \] eşitliği geçerlidir. \end{theorem}
+
+\begin{proof} $A \cup B \cup C$ kümesindeki herhangi bir $x$ elemanının formülün sağ
+tarafına yaptığı net katkıyı, $x$'in tam olarak kaç kümenin elemanı olduğuna göre
+inceleyelim: \begin{enumerate} \item $x$ bu üç kümeden \textbf{tam birine} ait
+olsun (örneğin sadece $A$'da): Tekli toplamlardan $|A|$'dan 1 katkı gelir. İkili
+veya üçlü kesişimlerde yer almadığından diğer terimlerden 0 gelir. Net katkı: 1.
+\item $x$ bu üç kümeden \textbf{tam ikisine} ait olsun (örneğin $A$ ve $B$'de, ama
+$C$'de değil): Teklilerden $|A|$ ve $|B|$ olmak üzere 2 katkı gelir. İkililerden
+yalnızca $|A \cap B|$ içinde yer aldığından -1 katkı gelir. Üçlü kesişimde yer
+almaz (0). Net katkı: $2 - 1 = 1$. \item $x$ bu üç kümenin \textbf{üçüne de} ait
+olsun ($A \cap B \cap C$): Tekli terimlerin üçünde de yer alır (+3). İkili
+kesişimlerin üçünde de yer alır (-3). Üçlü kesişimde yer alır (+1). Net katkı:
+$3 - 3 + 1 = 1$. \end{enumerate} Hangi durumda olursa olsun, birleşime ait her
+eleman formül tarafından tam 1 kez sayılmaktadır. Dolayısıyla eşitlik
+doğrudur. \end{proof}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example} 40 kişilik bir sınıfta 22 öğrenci matematik, 18 öğrenci fizik,
+15 öğrenci kimya dersini almaktadır. 9 öğrenci hem matematik hem fizik, 7
+öğrenci hem matematik hem kimya, 5 öğrenci ise hem fizik hem kimya dersini
+almaktadır. Her üç dersi de alan 3 öğrenci olduğuna göre, bu üç dersten
+\textbf{en az birini} alan kaç öğrenci vardır? Hiçbir dersi almayan kaç öğrenci
+vardır? \end{example}
+
+\begin{proof}[Çözüm]
+Matematik alanların kümesi $M$, fizik alanların kümesi $F$, kimya alanların kümesi $K$
+olsun. Verilen büyüklükler şunlardır: \begin{align*} |M| &= 22, \quad |F|
+= 18, \quad |K| = 15 \\ |M \cap F| &= 9, \quad |M \cap K| = 7, \quad |F \cap K|
+= 5 \\ |M \cap F \cap K| &= 3 \end{align*} En az bir dersi alan öğrenciler
+$M \cup F \cup K$ kümesini oluşturur. Üç küme içerme-dışarma formülünü uygularız:
+\begin{align*} |M \cup F \cup K| &= (|M| + |F| + |K|) \\ &\quad - (|M \cap F| + |M \cap K| + |F \cap K|) + |M \cap F \cap K| \\ &= (22 + 18 + 15) - (9 + 7 + 5) + 3 \\ &= 55 - 21 + 3 = 37 \end{align*} Demek ki öğrencilerin 37'si en az bir
+ders almaktadır.
+
+Sınıf mevcudu 40 olduğuna göre, hiçbir dersi almayan öğrenci sayısı evrensel
+kümeden birleşimin çıkarılmasıyla bulunur: \[ 40 - |M \cup F \cup K| = 40 - 37
+= 3 \] olarak elde edilir. \end{proof}
+
+\begin{example} 1'den 600'e kadar olan tam sayılar arasından 4 veya 6 ile
+bölünen fakat 5 ile \textbf{bölünmeyen} kaç sayı vardır? \end{example}
+
+\begin{proof}[Çözüm]
+İstenen koşul iki parçadan oluşur: Sayı 4 veya 6'ya bölünmeli, fakat 5'e
+bölünmemelidir. Bu tip sorularda 4 veya 6'ya bölünenleri bulup içlerinden 5'e
+bölünenleri çıkarmak en güvenli yoldur.
+
+4 ile bölünenler $A$, 6 ile bölünenler $B$, 5 ile bölünenler $C$ olsun. Bizden istenen
+küme $(A \cup B) \setminus C$ kümesidir. Kümeler teorisinden: \[ |(A \cup B)
+\setminus C| = |A \cup B| - |(A \cup B) \cap C| \] yazabiliriz. Dağılma
+özelliğinden $(A \cup B) \cap C = (A \cap C) \cup (B \cap C)$ olur.
+
+Adım adım hesaplayalım: \begin{enumerate} \item Önce $A \cup B$ kümesini bulalım.
+Hem 4'e hem 6'ya bölünen en küçük pozitif tam sayı (Bölüm 13'te ele aldığımız
+EKOK tanımıyla) $\text{EKOK}(4, 6) = 12$'dir. \[ |A| = \left\lfloor \frac{600}{4}
+\right\rfloor = 150, \quad |B| = \left\lfloor \frac{600}{6} \right\rfloor = 100,
+\quad |A \cap B| = \left\lfloor \frac{600}{12} \right\rfloor = 50 \] Buradan: \[ |A
+\cup B| = 150 + 100 - 50 = 200 \] \item Şimdi bu sayıların arasından 5'e de
+bölünenleri, yani $(A \cap C) \cup (B \cap C)$ kümesini bulalım:
+\begin{itemize} \item $A \cap C$: Hem 4'e hem 5'e bölünenler ($\text{EKOK}(4, 5) = 20$'ye
+bölünenler): \[ |A \cap C| = \left\lfloor \frac{600}{20} \right\rfloor = 30 \]
+\item $B \cap C$: Hem 6'ya hem 5'e bölünenler ($\text{EKOK}(6, 5) = 30$'a
+bölünenler): \[ |B \cap C| = \left\lfloor \frac{600}{30} \right\rfloor = 20 \]
+\item $(A \cap C) \cap (B \cap C) = A \cap B \cap C$: Hem 4, hem 6, hem 5'e bölünenler.
+$\text{EKOK}(4, 6, 5) = 60$'a bölünür: \[ |A \cap B \cap C| = \left\lfloor
+\frac{600}{60} \right\rfloor = 10 \] \end{itemize} İki küme formülünü $(A \cap C)$
+ve $(B \cap C)$ için uygularsak: \[ |(A \cap C) \cup (B \cap C)| = 30 + 20 - 10 =
+40 \] \item Son olarak istenen farkı alırız: \[ |(A \cup B) \setminus C| = 200 -
+40 = 160 \] \end{enumerate} Demek ki 1'den 600'e kadar aradığımız özellikte 160
+sayı vardır. \end{proof}
+
+\begin{example} 6 basamaklı, rakamları toplamı 4 olan kaç farklı doğal sayı
+yazılabilir? \end{example}
+
+\begin{proof}[Çözüm]
+Bir doğal sayının 6 basamaklı olması için ilk basamağının sıfırdan farklı olması
+gerekir. Sayımız $a_1 a_2 a_3 a_4 a_5 a_6$ olsun. Buradaki kısıtlar şunlardır: \[
+a_1 + a_2 + a_3 + a_4 + a_5 + a_6 = 4 \] ve $a_1 \ge 1$, diğer $a_i \ge 0$ olmalıdır.
+
+İlk basamağın sıfır olmaması kuralını uygulamak için $a_1' = a_1 - 1$
+tanımlayalım. Bu durumda $a_1' \ge 0$ olur ve denklemimiz: \[ a_1' + a_2 + a_3 +
+a_4 + a_5 + a_6 = 4 - 1 = 3 \] hâline gelir. Burada her bir değişken negatif
+olmayan birer tam sayıdır ($a_i \ge 0$). Normalde her bir basamak en fazla 9
+değerini alabilir; ancak toplamları zaten 3 olduğu için hiçbir değişkenin 9'u
+aşma tehlikesi yoktur. Dolayısıyla basamakların üst sınır kısıtı kendiliğinden
+sağlanır.
+
+Bölüm 5'te gördüğümüz ayraç (stars and bars) yöntemine göre, $n=3$ özdeş nesneyi
+$k=6$ farklı kutuya dağıtma sayısı: \[ \binom{n + k - 1}{k - 1} = \binom{3 + 6
+- 1}{6 - 1} = \binom{8}{5} = \binom{8}{3} = \frac{8 \times 7 \times 6}{3
+\times 2 \times 1} = 56 \] olarak bulunur.
+
+Üst sınır kısıtlarının toplamı aşmadığı durumlarda içerme-dışarmaya gerek
+kalmadan doğrudan çözüme ulaşılır; ancak toplamın 9'u aştığı durumlarda
+içerme-dışarma zorunlu hâle gelir. \end{proof}
+
+\section{Genel Formül}
+
+\subsection{Daha Fazla Küme ve Değişen İşaretler Deseni}
+
+İki kümede tek bir çıkarma yaptık: $+ -$. Üç kümede bir çıkarma, bir toplama
+yaptık: $+ - +$. Dört, beş veya genel olarak $n$ küme olduğunda da benzer bir yol
+izleriz.
+
+Her adımda birleşim alanını dengelemek için bir sonraki seviyedeki tüm kesişimleri
+hesaba katmamız gerekir. Bu dalgalı işaret deseni (önce ekle, sonra çıkar, tekrar
+ekle...) kombinatorik saymanın temel yapılarından biridir.
+
+\begin{theorem}[Genel İçerme-Dışarma İlkesi] $A_1, A_2, \dots, A_n$ sonlu kümeler
+olsun. Bu kümelerin birleşiminin eleman sayısı:
+\begin{multline*}
+|A_1 \cup A_2 \cup \cdots \cup A_n| = \sum_{1 \le i \le n} |A_i| - \sum_{1 \le i < j \le n} |A_i \cap A_j| \\
++ \sum_{1 \le i < j < k \le n} |A_i \cap A_j \cap A_k| - \cdots + (-1)^{n+1} |A_1 \cap A_2 \cap \cdots \cap A_n|
+\end{multline*}
+toplamı ile verilir. Toplam sembolüyle ifade edecek olursak: \[ \left|
+\bigcup_{i=1}^n A_i \right| = \sum_{k=1}^n (-1)^{k+1} \sum_{1 \le i_1 < i_2 <
+\dots < i_k \le n} |A_{i_1} \cap A_{i_2} \cap \dots \cap A_{i_k}| \] olur.
+\end{theorem}
+
+\subsection{Bu Formül Neden Her Zaman Doğrudur?}
+
+Formülün geçerliliğini görmek için birleşime ait \textbf{tek bir elemanın}
+adımlardaki durumunu izlemek yeterlidir.
+
+Birleşim kümesinden herhangi bir $x \in \bigcup_{i=1}^n A_i$ elemanı alalım. Bu
+eleman, verilen $n$ kümeden \textbf{tam $m$ tanesinin} içinde bulunsun
+($1 \le m \le n$).
+
+Formülün sağ tarafındaki terimlerin $x$ elemanını kaç kez saydığını inceleyelim:
+\begin{enumerate} \item \textbf{Tekli kümeler ($\sum |A_i|$):} $x$ tam $m$ kümenin
+içinde olduğuna göre, bu toplama tam $m = \binom{m}{1}$ kez katkı sağlar
+($+ \binom{m}{1}$). \item \textbf{İkili kesişimler ($\sum |A_i \cap A_j|$):}
+$x$'in bir $A_i \cap A_j$ kesişiminde yer alması için, hem $A_i$'nin hem de
+$A_j$'nin $x$'i içeren o $m$ küme arasından seçilmiş olması gerekir. $m$ küme
+arasından 2 küme $\binom{m}{2}$ farklı şekilde seçilebilir. Dolayısıyla bu
+terimden $-\binom{m}{2}$ katkı gelir. \item \textbf{Üçlü kesişimler
+($\sum |A_i \cap A_j \cap A_k|$):} Benzer şekilde, $x$ elemanı bu $m$ küme
+arasından seçilen herhangi üçlünün kesişimindedir. Bu terimden $+\binom{m}{3}$
+katkı gelir. \item Genel olarak, $k$'lı kesişimlerin toplamından $x$'e gelen
+katkı $(-1)^{k+1}\binom{m}{k}$ olacaktır. Eğer $k > m$ ise, $x$ en fazla $m$
+kümede yer aldığından daha büyük kesişimlerde bulunamaz; bu terimlerden gelen
+katkı 0'dır. \end{enumerate}
+
+O hâlde formülün sağ tarafının $x$ elemanına verdiği \textbf{net sayım değeri}:
+\[ \text{Net Sayım} = \binom{m}{1} - \binom{m}{2} + \binom{m}{3} - \binom{m}{4} +
+\cdots + (-1)^{m+1}\binom{m}{m} \] olur. Bu toplamın değerini bulmak için
+Bölüm 6'da gördüğümüz binom açılımını hatırlayalım: \[ (1 - 1)^m = \binom{m}{0}
+- \binom{m}{1} + \binom{m}{2} - \binom{m}{3} + \cdots + (-1)^m \binom{m}{m} \] Sol
+taraf $(0)^m = 0$ olduğundan: \[ 0 = 1 - \left[ \binom{m}{1} - \binom{m}{2} +
+\binom{m}{3} - \cdots + (-1)^{m+1}\binom{m}{m} \right] \] Köşeli parantezin
+içindeki ifade tam olarak aradığımız net sayım değeridir. Buradan: \[ \text{Net
+Sayım} = 1 \] elde edilir. Demek ki bir eleman kaç kümenin kesişiminde olursa
+olsun ($m=1, 2, \dots, n$), formüldeki ekleme ve çıkarmalar birbirini götürür ve
+o eleman sonuca \textbf{tam 1 kez} eklenmiş olur.
+
+Eleman hiçbir kümede yer almıyorsa ($m=0$), zaten hiçbir terimde sayılmaz,
+katkısı 0'dır. İspat tamamlanmıştır.
+
+\subsection{Tümleyen Sayımı (Complementary Counting)}
+
+Çoğu problemde "en az bir koşulu sağlayanlar" yerine, "verilen koşulların
+\textbf{hiçbirini} sağlamayanlar" sorulur.
+
+Evrensel kümemiz $U$ olsun. $A_1, A_2, \dots, A_n$ kümeleri de istenmeyen
+durumları temsil etsin. Bu durumda hiçbir istenmeyen duruma düşmeyen
+elemanların kümesi: \[ |\overline{A_1} \cap \overline{A_2} \cap \dots \cap
+\overline{A_n}| = |U| - |A_1 \cup A_2 \cup \dots \cup A_n| \] olarak ifade
+edilir. İçerme-dışarma formülünü buraya uygularsak: \[ |U \setminus (A_1 \cup
+\dots \cup A_n)| = |U| - \sum |A_i| + \sum |A_i \cap A_j| - \sum |A_i \cap A_j
+\cap A_k| + \cdots \] eşitliğini elde ederiz. Bu yaklaşım, özellikle doğrudan
+sayımın zor olduğu durumlarda işlemi belirgin biçimde kolaylaştırır.
+
+\begin{definition}[Yaygın Hata Uyarısı] İçerme-dışarma uygularken en sık yapılan
+hata terimlerin işaretlerini şaşırmaktır: \begin{itemize} \item \textbf{Birleşim
+arıyorsak:} Tekliler +, ikililer -, üçlüler +, dörtlüler - şeklinde ilerler.
+\item \textbf{Tümleyen (hiçbirini sağlamayanlar) arıyorsak:} Evrensel küme $|U|$
+ile başlarız (+), teklileri çıkarırız (-), ikilileri ekleriz (+), üçlüleri
+çıkarırız (-). \end{itemize} Son terimin işaretini ezberlemek yerine, tekli
+adımlarda işaretin pozitif mi negatif mi olduğunu takip ederek ilerleyiniz.
+\end{definition}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example} 1'den 1000'e kadar olan tam sayılar arasından 2, 3, 5 veya 7
+sayılarından \textbf{hiçbirine bölünmeyen} kaç sayı vardır? \end{example}
+
+\begin{proof}[Çözüm]
+Evrensel kümemiz $U = \{1, 2, \dots, 1000\}$ ve $|U| = 1000$'dir. İstenmeyen
+durumlar için kümeler tanımlayalım: \begin{itemize} \item $A_1$: 2 ile bölünenler
+\item $A_2$: 3 ile bölünenler \item $A_3$: 5 ile bölünenler \item $A_4$: 7 ile
+bölünenler \end{itemize} İstenen değer $|\overline{A_1} \cap \overline{A_2} \cap
+\overline{A_3} \cap \overline{A_4}|$'tür. Tümleyen formülüne göre: \[ \text{Sonuç}
+= 1000 - S_1 + S_2 - S_3 + S_4 \] Burada $S_k$, $k$'lı kesişimlerin eleman
+sayıları toplamıdır.
+
+\textbf{1. Adım: Tekli Kümeler ($S_1$)} \begin{align*} |A_1| &= \lfloor 1000 / 2
+\rfloor = 500 \\ |A_2| &= \lfloor 1000 / 3 \rfloor = 333 \\ |A_3| &= \lfloor 1000
+/ 5 \rfloor = 200 \\ |A_4| &= \lfloor 1000 / 7 \rfloor = 142 \\ S_1 &= 500 + 333
++ 200 + 142 = 1175 \end{align*}
+
+\textbf{2. Adım: İkili Kesişimler ($S_2$)} İkişerli çarpımlara bölünenleri sayarız
+($\binom{4}{2} = 6$ terim): \begin{itemize} \item
+$|A_1 \cap A_2| = \lfloor 1000 / 6 \rfloor = 166$ \item
+$|A_1 \cap A_3| = \lfloor 1000 / 10 \rfloor = 100$ \item
+$|A_1 \cap A_4| = \lfloor 1000 / 14 \rfloor = 71$ \item
+$|A_2 \cap A_3| = \lfloor 1000 / 15 \rfloor = 66$ \item
+$|A_2 \cap A_4| = \lfloor 1000 / 21 \rfloor = 47$ \item
+$|A_3 \cap A_4| = \lfloor 1000 / 35 \rfloor = 28$ \end{itemize} \[ S_2 = 166 + 100
++ 71 + 66 + 47 + 28 = 478 \]
+
+\textbf{3. Adım: Üçlü Kesişimler ($S_3$)} Üçerli çarpımlara bölünenleri sayarız
+($\binom{4}{3} = 4$ terim): \begin{itemize} \item
+$|A_1 \cap A_2 \cap A_3| = \lfloor 1000 / (2 \times 3 \times 5) \rfloor = \lfloor 1000 / 30 \rfloor = 33$
+\item
+$|A_1 \cap A_2 \cap A_4| = \lfloor 1000 / (2 \times 3 \times 7) \rfloor = \lfloor 1000 / 42 \rfloor = 23$
+\item
+$|A_1 \cap A_3 \cap A_4| = \lfloor 1000 / (2 \times 5 \times 7) \rfloor = \lfloor 1000 / 70 \rfloor = 14$
+\item
+$|A_2 \cap A_3 \cap A_4| = \lfloor 1000 / (3 \times 5 \times 7) \rfloor = \lfloor 1000 / 105 \rfloor = 9$
+\end{itemize} \[ S_3 = 33 + 23 + 14 + 9 = 79 \]
+
+\textbf{4. Adım: Dörtlü Kesişim ($S_4$)} Dördünün çarpımına
+($2 \times 3 \times 5 \times 7 = 210$) bölünenler: \[ S_4 = |A_1 \cap A_2 \cap A_3
+\cap A_4| = \lfloor 1000 / 210 \rfloor = 4 \]
+
+\textbf{5. Adım: Birleştirme} \[ \text{Sonuç} = 1000 - 1175 + 478 - 79 + 4 = 228
+\] Koşulları sağlayan 228 sayı bulunmaktadır. \end{proof}
+
+\begin{example} $x_1 + x_2 + x_3 + x_4 = 15$ denkleminin, her $i \in \{1, 2, 3, 4\}$
+için $0 \le x_i \le 6$ koşulunu sağlayan kaç farklı tam sayı çözümü vardır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Üst sınır kısıtı ($x_i \le 6$) olmasaydı, problem Bölüm 5'te ele aldığımız
+klasik negatif olmayan tam sayılarda ayraç yöntemiyle çözülebilirdi. Koşulu
+bozan durumlar, herhangi bir değişkenin $x_i \ge 7$ olmasıdır. Bu istenmeyen
+durumları içerme-dışarma ile ayıklayabiliriz.
+
+Evrensel küme $U$, hiçbir üst sınır olmaksızın $x_1 + x_2 + x_3 + x_4 = 15$
+denkleminin $x_i \ge 0$ çözümlerinin sayısıdır: \[ |U| = \binom{15 + 4 - 1}{4 - 1}
+= \binom{18}{3} = \frac{18 \times 17 \times 16}{6} = 816 \]
+
+İstenmeyen durum kümeleri olarak $A_i$, $x_i \ge 7$ olan çözümler kümesini göstersin
+($i = 1, 2, 3, 4$). İstenen çözüm sayısı: \[ \text{Çözüm Sayısı} = |U| - S_1 + S_2
+- S_3 + S_4 \]
+
+\textbf{1. Bir değişkenin kısıtı aşması ($S_1$):} Diyelim ki $x_1 \ge 7$.
+Değişken değişimi yapalım: $x_1' = x_1 - 7 \ge 0$. Denklem şuna dönüşür: \[ x_1' +
+x_2 + x_3 + x_4 = 15 - 7 = 8 \] Bu denklemin negatif olmayan tam sayılarda çözüm
+sayısı: \[ \binom{8 + 4 - 1}{4 - 1} = \binom{11}{3} = \frac{11 \times 10
+\times 9}{6} = 165 \] Kısıtı aşabilecek $\binom{4}{1} = 4$ farklı değişken
+olduğundan: \[ S_1 = 4 \times 165 = 660 \]
+
+\textbf{2. İki değişkenin kısıtı aşması ($S_2$):} Hem $x_1 \ge 7$ hem de $x_2 \ge 7$
+olsun. Değişken değişimiyle $x_1' = x_1 - 7$ ve $x_2' = x_2 - 7$ dersek: \[ x_1' +
+x_2' + x_3 + x_4 = 15 - 7 - 7 = 1 \] Çözüm sayısı: \[ \binom{1 + 4 - 1}{4 - 1} =
+\binom{4}{3} = 4 \] İki değişken $\binom{4}{2} = 6$ farklı şekilde seçilebildiğinden:
+\[ S_2 = 6 \times 4 = 24 \]
+
+\textbf{3. Üç veya daha fazla değişkenin kısıtı aşması ($S_3, S_4$):} Üç
+değişken birden en az 7 olursa, toplamları en az $7 \times 3 = 21$ olur. Ancak tüm
+değişkenlerin toplamı 15 verildiğinden bu durum olanaksızdır. Dolayısıyla
+$S_3 = 0$ ve $S_4 = 0$'dır.
+
+\textbf{Sonuç:} \[ \text{Çözüm Sayısı} = |U| - S_1 + S_2 = 816 - 660 + 24 = 180 \]
+olarak hesaplanır. \end{proof}
+
+\section{Düzensiz Dizilimler (Derangements) ve Şapka Problemi}
+
+\subsection{Şapka Problemi: Sabit Noktasız Permütasyonlar}
+
+Bölüm 4'te incelediğimiz permütasyon kavramının klasik uygulamalarından biri
+vestiyer ya da şapka problemidir: \begin{quote} $n$ kişi bir restorana gider ve
+şapkalarını vestiyere teslim eder. Çıkışta vestiyer görevlisi şapkaları rastgele
+bir biçimde bu $n$ kişiye dağıtır. \textbf{Hiç kimsenin kendi şapkasını almama}
+olasılığı veya bunu sağlayan durum sayısı kaçtır? \end{quote}
+
+Matematiksel olarak bu soru, $\{1, 2, \dots, n\}$ kümesinin hiçbir $i$ elemanı
+için $\pi(i) = i$ koşulunu sağlamayan $\pi$ permütasyonlarını bulmaya karşılık
+gelir. Bir permütasyonda $\pi(i) = i$ eşitliğini sağlayan elemanlara \textbf{sabit
+nokta} (fixed point) denir. Biz sabit noktası bulunmayan permütasyonların
+sayısını aramaktayız.
+
+\begin{definition}[Düzensiz Dizilim / Derangement] $\{1, 2, \dots, n\}$ kümesinin
+hiçbir elemanını kendi orijinal yerinde bırakmayan permütasyonlarına
+\textbf{düzensiz dizilim} (derangement) denir. $n$ elemanlı bir kümenin düzensiz
+dizilimlerinin sayısı $!n$ veya $D_n$ simgesiyle gösterilir. \end{definition}
+
+\subsection{Küçük Değerleri Elle İnceleyelim}
+
+Genel formüle geçmeden önce küçük $n$ değerleri için olası permütasyonları
+inceleyelim:
+
+\begin{itemize} \item $\mathbf{n = 1}$: Tek bir eleman vardır: $(1)$. Kendi
+yerindedir. Sabit noktası olmayan dizilim yoktur: \[ !1 = 0 \] \item $\mathbf{n =
+2}$: Olası dizilimler: $(1, 2)$ ve $(2, 1)$. \begin{itemize} \item $(1, 2) \to$ her
+ikisi de kendi yerinde. \item $(2, 1) \to 1$, $2$'nin yerinde; $2$, $1$'in yerinde.
+İkisi de yerinde değil. \end{itemize} \[ !2 = 1 \] \item $\mathbf{n = 3}$: Toplam
+$3! = 6$ permütasyon vardır: \begin{align*} (1, 2, 3) &\to \text{3 sabit nokta}
+\\ (1, 3, 2) &\to \text{1 sabit nokta (1)} \\ (3, 2, 1) &\to \text{1 sabit
+nokta (2)} \\ (2, 1, 3) &\to \text{1 sabit nokta (3)} \\ (2, 3, 1) &\to
+\text{Sabit nokta yok} \quad \checkmark \\ (3, 1, 2) &\to \text{Sabit nokta yok}
+\quad \checkmark \end{align*} 6 permütasyondan yalnızca 2 tanesinde hiçbir eleman
+kendi yerinde değildir: \[ !3 = 2 \] \item $\mathbf{n = 4}$: Toplam $4! = 24$
+permütasyon bulunur. Bunları elediğimizde 9 tanesinin sabit noktası olmadığını
+görürüz: \[ !4 = 9 \] \end{itemize} Dizi $0, 1, 2, 9, \dots$ biçiminde ilerler.
+
+\subsection{İçerme-Dışarma ile Genel Formülün Türetilmesi}
+
+Genel $!n$ formülü, içerme-dışarma ilkesinin doğrudan bir sonucudur.
+
+\begin{theorem}[Düzensiz Dizilim Formülü] $n \ge 1$ tam sayısı için düzensiz
+dizilimlerin sayısı: \[ !n = n! \left( 1 - \frac{1}{1!} + \frac{1}{2!} -
+\frac{1}{3!} + \frac{1}{4!} - \cdots + \frac{(-1)^n}{n!} \right) = n!
+\sum_{k=0}^n \frac{(-1)^k}{k!} \] formülü ile hesaplanır. \end{theorem}
+
+\begin{proof} Tüm permütasyonların kümesi evrensel kümemiz olsun: $|U| = n!$.
+
+Bir permütasyonun koşulu ihlal etmesi, en az bir elemanın kendi yerinde kalması
+demektir. $i \in \{1, 2, \dots, n\}$ için: \[ A_i = \{ \pi \mid \pi(i) = i \} \]
+kümesini tanımlayalım. $A_i$, $i$. elemanın kendi yerinde kaldığı permütasyonların
+kümesidir.
+
+Düzensiz dizilimler, bu durumların hiçbirinin gerçekleşmediği
+permütasyonlardır: \[ !n = |U \setminus (A_1 \cup A_2 \cup \dots \cup A_n)| \]
+Tümleyen içerme-dışarma ilkesini yazalım: \[ !n = |U| - \sum_{i} |A_i| + \sum_{i
+< j} |A_i \cap A_j| - \sum_{i < j < k} |A_i \cap A_j \cap A_k| + \cdots + (-1)^n
+|A_1 \cap \dots \cap A_n| \] Kesişimlerin büyüklüklerini adım adım hesaplayalım:
+\begin{enumerate} \item $|A_i|$: $i$. eleman kendi yerine sabitlenmiştir. Kalan
+$n-1$ eleman kendi arasında $(n-1)!$ farklı şekilde sıralanabilir: \[ |A_i| =
+(n-1)! \] Bu türden $\binom{n}{1}$ küme olduğundan: \[ \sum_{i} |A_i| =
+\binom{n}{1} (n-1)! = \frac{n!}{1!(n-1)!} (n-1)! = \frac{n!}{1!} \] \item
+$|A_i \cap A_j|$: Hem $i$ hem de $j$ kendi yerindedir (2 eleman sabit). Kalan $n-2$
+eleman $(n-2)!$ biçimde dizilir: \[ |A_i \cap A_j| = (n-2)! \] Bu türden
+$\binom{n}{2}$ çift olduğundan: \[ \sum_{i < j} |A_i \cap A_j| = \binom{n}{2}
+(n-2)! = \frac{n!}{2!(n-2)!} (n-2)! = \frac{n!}{2!} \] \item Benzer biçimde,
+herhangi $k$ elemanın kendi yerinde sabitlendiği durumların sayısı: \[ \sum_{i_1 <
+\dots < i_k} |A_{i_1} \cap \dots \cap A_{i_k}| = \binom{n}{k} (n-k)! =
+\frac{n!}{k!(n-k)!} (n-k)! = \frac{n!}{k!} \] \end{enumerate} Bu terimleri
+formülde yerine yazarsak: \begin{align*} !n &= n! - \frac{n!}{1!} +
+\frac{n!}{2!} - \frac{n!}{3!} + \cdots + (-1)^n \frac{n!}{n!} \\ &= n! \left( 1 -
+\frac{1}{1!} + \frac{1}{2!} - \frac{1}{3!} + \cdots + \frac{(-1)^n}{n!} \right)
+\end{align*} elde edilir. \end{proof}
+
+Formülü küçük değerlerde kontrol edelim: \begin{align*} !1 &= 1!(1 - 1) = 0 \\
+!2 &= 2!\left(1 - 1 + \frac{1}{2}\right) = 2 \times \frac{1}{2} = 1 \\ !3 &= 6\left(1
+- 1 + \frac{1}{2} - \frac{1}{6}\right) = 6 \times \frac{2}{6} = 2 \\ !4 &= 24\left(1
+- 1 + \frac{1}{2} - \frac{1}{6} + \frac{1}{24}\right) = 24 \times \frac{12 - 4 +
+1}{24} = 9 \\ !5 &= 120\left(\frac{9}{24} - \frac{1}{120}\right) = 5 \times 9 - 1 =
+44 \end{align*} Sonuçlar elle bulduğumuz değerlerle bütünüyle örtüşmektedir.
+
+\subsection{Doğal Bir Sabit: 1/e ile Bağlantı}
+
+Parantez içindeki ifadeye dikkatle bakalım: \[ 1 - \frac{1}{1!} + \frac{1}{2!} -
+\frac{1}{3!} + \frac{1}{4!} - \cdots + \frac{(-1)^n}{n!} \] Bu sonlu toplam, $n$
+büyüdükçe belirli bir sabite yaklaşır: \[ \frac{1}{e} \approx 0.367879\dots \]
+(Bu sabitin neden tam olarak $\frac{1}{e}$ olduğunu merak edenler için hemen
+aşağıda kısa bir kutu var.) Bu bağıntı çarpıcı bir gerçeği ortaya koyar: $n$
+büyüdükçe rastgele dağıtılan şapkaların \textbf{hiçbirinin} doğru sahibine gitmeme
+olasılığı: \[ \frac{!n}{n!} \approx \frac{1}{e} \approx \%36.8 \] değerine hızla
+yaklaşır. Kişi sayısı ne kadar büyük olursa olsun, kimsenin kendi şapkasını
+alamama olasılığı yaklaşık üçte birdir ($\approx \%36.8$).
+
+\fbox{\parbox{0.92\textwidth}{
+\textbf{Meraklısı için: Bu sabit neden tam olarak $1/e$?} \\
+$\frac{!n}{n!}$ oranının neden $\frac{1}{e}$'ye yaklaştığını görmek isteyenler için
+kısa bir tur: $e^x$ fonksiyonunun Taylor serisi \[ e^x = 1 + \frac{x}{1!} +
+\frac{x^2}{2!} + \frac{x^3}{3!} + \cdots \] biçimindedir. Bu seride $x = -1$
+alınırsa \[ \frac{1}{e} = e^{-1} = 1 - \frac{1}{1!} + \frac{1}{2!} - \frac{1}{3!}
++ \frac{1}{4!} - \cdots \] elde edilir. İşte düzensiz dizilim formülündeki
+parantezli ifade, bu sonsuz toplamın sonlu bir kesitidir; bu yüzden $\frac{!n}{n!}$
+oranı, $n$ büyüdükçe $\frac{1}{e}$'ye hızla yaklaşır.}}
+
+Pratik hesaplamalarda $!n$, $\frac{n!}{e}$ değerine en yakın tam sayıdır: \[ !n
+= \left\lfloor \frac{n!}{e} + \frac{1}{2} \right\rfloor \quad (n \ge 1) \]
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example} 5 mektup ve bu mektupların gönderileceği 5 farklı adresli zarf
+vardır. Mektuplar zarflara rastgele konulduğunda \textbf{tam olarak 2} mektubun
+doğru zarfa konulmuş olma sayısı kaçtır? \end{example}
+
+\begin{proof}[Çözüm]
+Bu durum iki aşamada incelenebilir: \begin{enumerate} \item Doğru zarfa gidecek
+2 mektup seçilir. \item Kalan 3 mektup, hiçbirinin doğru zarfa gitmeyeceği
+şekilde dağıtılır. (Eğer kalanlardan biri bile doğru zarfa giderse, doğru zarf
+sayısı 2'yi aşacaktır.) \end{enumerate}
+
+Doğru zarfa gidecek 2 mektup $\binom{5}{2}$ farklı şekilde seçilebilir: \[
+\binom{5}{2} = \frac{5 \times 4}{2} = 10 \] Kalan 3 mektubun kalan 3 zarfa
+tamamen yanlış dağılması ise düzensiz dizilim sayısı olan $!3$ kadardır: \[ !3 = 2
+\] Bölüm 3'teki çarpma kuralı gereği: \[ \binom{5}{2} \times !3 = 10 \times 2 = 20
+\] farklı durum bulunur. \end{proof}
+
+\begin{example} Bir yuvarlak masa etrafında 4 evli çift (toplam 8 kişi)
+oturacaktır. Kadınlar ve erkekler dönüşümlü (bir kadın, bir erkek) oturacaktır.
+Kadınlar masaya yerleştikten sonra, hiçbir erkeğin kendi eşinin \textbf{hemen
+sağında} oturmamasını istiyoruz. Erkekler bu masaya kaç farklı biçimde
+oturabilir? \end{example}
+
+\begin{proof}[Çözüm]
+Kadınların yerleri belirlendikten sonra aralarında erkekler için 4 boş sandalye
+kalır. Bu sandalyeleri 1, 2, 3, 4 olarak numaralandıralım; öyle ki $i$. sandalye
+tam olarak $i$. kadının sağındaki sandalye olsun.
+
+$i$. erkeğin kendi eşinin sağına oturması, $i$. sandalyeye oturması demektir.
+Hiçbir erkeğin kendi eşinin sağında oturmaması koşulu ise hiçbir $i$. erkeğin $i$.
+sandalyeye oturmaması anlamına gelir.
+
+Bu durum, 4 erkeğin 4 sandalyeye yerleşiminde sabit noktasız bir permütasyon,
+yani bir düzensiz dizilim problemidir.
+
+O hâlde aranan oturma düzeni sayısı doğrudan $!4$ ile verilir: \[ !4 = 9 \]
+Erkekler, kadınların konumu sabitken bu koşula uygun 9 farklı biçimde
+oturabilirler. \end{proof}
+
+\begin{example} $\{1, 2, 3, 4, 5, 6\}$ kümesinin permütasyonları arasından 1'in
+ilk sırada olmadığı ($\pi(1) \ne 1$) ve 6'nın son sırada olmadığı ($\pi(6) \ne 6$)
+kaç farklı permütasyon vardır? \end{example}
+
+\begin{proof}[Çözüm]
+Bu problem tüm elemanların değil, yalnızca iki elemanın konumunu kısıtlamaktadır.
+Bu nedenle tam bir düzensiz dizilim formülü yerine iki küme içerme-dışarma
+ilkesini uygulamak yeterlidir.
+
+Tüm permütasyonların sayısı $|U| = 6! = 720$'dir.
+
+İstenmeyen durumlar: \begin{itemize} \item $A$: 1'in birinci sırada olması
+($\pi(1) = 1$). 1 sabitlendiğinden kalan 5 eleman $5! = 120$ şekilde dizilir:
+$|A| = 120$. \item $B$: 6'nın altıncı sırada olması ($\pi(6) = 6$). 6 sabitlendiğinden
+kalan 5 eleman $5! = 120$ şekilde dizilir: $|B| = 120$. \item $A \cap B$: Hem
+$\pi(1) = 1$ hem de $\pi(6) = 6$ olması. Bu iki eleman sabitlendiğinden kalan 4
+eleman $4! = 24$ şekilde dizilir: $|A \cap B| = 24$. \end{itemize} İçerme-dışarma
+kuralına göre istenmeyen durumlardan en az birine düşen permütasyon sayısı: \[
+|A \cup B| = |A| + |B| - |A \cap B| = 120 + 120 - 24 = 216 \] Her iki ihlalden de
+kaçınmak istediğimize göre, evrensel kümeden birleşimi çıkarırız: \[ |\overline{A}
+\cap \overline{B}| = |U| - |A \cup B| = 720 - 216 = 504 \] Koşulları sağlayan 504
+farklı permütasyon vardır. \end{proof}
+
+\begin{example} İçerme-dışarma mantığını algoritmik olarak nasıl ifade ederiz? $N$
+tane kümenin kesişim boyutları verildiğinde genel birleşim boyutunu hesaplayan
+mantığı gösteriniz. \end{example}
+
+\begin{proof}[Çözüm] Programlama yarışmalarında $N$ genellikle 15--20 gibi küçük
+değerler aldığında, tüm alt kümeleri gezmek için \textbf{bitmask} (bitmask)
+tekniği kullanılır. Bir maskede 1 olan bitler seçilen kümeleri, seçilen küme
+adedinin tek veya çift olması ise formüldeki + ya da - işaretini belirler:
+
+\begin{lstlisting}
+function inclusionExclusion(n, intersectionSize)
+    totalUnion = 0
+    
+    for mask = 1 to (2^n - 1) do
+        elementCount = countSetBits(mask)
+        intersection = intersectionSize[mask]
+        
+        if elementCount mod 2 == 1 then
+            totalUnion = totalUnion + intersection
+        else
+            totalUnion = totalUnion - intersection
+        end if
+    end for
+    
+    return totalUnion
+end function\end{lstlisting}
+Bu algoritma $2^n - 1$ alt kümenin her birini içerme-dışarma ilkesinin
+belirlediği katsayıyla ($(-1)^{k+1}$) toplama katar.
+\end{proof}

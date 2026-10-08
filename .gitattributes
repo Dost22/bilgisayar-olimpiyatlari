@@ -1,0 +1,16 @@
+# Satır sonları: depo içinde her zaman LF; checkout'ta platforma uyulur.
+* text=auto eol=lf
+
+# İkili dosyalar: git bunları metin sanıp dönüştürmemeli.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.otf binary
+*.ttf binary
+
+# Üçüncü taraf lisans metni (GUST Font License) birebir korunur.
+fonts/LICENSE.txt -text
+
+# Üretilen dosyalar: GitHub'ın dil istatistiğini ve "dosya bloğu" nu kirletmesin.
+site/** linguist-generated=true
+output/** linguist-documentation=false

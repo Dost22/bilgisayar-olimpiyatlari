@@ -1,0 +1,35 @@
+{
+  "file": "16_parite_ve_simetri.tex",
+  "findings": [
+    {
+      "file": "16_parite_ve_simetri.tex",
+      "line_hint": 282,
+      "type": "logic_gap",
+      "severity": "major",
+      "excerpt": "Bu durum beyaz karelerin kullanımında yerel bir tıkanıklığa yol açar. Nitekim ayrıntılı bir graf analizi, $(1, 1)$'den $(5, 5)$'e giden bir Hamilton yolunun bulunmadığını gösterir.",
+      "issue": "Yazar, atın renk değiştirme kuralının bu problemde tek başına çelişki vermediğini belirttikten sonra köşe karelerinin komşuluk kısıtlarına değinmiş, fakat ispatı tamamlamayıp 'ayrıntılı bir graf analizi Hamilton yolunun bulunmadığını gösterir' diyerek tamamlanmamış bir argümanla sonlandırmıştır. Bu durum belirgin bir ispat boşluğudur (logic gap). Ayrıca 'At Gezintisi ve Renk Değişimi' başlığı altında pariteyle doğrudan çelişki veren bir soru (örneğin 25 karelik tahtada kapalı bir turun imkânsızlığı veya beyaz kareden başlayan bir açık turun imkânsızlığı) yerine pariteyle çözülemeyen bir sorunun yarım bırakılması pedagojik açıdan da hatalıdır.",
+      "suggested_fix": "Örnek, renklendirme ve parite kuralının doğrudan ve eksiksiz çelişki ürettiği bir problemle değiştirilmelidir; örneğin: '5x5'lik tahtada atın başladığı kareye dönen kapalı bir tur (Hamilton çevrimi) yapmasının imkânsız olduğunu gösteriniz' (25 adım tek olduğundan at başladığı renkte olamaz) veya 'Bir atın beyaz bir kareden başlayarak 25 karenin tamamını tam bir kez ziyaret etmesi mümkün müdür?' (13 siyah, 12 beyaz kare olduğundan beyazdan başlayan tur en fazla 12 siyah kare gezebilir).",
+      "confidence": "high"
+    },
+    {
+      "file": "16_parite_ve_simetri.tex",
+      "line_hint": 344,
+      "type": "math_error",
+      "severity": "minor",
+      "excerpt": "simetri ekseninden dışa doğru Bölüm 21'de inceleyeceğimiz two pointers tekniğiyle kontrol eder:",
+      "issue": "Metindeki açıklama kodun işleyiş yönüyle çelişmektedir. Kod simetri ekseninden dışa doğru değil; dizginin iki ucundan merkeze doğru ('sol = 0', 'sag = n - 1', 'sol++', 'sag--') yani dıştan içe doğru çalışmaktadır.",
+      "suggested_fix": "'simetri ekseninden dışa doğru' ifadesi 'dizginin iki ucundan merkeze doğru' olarak düzeltilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "16_parite_ve_simetri.tex",
+      "line_hint": 351,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "// Iki isaretci ile simetri kontrolu: O(n) zaman, O(1) ekstra alan",
+      "issue": "Terminoloji sözleşmesine göre 'two pointers' terimi İngilizce korunmalıdır; Türkçe karşılığı olan 'iki işaretçi' teriminin kullanılması Kategori A kapsamında yasaktır.",
+      "suggested_fix": "Yorum satırı '// Two pointers ile simetri kontrolu: O(n) zaman, O(1) ekstra alan' şeklinde güncellenmelidir.",
+      "confidence": "high"
+    }
+  ]
+}

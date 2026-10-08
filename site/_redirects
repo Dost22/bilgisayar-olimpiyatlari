@@ -1,0 +1,2 @@
+# Eski *.netlify.app adresi özel alan adına yönlendirilir (bkz. KARARLAR.md → D50)
+https://bilgisayar-olimpiyatlari.netlify.app/*  https://bilgisayar-olimpiyatlari.com/:splat  301!

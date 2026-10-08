@@ -1,0 +1,25 @@
+{
+  "file": "09_izgara_yollari_ve_yineleme_iliskileri.tex",
+  "findings": [
+    {
+      "file": "09_izgara_yollari_ve_yineleme_iliskileri.tex",
+      "line_hint": 147,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "define MOD 1000000007",
+      "issue": "C dilinde önişlemci makro tanımları '#' karakteri ile başlamalıdır. 'define MOD' ifadesi derleme hatasına yol açar.",
+      "suggested_fix": "#define MOD 1000000007",
+      "confidence": "high"
+    },
+    {
+      "file": "09_izgara_yollari_ve_yineleme_iliskileri.tex",
+      "line_hint": 344,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "define MOD 1000000007",
+      "issue": "C dilinde önişlemci makro tanımları '#' karakteri ile başlamalıdır. 'define MOD' ifadesi derleme hatasına yol açar.",
+      "suggested_fix": "#define MOD 1000000007",
+      "confidence": "high"
+    }
+  ]
+}

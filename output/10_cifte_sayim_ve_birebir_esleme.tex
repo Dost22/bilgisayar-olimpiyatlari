@@ -1,0 +1,489 @@
+\chapter[Çifte Sayım ve Birebir Eşleme · \textit{İleri}]{Çifte Sayım ve Birebir Eşleme}
+\chaptermark{Çifte Sayım ve Birebir Eşleme}
+
+Matematik ve bilgisayar biliminde bir problemi çözmenin en etkili yollarından biri, karmaşık cebirsel sadeleştirmeler veya uzun denklemler kurmak yerine saymak istediğimiz nesnelere farklı bir açıdan bakmaktır. Bir büyüklüğü iki farklı yöntemle sayıp sonuçları birbirine eşitlemek ya da zor bir kümenin elemanlarını yapısını çok iyi bildiğimiz başka bir kümenin elemanlarıyla birebir eşleştirmek, kombinatorik düşüncenin temel dayanaklarındandır.
+
+TÜBİTAK Bilgisayar Olimpiyatı birinci aşama sınavında karşımıza çıkan pek çok soru, ilk bakışta karmaşık toplam formülleri veya iç içe döngüler gibi görünür. Oysa doğru eşlemeyi kurduğumuzda ya da bir matrisin satır ve sütun toplamlarını karşılaştırdığımızda, sayfalar sürecek cebirsel işlemler tek bir satırda sadeleşir. Bu çerçevede kombinatorik ispatın temel yöntemlerinden ikisine odaklanacağız: \textbf{çifte sayım} ve \textbf{birebir eşleme}.
+
+\section{Çifte Sayım (Double Counting)}
+
+Bir salonda $n$ kişi olduğunu ve bazılarının birbiriyle el sıkıştığını hayal edelim. Toplam el sıkışma sayısını bulmak istiyoruz. Salondaki her kişiye tek tek yaklaşıp kaç kişiyle el sıkıştığını sorsak ve aldığımız tüm yanıtları toplasak, bu toplam gerçek el sıkışma sayısına mı eşit olur?
+
+Hemen küçük ve somut bir örnekle deneyelim. Üç kişi olsun: Ahmet, Berk ve Can.
+Ahmet; Berk ve Can ile el sıkışmış olsun. Berk ile Can ise birbirleriyle el sıkışmamış olsun.
+\begin{itemize}
+    \item Ahmet'in el sıkışma sayısı: $2$
+    \item Berk'in el sıkışma sayısı: $1$
+    \item Can'ın el sıkışma sayısı: $1$
+\end{itemize}
+Bu sayıları toplarsak $2 + 1 + 1 = 4$ elde ederiz. Fakat salonda gerçekleşen toplam tokalaşma sayısı sadece $2$'dir (Ahmet-Berk ve Ahmet-Can). Aradaki fark nereden kaynaklanıyor?
+
+Cevap açıktır: Her el sıkışma eylemi iki elin birbirine temas etmesini gerektirir; dolayısıyla her bir el sıkışma, o eyleme katılan iki kişi tarafından da birer kez sayılmış, yani tam olarak iki defa hesaba katılmıştır. O halde kişilerin el sıkışma sayılarının toplamı, gerçekleşen toplam el sıkışma sayısının tam $2$ katıdır:
+\[ 4 = 2 \times 2 \]
+
+Bu gözlem, bizi aynı büyüklüğü iki farklı perspektiften sayarak kurulan bir eşitliğe ulaştırır. Bu yönteme \textbf{çifte sayım} (iki yoldan sayma) denir.
+
+\subsection{El Sıkışma Lemması (Handshaking Lemma)}
+
+Bu fikri bir graf (graph) modeli üzerinde biçimselleştirelim. Salondaki her insanı bir düğüm (node/köşe), gerçekleşen her el sıkışmayı ise bu iki insanı birleştiren bir kenar (edge) olarak düşünelim. Bir $v$ düğümüne bağlı kenar sayısına o düğümün derecesi denir ve $\deg(v)$ ile gösterilir.
+
+\begin{theorem}[El Sıkışma Lemması]
+Bir $G = (V, E)$ sonlu grafında, tüm düğümlerin derecelerinin toplamı, toplam kenar sayısının ($|E|$) iki katına eşittir:
+\[ \sum_{v \in V} \deg(v) = 2|E| \]
+\end{theorem}
+
+\begin{proof}
+Kenarlar ile düğümler arasındaki ilişkiyi saymak için şu ikililerin kümesini tanımlayalım:
+\[ S = \{ (v, e) : v \in V, e \in E \text{ ve köşe } v \text{ kenar } e\text{'nin bir uç noktasıdır} \} \]
+$|S|$ büyüklüğünü iki farklı yoldan hesaplayalım:
+
+\textbf{1. Yol (Düğümler üzerinden sayma):} Her bir $v \in V$ düğümünü ele alalım. $v$ düğümünün uç noktası olduğu kenarların sayısı doğrudan o düğümün derecesidir ($\deg(v)$). Dolayısıyla tüm düğümler üzerinden toplarsak:
+\[ |S| = \sum_{v \in V} \deg(v) \]
+
+\textbf{2. Yol (Kenarlar üzerinden sayma):} Her bir $e \in E$ kenarını ele alalım. Tanım gereği her kenarın tam olarak $2$ uç noktası vardır. Dolayısıyla her $e$ kenarı, $S$ kümesinde tam olarak $2$ adet $(v, e)$ ikilisine katkı sağlar. Tüm kenarlar üzerinden toplarsak:
+\[ |S| = \sum_{e \in E} 2 = 2|E| \]
+
+Her iki yöntem de aynı $|S|$ kümesini saydığı için:
+\[ \sum_{v \in V} \deg(v) = 2|E| \]
+eşitliği elde edilir.
+\end{proof}
+
+Bu eşitliğin doğrudan bir sonucu vardır:
+
+\begin{theorem}
+Herhangi bir grafta, tek dereceli düğümlerin sayısı daima çifttir.
+\end{theorem}
+
+\begin{proof}
+Düğümleri derecesi tek olanlar ($V_{\text{tek}}$) ve çift olanlar ($V_{\text{çift}}$) olarak iki ayrık kümeye ayıralım:
+\[ \sum_{v \in V} \deg(v) = \sum_{v \in V_{\text{tek}}} \deg(v) + \sum_{u \in V_{\text{çift}}} \deg(u) = 2|E| \]
+Eşitliğin sağ tarafı $2|E|$ çift bir sayıdır. Sol taraftaki ikinci terim, çift sayıların toplamı olduğu için çifttir. Dolayısıyla ilk terim olan $\sum_{v \in V_{\text{tek}}} \deg(v)$ de çift olmak zorundadır. Tek sayıların toplamının çift olabilmesi ancak ve ancak toplanan terim sayısının çift olmasıyla mümkündür. O halde $|V_{\text{tek}}|$ çifttir.
+\end{proof}
+
+\subsection{Matrisler ve Görünüm Değiştirme}
+
+Çifte sayım yönteminin en yaygın biçimsel modeli, $0$ ve $1$'lerden oluşan bir matrisin elemanlarını saymaktır. Bir $M$ matrisindeki toplam $1$'lerin sayısı iki farklı yolla bulunabilir:
+\[ \sum_{i} (\text{$i$. satırdaki 1'lerin sayısı}) = \sum_{j} (\text{$j$. sütundaki 1'lerin sayısı}) \]
+
+Bu teknik, "satır toplamı = sütun toplamı" prensibi olarak da adlandırılır ve kombinatorik tasarım problemlerinde büyük kolaylık sağlar.
+
+\begin{example}
+Bir okulda $15$ öğrenci ve $15$ kulüp bulunmaktadır. Her kulüpte tam olarak $4$ öğrenci yer almaktadır. Herhangi iki kulübün en fazla $1$ ortak öğrencisi olduğu bilindiğine göre, en az kulübe üye olan öğrencinin üye olduğu kulüp sayısı en fazla kaç olabilir?
+\end{example}
+
+\begin{proof}[Çözüm]
+Öğrenciler ile kulüpler arasındaki üyelik ilişkisini bir matris olarak modelleyelim. Satırlar kulüpleri ($K_1, \dots, K_{15}$), sütunlar öğrencileri ($O_1, \dots, O_{15}$) temsil etsin. Eğer $O_j$ öğrencisi $K_i$ kulübüne üye ise matrisin $(i, j)$ hücresine $1$, aksi halde $0$ yazalım.
+
+Buradaki temel kısıt, herhangi iki kulübün en fazla $1$ ortak öğrencisi olmasıdır. Bu kısıt doğrudan şu yapıyı saymaya işaret eder: Bir öğrenci ve onun üye olduğu iki farklı kulüpten oluşan üçlüler. Yani öyle $(O, \{K_a, K_b\})$ üçlülerini sayalım ki, $O$ öğrencisi hem $K_a$ hem de $K_b$ kulübüne üye olsun.
+
+Bu üçlülerin sayısına $T$ diyelim ve iki yoldan hesaplayalım:
+
+\textbf{1. Yol (Kulüp çiftleri üzerinden sayma):}
+Toplam $\binom{15}{2} = \frac{15 \times 14}{2} = 105$ farklı kulüp çifti vardır.
+Soruda verilen kurala göre, herhangi iki kulübün en fazla $1$ ortak öğrencisi olabilir. Dolayısıyla her kulüp çifti en fazla $1$ öğrenci tarafından paylaşılır. Buradan:
+\[ T \le 105 \times 1 = 105 \]
+
+\textbf{2. Yol (Öğrenciler üzerinden sayma):}
+$j$. öğrencinin üye olduğu kulüp sayısı $d_j$ olsun. Bu öğrenci, kendi üye olduğu kulüpler arasından $\binom{d_j}{2}$ farklı kulüp çiftinde ortak üyedir. O halde:
+\[ T = \sum_{j=1}^{15} \binom{d_j}{2} \]
+
+Bu iki hesabı birleştirirsek:
+\[ \sum_{j=1}^{15} \binom{d_j}{2} \le 105 \]
+
+Toplam üyelik sayısını da çifte sayımla kontrol edelim. Her kulüpte $4$ öğrenci olduğuna göre, matristeki toplam $1$ sayısı $15 \times 4 = 60$'tır. Dolayısıyla:
+\[ \sum_{j=1}^{15} d_j = 60 \]
+
+$15$ öğrencinin dereceleri toplamı $60$'tır; yani öğrenci başına ortalama $60 / 15 = 4$ kulüp düşer.
+Eğer tüm öğrenciler eşit sayıda, yani $d_j = 4$ kulübe üye olsalardı:
+\[ \sum_{j=1}^{15} \binom{4}{2} = 15 \times 6 = 90 \le 105 \]
+olurdu ve bu eşitsizlik sağlanırdı.
+
+Peki en az kulübe üye olan öğrencinin üye olduğu kulüp sayısı $4$ olabilir mi? Evet, herkes $4$ kulübe üye olursa minimum değer $4$ olur.
+Minimum değer $5$ olabilir mi? Eğer herkes en az $5$ kulübe üye olsaydı, toplam üyelik sayısı en az $15 \times 5 = 75$ olurdu; oysa toplam üyelik $60$'tır. Bu bir çelişkidir.
+
+Dolayısıyla en az kulübe üye olan öğrencinin kulüp sayısı en fazla $4$ olabilir.
+\end{proof}
+
+\begin{example}
+$n$ elemanlı bir kümenin alt kümeleri arasından öyle bir $\mathcal{F}$ ailesi seçiliyor ki, bu ailedeki hiçbir küme bir diğerinin alt kümesi değildir (böyle bir aileye \textit{Sperner ailesi} veya \textit{antizincir} denir). $\mathcal{F}$ ailesinin eleman sayısı en fazla kaç olabilir?
+\end{example}
+
+\begin{proof}[Çözüm]
+Bu klasik sonuç Lubell-Yamamoto-Meshalkin (LYM) eşitsizliği ile kanıtlanır.
+Doğrudan alt kümeleri saymak yerine, $\{1, 2, \dots, n\}$ kümesinin tüm $n!$ permütasyonlarını ele alalım.
+Bir $\pi = (\pi_1, \pi_2, \dots, \pi_n)$ permütasyonu verildiğinde, bunun başlangıç öbekleri (önekleri) şunlardır:
+\[ \emptyset, \{\pi_1\}, \{\pi_1, \pi_2\}, \dots, \{\pi_1, \dots, \pi_n\} \]
+Dikkat edilirse, bu öneklerin her biri bir öncekinin alt kümesidir; yani tam bir zincir oluştururlar.
+Dolayısıyla, $\mathcal{F}$ ailesinden bir $A$ kümesi, verilen bir permütasyonun öneki olarak \textbf{en fazla bir kez} yer alabilir; çünkü iki farklı küme yer alsaydı biri diğerini kapsamak zorunda kalırdı, bu da antizincir tanımına aykırıdır.
+
+Şimdi şu ikilileri iki yoldan sayalım:
+\[ S = \{ (A, \pi) : A \in \mathcal{F}, \pi \text{ bir permütasyon ve } A \text{ kümesi } \pi\text{'nin bir öneki} \} \]
+
+\textbf{1. Yol (Permütasyonlar üzerinden):}
+Her $\pi$ permütasyonu için, başlangıç önekleri arasında $\mathcal{F}$'ye ait en fazla $1$ küme bulunabilir. Toplam $n!$ permütasyon olduğuna göre:
+\[ |S| \le n! \]
+
+\textbf{2. Yol ($\mathcal{F}$'deki kümeler üzerinden):}
+Sabit bir $A \in \mathcal{F}$ kümesi alalım. $|A| = k$ olsun. $A$'nın bir permütasyonun ilk $k$ elemanını oluşturması için:
+\begin{itemize}
+    \item İlk $k$ pozisyona $A$'nın elemanları kendi içinde $k!$ farklı şekilde dizilmelidir.
+    \item Kalan $n-k$ pozisyona $A$'da olmayan elemanlar $(n-k)!$ farklı şekilde dizilmelidir.
+\end{itemize}
+Dolayısıyla her $A$ kümesi tam olarak $k!(n-k)!$ adet permütasyonda önek olarak belirir. O halde:
+\[ |S| = \sum_{A \in \mathcal{F}} |A|!(n - |A|)! \]
+
+İki hesabı birleştirelim:
+\[ \sum_{A \in \mathcal{F}} |A|!(n - |A|)! \le n! \]
+Her iki tarafı $n!$'e bölersek:
+\[ \sum_{A \in \mathcal{F}} \frac{|A|!(n - |A|)!}{n!} \le 1 \implies \sum_{A \in \mathcal{F}} \frac{1}{\binom{n}{|A|}} \le 1 \]
+Bu eşitsizlik \textbf{LYM Eşitsizliği} olarak bilinir.
+
+Bölüm 5 ve 6'da incelediğimiz üzere $\binom{n}{k}$ katsayısı, $k = \lfloor n/2 \rfloor$ değerinde maksimuma ulaşır. Dolayısıyla her $A$ için:
+\[ \frac{1}{\binom{n}{|A|}} \ge \frac{1}{\binom{n}{\lfloor n/2 \rfloor}} \]
+Buradan:
+\[ \sum_{A \in \mathcal{F}} \frac{1}{\binom{n}{\lfloor n/2 \rfloor}} \le \sum_{A \in \mathcal{F}} \frac{1}{\binom{n}{|A|}} \le 1 \]
+\[ \frac{|\mathcal{F}|}{\binom{n}{\lfloor n/2 \rfloor}} \le 1 \implies |\mathcal{F}| \le \binom{n}{\lfloor n/2 \rfloor} \]
+elde edilir. Eşitlik durumu, tam olarak $\lfloor n/2 \rfloor$ elemanlı tüm alt kümeler seçildiğinde sağlanır.
+\end{proof}
+
+\subsection{Algoritmik Açıdan Çifte Sayım}
+
+Bilgisayar biliminde bir algoritmanın karmaşıklığını hesaplarken iç içe döngülerin adım sayısını bulmak genellikle bir çifte sayım problemidir.
+
+Aşağıdaki C kod parçasına bakalım:
+\begin{lstlisting}[language=CTemel]
+long long toplam = 0;
+for (int i = 1; i <= n; i++) {
+    for (int j = i; j <= n; j += i) {
+        toplam++;
+    }
+}
+\end{lstlisting}
+
+Bu döngünün kaç adım çalıştığını iki yoldan sayabiliriz:
+\begin{enumerate}
+    \item \textbf{Dış döngü ($i$) üzerinden:} Her $i$ sayısı için iç döngü $\lfloor n/i \rfloor$ kez döner. Toplam adım sayısı:
+    \[ \sum_{i=1}^{n} \lfloor \frac{n}{i} \rfloor \]
+    Bu toplam harmonik seriden ötürü yaklaşık $n \ln n$, yani $O(n \log n)$ karmaşıklığındadır.
+    \item \textbf{İç döngünün vurduğu ($j$) değerleri üzerinden:} Bir $j$ değeri kaç defa ziyaret edilir? Bölüm 11'deki bölünebilme tanımını hatırlarsak, $j$'nin her pozitif böleni $i$ için bir kez ziyaret edilir. Dolayısıyla $d(j)$, $j$'nin pozitif bölen sayısı olmak üzere:
+    \[ \text{Toplam Adım} = \sum_{j=1}^{n} d(j) \]
+\end{enumerate}
+İki yoldan sayarak şu temel özdeşliği doğrudan elde ederiz:
+\[ \sum_{i=1}^{n} \lfloor \frac{n}{i} \rfloor = \sum_{j=1}^{n} d(j) \]
+Böylece $1$'den $n$'e kadar olan sayıların bölen sayılarının ortalamasının $\ln n$ civarında olduğunu ileri analize başvurmadan çifte sayımla görmüş oluruz.
+
+\begin{lstlisting}
+FUNCTION sumDivisorCounts(n)
+    divisorCounts = ARRAY OF SIZE (n + 1) INITIALIZED WITH 0
+    FOR i FROM 1 TO n DO
+        FOR j FROM i TO n STEP i DO
+            divisorCounts[j] = divisorCounts[j] + 1
+        END FOR
+    END FOR
+    RETURN SUM(divisorCounts)
+END FUNCTION
+
+FUNCTION sumFloorDivisions(n)
+    total = 0
+    FOR i FROM 1 TO n DO
+        total = total + FLOOR(n / i)
+    END FOR
+    RETURN total
+END FUNCTION
+
+n = 1000
+ASSERT sumDivisorCounts(n) EQUALS sumFloorDivisions(n)\end{lstlisting}
+
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{\textbf{En Sık Yapılan Hata (Çifte Sayım):}
+Bir nesneyi iki yoldan sayarken, sayılan ikililerin kümesini ($S$) kesin ve net bir biçimde tanımlamadan işe başlamaktır. Hangi elemanın hangi kurala göre sayıldığı netleştirilmezse, bazı elemanlar tekrar tekrar sayılabilir veya tamamen gözden kaçabilir.}}
+\end{center}
+
+\section{Birebir Eşleme (Bijection)}
+
+Bir sepet elma ile bir sepet armudun sayılarının eşit olup olmadığını anlamanın en ilkel yolu nedir? İki sepetteki meyveleri de teker teker sayıp sayıları karşılaştırabilirsiniz. Peki ya saymayı bilmiyorsanız?
+
+Daha doğrudan bir yaklaşım vardır: Sepetten bir elma alıp diğer sepetten bir armutla eşleştirerek masaya koyarsınız. Bu işlemi meyveler bitene kadar tekrarlarsınız. Masada açıkta tek bir meyve kalmadığında, başlangıçta her iki sepette de aynı sayıda meyve olduğunu anlarsınız.
+
+Kombinatorikte bu yaklaşıma \textbf{birebir eşleme} (bijection) denir. Eleman sayısını belirlemek istediğimiz zor bir küme yerine eleman sayısı bilinen denk bir küme seçer ve iki küme arasında birebir ve örten bir dönüşüm kurarız.
+
+\begin{definition}[Birebir ve Örten Fonksiyon]
+$A$ ve $B$ iki sonlu küme olsun. Bir $f: A \to B$ fonksiyonu:
+\begin{enumerate}
+    \item \textbf{Birebir (injective)} ise: Her $x_1, x_2 \in A$ için $f(x_1) = f(x_2) \implies x_1 = x_2$ olmalıdır. (Farklı elemanlar farklı yerlere gider.)
+    \item \textbf{Örten (surjective)} ise: Her $y \in B$ için $f(x) = y$ olacak şekilde en az bir $x \in A$ bulunmalıdır. (Açıkta eleman kalmaz.)
+\end{enumerate}
+Hem birebir hem de örten olan bir fonksiyona \textbf{birebir eşleme} (bijection) denir. Eğer $A$ ile $B$ arasında bir birebir eşleme varsa:
+\[ |A| = |B| \]
+\end{definition}
+
+Birebir eşleme kurarken izlenmesi gereken sistematik adımlar şunlardır:
+\begin{enumerate}
+    \item Zor küme $A$'yı ve bilinen/kolay küme $B$'yi belirle.
+    \item Her $a \in A$ elemanını bir $b \in B$ elemanına götüren açık bir $f(a)$ kuralı yaz.
+    \item Ters kuralı göster: Her $b \in B$ elemanını geriye tek bir $a \in A$ elemanına götüren $f^{-1}(b)$ kuralını tanımla.
+    \item Ters fonksiyonun varlığı ($f^{-1}(f(a)) = a$ ve $f(f^{-1}(b)) = b$), fonksiyonun otomatikman hem birebir hem örten olduğunu kanıtlar.
+\end{enumerate}
+
+\subsection{Somut Örnek: Parite Eşlemesi}
+
+$n \ge 1$ elemanlı bir $X = \{x_1, x_2, \dots, x_n\}$ kümesini düşünelim. Bu kümenin çift sayıda elemana sahip alt kümelerinin sayısı ile tek sayıda elemana sahip alt kümelerinin sayısı birbirine eşit midir?
+
+Hemen $n = 3$ için $X = \{1, 2, 3\}$ ile deneyelim:
+\begin{itemize}
+    \item Çift boyutlu alt kümeler ($A_{\text{çift}}$): $\emptyset$ (0 elemanlı), $\{1, 2\}$, $\{1, 3\}$, $\{2, 3\}$ $\implies$ Toplam $4$ tane.
+    \item Tek boyutlu alt kümeler ($A_{\text{tek}}$): $\{1\}$, $\{2\}$, $\{3\}$, $\{1, 2, 3\}$ $\implies$ Toplam $4$ tane.
+\end{itemize}
+Sayılar eşit çıktı ($4 = 4$). Genel durumda bunu nasıl ispatlarız?
+
+\begin{theorem}
+$n \ge 1$ elemanlı bir kümenin çift sayıda elemana sahip alt kümelerinin sayısı, tek sayıda elemana sahip alt kümelerinin sayısına eşittir:
+\[ \sum_{k \text{ çift}} \binom{n}{k} = \sum_{k \text{ tek}} \binom{n}{k} = 2^{n-1} \]
+\end{theorem}
+
+\begin{proof}
+Çift boyutlu bir alt kümeyi tek boyutlu bir alt kümeye dönüştürmenin doğrudan bir yolu, kümeye sabit bir elemanı eklemek ya da kümeden çıkarmaktır. Bölüm 17'de ele alacağımız parite mantığıyla, bu işlem kümenin eleman sayısını $\pm 1$ değiştirir ve paritesini tersine çevirir.
+
+Kümenin özel bir elemanını sabitleyelim; örneğin $x_1$ elemanını seçelim.
+$A_{\text{çift}}$ kümesinden $A_{\text{tek}}$ kümesine bir $f$ fonksiyonu tanımlayalım:
+\[ f(S) = \begin{cases} 
+S \cup \{x_1\}, & \text{eğer } x_1 \notin S \\ 
+S \setminus \{x_1\}, & \text{eğer } x_1 \in S 
+\end{cases} \]
+
+Bu kuralı inceleyelim:
+\begin{itemize}
+    \item Eğer $|S|$ çift ise, $x_1$'i eklersek ya da çıkarırsak yeni kümenin boyutu $|S| \pm 1$ olur, yani tek sayıya dönüşür. Dolayısıyla $f(S) \in A_{\text{tek}}$ olur.
+    \item Bu işlemin tersi tam olarak kendisidir: $f(f(S)) = S$. Çünkü $x_1$ yoksa ekledik, bir daha uygularsak çıkardık ve eski haline döndük.
+\end{itemize}
+Bir fonksiyon kendi kendisinin tersi ise ($f \circ f = I$), o fonksiyon zorunlu olarak birebir ve örtendir (involüsyon).
+Dolayısıyla $|A_{\text{çift}}| = |A_{\text{tek}}|$ olmak zorundadır. Toplam alt küme sayısı $2^n$ olduğuna göre, her birinin sayısı $2^n / 2 = 2^{n-1}$ olur.
+\end{proof}
+
+\subsection{Kafes Yolları (Grid Paths) ve Bloklama Eşlemesi}
+
+Bölüm 9'da incelediğimiz kafes yolları, kombinatorikte birebir eşlemenin en sık kullanıldığı alanlardandır.
+$(0,0)$ noktasından $(m,n)$ noktasına sadece sağa ($R: (x+1, y)$) ve yukarı ($U: (x, y+1)$) adımlarla kaç farklı yoldan gidilebilir?
+
+Toplamda $m$ defa sağa ve $n$ defa yukarı adım atmak zorundayız. Toplam adım sayısı $m+n$'dir. Bu adımlardan hangilerinin sağa olacağını seçmek $\binom{m+n}{m}$ farklı yolla yapılabilir. Burada kurulan eşleme şudur: Geçerli her yol, $\{R, U\}$ harflerinden oluşan, $m$ tane $R$ ve $n$ tane $U$ içeren bir dizilime birebir karşılık gelir.
+
+\begin{example}[André'nin Yansıma İlkesi (Désiré André, 1887) / Catalan Sayıları Sezgisi]
+$(0,0)$ noktasından $(n,n)$ noktasına giden ve $y = x$ doğrusunun kesinlikle üzerine çıkmayan (yani her an $y \le x$ olan) kafes yollarının sayısını bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+İlk hamle olarak kuralı ihlal eden durumları belirleyelim. Kısıtlamasız tüm yolların sayısı $\binom{2n}{n}$'dir. Kuralı ihlal eden "kötü" yolları çıkarırsak sonuca ulaşabiliriz. Kötü bir yol, yolculuğun bir anında $y = x+1$ doğrusuna değen yoldur.
+
+Bir kötü yol düşünelim. Bu yol $y = x+1$ doğrusuna ilk kez bir $P$ noktasında çarpmış olsun.
+$P$ noktasından sonraki yol parçasını $y = x+1$ doğrusuna göre \textbf{yansıtalım} (yani sonraki tüm $R$ adımlarını $U$, tüm $U$ adımlarını $R$ yapalım).
+
+\begin{itemize}
+    \item Başlangıçta yol $(n,n)$ noktasında bitiyordu ($n$ tane $R$, $n$ tane $U$).
+    \item Çarpma anı $P$'ye kadar yol $k$ tane $R$ ve $k+1$ tane $U$ atmıştır (çünkü $y = x+1$).
+    \item $P$'den sonra kalan adımlar: $n-k$ tane $R$ ve $n - (k+1)$ tane $U$.
+    \item Bu kalan kısmı tersine çevirirsek ($R \leftrightarrow U$), yeni eklenen adımlar $n - (k+1)$ tane $R$ ve $n-k$ tane $U$ olur.
+    \item Yansıyan yeni yolun ulaştığı son nokta:
+    \[ x_{\text{son}} = k + (n - k - 1) = n - 1 \]
+    \[ y_{\text{son}} = (k + 1) + (n - k) = n + 1 \]
+\end{itemize}
+Görüldüğü gibi, $y = x+1$ doğrusuna en az bir kez çarpan her yol, yansıtıldığında $(0,0)$'dan $(n-1, n+1)$ noktasına giden bir yola dönüşür.
+
+Bu eşleme tersine de kurulabilir: $(0,0)$'dan $(n-1, n+1)$ noktasına giden her yol, başlangıçta $y \le x$ iken sonunda $y > x$ olduğu için $y = x+1$ doğrusunu kesmek \textbf{zorundadır}. İlk kestiği noktadan sonrasını yansıtırsak orijinal $(n,n)$'e giden kötü yolu geri elde ederiz.
+
+Dolayısıyla:
+\[ |\text{Kötü Yollar}| = \binom{(n-1) + (n+1)}{n-1} = \binom{2n}{n-1} \]
+Geçerli yolların sayısı ise:
+\[ C_n = \binom{2n}{n} - \binom{2n}{n-1} = \frac{1}{n+1}\binom{2n}{n} \]
+Bu sayılara \textbf{Catalan Sayıları} denir. Birebir eşleme sayesinde geometrik bir yansıma problemi doğrudan çözüme kavuşturulmuştur.
+\end{proof}
+
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{\textbf{En Sık Yapılan Hata (Birebir Eşleme):}
+Aday bir $f: A \to B$ dönüşümü kurgulayıp sadece birebir olduğunu sezmek ama $f$'nin hedef kümedeki \textbf{her} elemanı kapsadığını (örtenlik) ya da $f(A) \subseteq B$ olduğunu (yani dönüşümün hedef kümenin sınırları içinde kaldığını) kontrol etmeyi unutmaktır. En sağlam kontrol, ters fonksiyon $f^{-1}$'i açıkça yazıp çalıştığını göstermektir.}}
+\end{center}
+
+\section{Kombinatorik İspat Örnekleri}
+
+Bir cebirsel özdeşliği kanıtlamanın iki yolu vardır: Formülleri açıp terimleri sadeleştirmek ya da ifadenin iki tarafının da aslında aynı büyüklüğü saydığını göstermek. İkinci yaklaşıma \textbf{kombinatorik ispat} denir. Kombinatorik ispatlar ifadenin doğruluğunu göstermekle kalmaz, arkasındaki yapısal nedeni de açıklar.
+
+\subsection{Pascal Özdeşliğine İkinci İspat}
+
+Pascal kuralını cebirsel olarak faktöriyellerle ($n!$) ispatlamayı Bölüm 5'ten biliyoruz. Şimdi bu kuralı doğrudan bir kombinatorik sayımla gösterelim.
+
+\begin{theorem}[Pascal Özdeşliği]
+$1 \le k \le n$ tam sayıları için:
+\[ \binom{n+1}{k} = \binom{n}{k} + \binom{n}{k-1} \]
+\end{theorem}
+
+\begin{proof}
+\textbf{Soru:} $n+1$ kişilik bir gruptan $k$ kişilik bir olimpiyat takımı kaç farklı şekilde seçilebilir?
+
+\textbf{1. Cevap (Doğrudan Seçim):}
+$n+1$ elemanlı bir kümeden sırasız olarak $k$ eleman seçiyoruz. Tanım gereği bu seçim:
+\[ \binom{n+1}{k} \]
+farklı şekilde yapılabilir.
+
+\textbf{2. Cevap (Özel Bir Kişiye Göre Durum Analizi):}
+Gruptaki öğrencilerden birini belirleyelim; adı Ayşe olsun.
+Kurulacak $k$ kişilik takımda Ayşe ya vardır ya da yoktur. Bu iki durum birbirini dışlar:
+\begin{itemize}
+    \item \textbf{1. Durum (Ayşe takımda yok):} Takımın tamamı Ayşe dışındaki kalan $n$ kişi arasından seçilmelidir. $n$ kişiden $k$ kişi seçileceği için $\binom{n}{k}$ farklı yol vardır.
+    \item \textbf{2. Durum (Ayşe takımda var):} Ayşe'nin yeri kesinleştiği için takımın kalan $k-1$ üyesi, gruptaki diğer $n$ kişi arasından seçilmelidir. Bu seçim $\binom{n}{k-1}$ farklı yolla yapılabilir.
+\end{itemize}
+Toplama ilkesi gereği toplam takım sayısı bu iki durumun toplamıdır:
+\[ \binom{n}{k} + \binom{n}{k-1} \]
+
+Her iki yöntem de aynı takım sayısını bulduğundan:
+\[ \binom{n+1}{k} = \binom{n}{k} + \binom{n}{k-1} \]
+özdeşliği kanıtlanmış olur.
+\end{proof}
+
+\subsection{Alt Küme Sayısı Özdeşlikleri}
+
+\begin{theorem}
+Her $n \ge 0$ tam sayısı için:
+\[ \sum_{k=0}^{n} \binom{n}{k} = 2^n \]
+\end{theorem}
+
+\begin{proof}
+$n$ elemanlı bir $S = \{a_1, a_2, \dots, a_n\}$ kümesinin tüm alt kümelerinin sayısını iki yoldan hesaplayalım.
+
+\textbf{1. Yol (Kümeleri boyutlarına göre ayırarak):}
+Bir alt kümenin eleman sayısı $k$, $0$ ile $n$ arasında herhangi bir değer alabilir. $k$ elemanlı alt kümelerin sayısı $\binom{n}{k}$'dır. Tüm olası boyutları toplarsak:
+\[ \text{Toplam Alt Küme Sayısı} = \sum_{k=0}^{n} \binom{n}{k} \]
+
+\textbf{2. Yol (Elemanların üyelik kararları üzerinden):}
+Bir alt küme oluşturmak için her $a_i \in S$ elemanı için bağımsız bir karar veririz:
+\[ a_i \text{ bu alt kümede var mı, yok mu?} \]
+Her eleman için $2$ bağımsız seçenek (VAR ya da YOK) vardır. Çarpma ilkesi gereği $n$ eleman için toplam seçenek sayısı:
+\[ \underbrace{2 \times 2 \times \dots \times 2}_{n \text{ tane}} = 2^n \]
+
+İki sayım da aynı nesneleri saydığından eşitlik sağlanır.
+\end{proof}
+
+\begin{example}[Komite ve Başkan Seçimi]
+$n \ge 1$ için aşağıdaki özdeşliği kombinatorik bir model kurarak ispatlayınız:
+\[ \sum_{k=1}^{n} k \binom{n}{k} = n 2^{n-1} \]
+\end{example}
+
+\begin{proof}[Çözüm]
+Sol taraftaki $k \binom{n}{k}$ teriminin yapısına bakalım: Önce $n$ kişiden $k$ kişilik bir komite seçilmiş ($\binom{n}{k}$), ardından seçilen bu $k$ kişi arasından $1$ başkan seçilmiştir ($k$). Dolayısıyla ifadenin tamamı, herhangi bir büyüklükte bir komite ve bu komitenin içinden bir başkan seçme işlemini temsil eder.
+
+Şimdi bu komite ve başkan çiftini iki yoldan seçelim:
+
+\textbf{1. Yol (Önce komiteyi, sonra başkanı seç):}
+Komitenin boyutu $k$ ($1 \le k \le n$) olsun.
+\begin{itemize}
+    \item $k$ kişilik komite $\binom{n}{k}$ yolla seçilir.
+    \item Seçilen komiteye başkan $k$ farklı yoldan belirlenir.
+\end{itemize}
+Komite boyutu $1, 2, \dots, n$ olabileceği için tüm durumların toplamı:
+\[ \sum_{k=1}^{n} k \binom{n}{k} \]
+
+\textbf{2. Yol (Önce başkanı, sonra komitenin kalanını seç):}
+Sıralamayı değiştirelim:
+\begin{itemize}
+    \item $n$ kişi arasından komite başkanını seçelim: $n$ farklı seçenek vardır.
+    \item Kalan $n-1$ kişinin her birine soralım: "Bu komiteye girmek istiyor musun?"
+    \item Her birinin $2$ seçeneği vardır (evet/hayır). Bu da $2^{n-1}$ farklı komite oluşumu demektir.
+\end{itemize}
+Çarpma ilkesi gereği toplam seçim sayısı:
+\[ n \times 2^{n-1} \]
+
+Her iki yöntem de (komite, başkan) çiftlerini saydığı için:
+\[ \sum_{k=1}^{n} k \binom{n}{k} = n 2^{n-1} \]
+\end{proof}
+
+\begin{example}[Vandermonde Özdeşliği]
+$m, n, k \ge 0$ tam sayıları için:
+\[ \sum_{i=0}^{k} \binom{m}{i} \binom{n}{k-i} = \binom{m+n}{k} \]
+özdeşliğini kombinatorik olarak kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Sağ taraftaki $\binom{m+n}{k}$ ifadesi, toplam $m+n$ kişilik bir gruptan $k$ kişinin seçilmesini anlatır. Sol tarafta ise grup iki parçaya ayrılmış durumdadır. Bu durumu somutlaştıralım:
+
+Bir sınıfta $m$ kız ve $n$ erkek öğrenci olsun. Bu sınıftan $k$ kişilik bir yarışma takımı seçmek istiyoruz.
+
+\textbf{1. Yol (Doğrudan seçim):}
+Toplam $m+n$ öğrenciden $k$ öğrenci seçileceği için toplam durum sayısı:
+\[ \binom{m+n}{k} \]
+
+\textbf{2. Yol (Kız ve erkek sayılarına göre parçalama):}
+Seçilen $k$ kişilik takımda $i$ tane kız öğrenci ($0 \le i \le k$) bulunsun. O halde takımın geri kalan $k-i$ kişisi erkek olmak zorundadır.
+\begin{itemize}
+    \item $m$ kız arasından $i$ kız $\binom{m}{i}$ yolla seçilir.
+    \item $n$ erkek arasından $k-i$ erkek $\binom{n}{k-i}$ yolla seçilir.
+\end{itemize}
+Çarpma kuralıyla bu bileşim $\binom{m}{i} \binom{n}{k-i}$ yolla oluşturulur.
+$i$'nin tüm olası $0, 1, \dots, k$ değerlerini toplarsak:
+\[ \sum_{i=0}^{k} \binom{m}{i} \binom{n}{k-i} \]
+
+Her iki yol da aynı takımları saydığından eşitlik kanıtlanır.
+\end{proof}
+
+\subsection{Ağaç Sayma ve Prüfer Kodlaması: Cayley Formülü}
+
+Bilgisayar olimpiyatlarında ve ileride Bölüm 28'de göreceğimiz graf teorisinde ağaç (tree) yapıları önemli bir yer tutar. $n$ etiketli düğüm üzerine çizilebilecek farklı ağaçların sayısını veren formül $n^{n-2}$'dir (Cayley Formülü).
+Bu formülün Prüfer dizilimi ile ispatı, birebir eşlemenin kombinatorikteki etkili uygulamalarındandır.
+
+\begin{theorem}[Cayley Formülü]
+$\{1, 2, \dots, n\}$ etiketli düğümlere sahip farklı ağaçların sayısı $n^{n-2}$'dir ($n \ge 2$).
+\end{theorem}
+
+\begin{proof}[İspat Taslağı (Prüfer Eşlemesi)]
+Bir $T$ ağacını, elemanları $\{1, 2, \dots, n\}$ kümesinden seçilen $n-2$ uzunluğundaki bir $(p_1, p_2, \dots, p_{n-2})$ dizisiyle birebir eşleyebiliriz.
+
+\textbf{Ağaçtan Diziye ($f: T \to P$):}
+\begin{enumerate}
+    \item Ağaçtaki derecesi $1$ olan düğümleri (yaprakları) bul.
+    \item Etiketi en küçük olan yaprağı seç. Bu yaprağın tek komşusunun etiketini diziye yaz.
+    \item Bu yaprağı ve ona bağlı kenarı ağaçtan sil.
+    \item Ağaçta sadece $2$ düğüm kalana kadar bu işlemi tekrarla. Toplam $n-2$ adımda $n-2$ elemanlı bir dizi oluşur.
+\end{enumerate}
+
+\textbf{Diziden Ağaca ($f^{-1}: P \to T$):}
+Her adımda dizide görünmeyen en küçük etiket, o adımda silinen yaprağın ta kendisidir. Dolayısıyla adımları geriye doğru takip ederek her yaprağın hangi düğüme bağlanması gerektiği tek şekilde belirlenir.
+
+Bu işlem $n$ düğümlü her ağacı, $\{1, 2, \dots, n\}$ elemanlarından oluşan $n-2$ uzunluğundaki dizilerle birebir eşler.
+Böyle bir dizinin her pozisyonu için $n$ bağımsız seçenek olduğundan, toplam dizi sayısı:
+\[ \underbrace{n \times n \times \dots \times n}_{n-2 \text{ tane}} = n^{n-2} \]
+olur. Eşleme birebir ve örten olduğundan ağaç sayısı da $n^{n-2}$'dir.
+\end{proof}
+
+\subsection{Hokey Sopası Özdeşliği (Hockey-Stick Identity)}
+
+\begin{theorem}[Hokey Sopası Özdeşliği]
+$n \ge k$ pozitif tam sayıları için:
+\[ \sum_{i=k}^{n} \binom{i}{k} = \binom{n+1}{k+1} \]
+\end{theorem}
+
+\begin{proof}
+Sağ taraftaki $\binom{n+1}{k+1}$ ifadesi, $\{1, 2, \dots, n+1\}$ kümesinden $k+1$ elemanlı bir alt küme seçmeyi temsil eder. Sol taraftaki toplam ise bir parametreye göre durum ayrımı yapıldığını gösterir. Buradaki doğal ayrım ölçütü, alt kümenin en büyük elemanıdır.
+
+$\{1, 2, \dots, n+1\}$ kümesinden $k+1$ elemanlı bir $A$ alt kümesi seçelim.
+$A$ kümesinin en büyük elemanına $M$ diyelim.
+$A$'da $k+1$ eleman olduğu için en büyük eleman $M$ en az $k+1$ olabilir. En fazla ise $n+1$ olabilir.
+O halde $M = i+1$ olsun, burada $k \le i \le n$.
+
+Eğer en büyük eleman $i+1$ olarak sabitlenirse:
+\begin{itemize}
+    \item $i+1$'den büyük hiçbir eleman seçilemez.
+    \item $A$'nın kalan $k$ elemanı, $i+1$'den küçük olan $\{1, 2, \dots, i\}$ kümesinden seçilmelidir.
+    \item $i$ eleman arasından $k$ eleman $\binom{i}{k}$ yolla seçilir.
+\end{itemize}
+Olası tüm en büyük eleman durumlarını ($i = k, k+1, \dots, n$) toplarsak:
+\[ \sum_{i=k}^{n} \binom{i}{k} = \binom{n+1}{k+1} \]
+özdeşliği doğrudan elde edilir. Pascal üçgeninde bu toplama bakıldığında bir köşegenden başlayıp aniden yön değiştiren bir çizgi görülür; bu şekil bir hokey sopasına benzediği için özdeşlik bu adla anılır.
+\end{proof}
+
+\subsection{Özet ve Problem Çözme Rehberi}
+
+Kombinatorik bir eşitlik veya sayım problemiyle karşılaşıldığında şu adımlar izlenebilir:
+
+\begin{enumerate}
+    \item \textbf{Cebirsel açılımlara takılmayın:} Faktöriyel sadeleştirmeleri uzadığında durup "Burada somut olarak ne seçiliyor?" sorusunu sorun.
+    \item \textbf{İlişki matrisi kurun:} İki farklı küme arasındaki ilişkiler söz konusuysa bir $\{0, 1\}$ matrisi düşünün. Satır toplamları ile sütun toplamlarını eşitlemek (çifte sayım) denklemi belirginleştirir.
+    \item \textbf{Uç elemanı sabitleyin:} Alt küme seçimlerinde "en büyük eleman", "özel bir üye" veya "ilk kural ihlali anı" gibi bir referans noktası belirlemek, toplamları bağımsız parçalara ayırmanın etkili bir yoludur.
+    \item \textbf{Ters fonksiyon testi:} Birebir eşleme kurarken $f^{-1}$ dönüşümünü somut olarak gösterin. Fonksiyonun hedef kümede açıkta eleman bırakıp bırakmadığını küçük değerlerle ($n=1, 2$) denetleyin.
+\end{enumerate}

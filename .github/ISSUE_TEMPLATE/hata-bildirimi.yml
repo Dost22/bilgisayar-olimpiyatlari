@@ -1,0 +1,73 @@
+name: Hata bildirimi
+description: Kitapta yazım, hesap, atıf ya da dizgi hatası bildirin.
+title: "[Hata] "
+labels: ["hata"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bildiriminiz için teşekkürler! Aşağıdaki alanları doldurmak, hatanın
+        bulunmasını ve düzeltilmesini hızlandırır. Kitabın güncel sürümü:
+        <https://bilgisayar-olimpiyatlari.com>
+  - type: checkboxes
+    id: on-kontrol
+    attributes:
+      label: Ön kontrol
+      options:
+        - label: Kitabın güncel sürümüne baktım (sitedeki PDF).
+          required: true
+        - label: Aynı hatayı başka biri bildirmemiş; açık issue'lara baktım.
+          required: false
+  - type: input
+    id: yer
+    attributes:
+      label: Nerede?
+      description: Bölüm numarası ve varsa alt konu başlığı.
+      placeholder: "Bölüm 14 · Fermat'nın Küçük Teoremi"
+    validations:
+      required: true
+  - type: input
+    id: sayfa
+    attributes:
+      label: Sayfa numarası
+      description: PDF'in alt kısmındaki sayfa numarası.
+      placeholder: "312"
+    validations:
+      required: true
+  - type: textarea
+    id: alinti
+    attributes:
+      label: Hatalı ifade (aynen)
+      description: Metinde gördüğünüz cümleyi veya formülü olduğu gibi yapıştırın.
+    validations:
+      required: true
+  - type: textarea
+    id: aciklama
+    attributes:
+      label: Neden hatalı?
+      description: |
+        Doğrusunu ve varsa karşı örneğinizi yazın. Matematiksel bir hata
+        bildiriyorsanız hesabınızı adım adım göstermeniz çok yardımcı olur.
+    validations:
+      required: true
+  - type: dropdown
+    id: tur
+    attributes:
+      label: Hatanın türü
+      options:
+        - Yazım / dil bilgisi
+        - Matematiksel hata
+        - Atıf veya sayfa numarası hatası
+        - Kod hatası
+        - Dizgi (LaTeX) hatası
+        - Diğer
+    validations:
+      required: true
+  - type: input
+    id: surum
+    attributes:
+      label: Kitabın sürümü
+      description: PDF'i ne zaman indirdiğiniz ya da künye sayfasındaki yayın yılı.
+      placeholder: "24 Eylül 2026"
+    validations:
+      required: false

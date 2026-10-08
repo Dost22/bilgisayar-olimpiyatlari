@@ -1,0 +1,25 @@
+{
+  "file": "29_donguler_ve_fonksiyonlar.tex",
+  "findings": [
+    {
+      "file": "29_donguler_ve_fonksiyonlar.tex",
+      "line_hint": 338,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "\\subsubsection{3. Gösterici ile Dinamik Yapıların Güncellenmesi}",
+      "issue": "Kitap terminoloji sözleşmesine göre C dilindeki bu kavram için 'işaretçi (pointer)' terimi standardize edilmiştir; 'gösterici' terimi kullanılmamalıdır.",
+      "suggested_fix": "\\subsubsection{3. İşaretçi ile Dinamik Yapıların Güncellenmesi} veya doğrudan konu kapsamına uygun bir başlık ile değiştirilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "29_donguler_ve_fonksiyonlar.tex",
+      "line_hint": 343,
+      "type": "prerequisite_violation",
+      "severity": "major",
+      "excerpt": "typedef struct {\n    int *data;\n    size_t size;\n    size_t capacity;\n} List;",
+      "issue": "Bölüm 29 henüz döngüler ve temel fonksiyonları işlemektedir. Kod örneğinde kullanılan 'struct' ve 'typedef' yapıları Bölüm 31'de, dinamik bellek tahsisi (malloc, realloc, free) ve detaylı işaretçi modelleri ise Bölüm 30'da anlatılmaktadır. Bu kavramlar henüz tanıtılmadan karmaşık bir dinamik dizi yapısı örnek olarak sunulmuştur.",
+      "suggested_fix": "Bu örnek yerine fonksiyonlara işaretçiyle dizi veya basit değişken aktarımını gösteren, henüz struct ve dinamik bellek (malloc/realloc) gerektirmeyen temel bir fonksiyon örneği verilmelidir.",
+      "confidence": "high"
+    }
+  ]
+}

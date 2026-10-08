@@ -1,0 +1,25 @@
+{
+  "file": "05_kombinasyon.tex",
+  "findings": [
+    {
+      "file": "05_kombinasyon.tex",
+      "line_hint": 224,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "Pascal bağıntısı $\\binom{n}{r} = \\binom{n-1}{r-1} + \\binom{n-1}{r}$ doğal bir rekürsiyon (rekürsiyon) yapısı sunar.",
+      "issue": "Terminoloji sözleşmesinde B kategorisinde yer alan terimler için kural 'rekürsiyon (recursion)' şeklinde ilk geçişte İngilizce karşılığının parantez içinde verilmesidir. Metinde sehven 'rekürsiyon (rekürsiyon)' yazılmıştır.",
+      "suggested_fix": "'rekürsiyon (rekürsiyon)' ifadesini 'rekürsiyon (recursion)' olarak düzeltiniz.",
+      "confidence": "high"
+    },
+    {
+      "file": "05_kombinasyon.tex",
+      "line_hint": 232,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "// Ozyinelemeli adim: Pascal kurali",
+      "issue": "Terminoloji sözleşmesine göre 'özyineleme' terimi yasaklanmış olup yerine 'rekürsiyon' / 'rekürsif' kullanımı zorunlu kılınmıştır.",
+      "suggested_fix": "Yorum satırını '// Rekursif adim: Pascal kurali' olarak güncelleyiniz.",
+      "confidence": "high"
+    }
+  ]
+}

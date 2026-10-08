@@ -1,0 +1,566 @@
+\chapter[Saymanın Temel İlkeleri · \textit{Temel}]{Saymanın Temel İlkeleri}
+\chaptermark{Saymanın Temel İlkeleri}
+
+Bir algoritmanın çalışma süresini analiz ederken, bir şifrenin güvenliğini değerlendirirken ya da bir veri yapısındaki olası durumları incelerken temel bir soruyla karşılaşırız: ``Burada kaç farklı durum vardır?'' 
+
+Kombinatorik, sonlu ya da ayrık yapıların eleman sayılarını belirleyen matematik dalıdır. İlk bakışta saymak, nesneleri birer birer göstermek kadar yalın bir eylem gibi görünebilir. Ancak incelenen nesnelerin sayısı binleri, milyonları ya da milyarları aştığında nesneleri tek tek listelemek mümkün olmaz. Örneğin $64$ karelik bir satranç tahtasına taşların dizilme biçimlerinin sayısı evrendeki atomların sayısından çok daha fazladır.
+
+Bu nedenle nesneleri tek tek saymak yerine, kurallara dayalı sistematik sayma yöntemleri kullanılır. Kombinatorik, temelde iki ilke üzerine kuruludur: \textbf{çarpma kuralı} ve \textbf{toplama kuralı}. Bu bölümde, sayma kuramının bu iki temel yapı taşını somut örneklerle ele alıp genel formüllerine ulaşacağız.
+
+% ============================================================
+% 3.1 ÇARPMA KURALI
+% ============================================================
+\section{Çarpma Kuralı}
+
+Gündelik bir problemle başlayalım: Gardırobunuzda $3$ farklı gömlek (Mavi, Beyaz, Çizgili) ve $4$ farklı pantolon (Siyah, Gri, Kot, Bej) bulunuyor. Bir gömlek \textbf{ve} bir pantolondan oluşan bir kıyafeti kaç farklı şekilde seçebilirsiniz?
+
+Seçenekleri listeleyelim:
+\begin{itemize}
+  \item Mavi gömlek seçilirse yanına $4$ farklı pantolondan biri giyilebilir: (Mavi, Siyah), (Mavi, Gri), (Mavi, Kot), (Mavi, Bej) $\to 4$ seçenek.
+  \item Beyaz gömlek seçilirse yine $4$ farklı pantolon seçeneği vardır: (Beyaz, Siyah), (Beyaz, Gri), (Beyaz, Kot), (Beyaz, Bej) $\to 4$ seçenek.
+  \item Çizgili gömlek seçilirse yine $4$ farklı pantolon seçeneği vardır: (Çizgili, Siyah), (Çizgili, Gri), (Çizgili, Kot), (Çizgili, Bej) $\to 4$ seçenek.
+\end{itemize}
+
+Her gömlek seçimi için pantolon seçeneklerinin sayısı değişmez ve her biri için $4$ yeni durum ortaya çıkar. Toplam seçenek sayısı:
+\[ 4 + 4 + 4 = 3 \times 4 = 12 \]
+olur. Bu kombine bir de $2$ farklı ayakkabı çifti (Spor, Klasik) eklenseydi, bu $12$ durumun her biri için $2$ farklı ayakkabı seçilebilecek ve toplam seçenek sayısı $12 \times 2 = 24$ olacaktı.
+
+Bu gözlem bizi saymanın ilk temel ilkesine götürür:
+
+\begin{definition}[Çarpma Kuralı / Bağımsız Adımlar İlkesi]
+Bir işlem birbiri ardına gerçekleştirilen $k$ adımdan oluşsun:
+\begin{itemize}
+  \item 1. adım $n_1$ farklı yolla yapılabiliyorsa,
+  \item 1. adım nasıl yapılırsa yapılsın, 2. adım $n_2$ farklı yolla yapılabiliyorsa,
+  \item 1. ve 2. adımlar nasıl yapılırsa yapılsın, 3. adım $n_3$ farklı yolla yapılabiliyorsa,
+  \item \dots
+  \item İlk $(k-1)$ adım nasıl yapılırsa yapılsın, sonuncu $k$. adım $n_k$ farklı yolla yapılabiliyorsa;
+\end{itemize}
+bu işlemin tamamı sırasıyla
+\[ n_1 \times n_2 \times n_3 \times \dots \times n_k \]
+farklı yolla gerçekleştirilebilir.
+\end{definition}
+
+\subsection{Kümeler Kuramı Açısından Çarpma Kuralı}
+
+Bölüm 1'de kurduğumuz küme kavramlarını hatırlayalım. $A$ ve $B$ iki sonlu küme olsun. Bu iki kümenin elemanlarından oluşturulan tüm sıralı ikililerin ($ (a, b) $) kümesine $A$ ile $B$'nin \textbf{Kartezyen çarpımı} denir ve $A \times B$ ile gösterilir:
+\[ A \times B = \{(a, b) \mid a \in A \text{ ve } b \in B\} \]
+
+\begin{theorem}
+$A$ ve $B$ sonlu iki küme olmak üzere, Kartezyen çarpımın eleman sayısı kümelerin eleman sayılarının çarpımına eşittir:
+\[ |A \times B| = |A| \cdot |B| \]
+\end{theorem}
+\begin{proof}
+$A = \{a_1, a_2, \dots, a_m\}$ ve $B = \{b_1, b_2, \dots, b_n\}$ olsun. Dolayısıyla $|A| = m$ ve $|B| = n$'dir. $A \times B$'nin tüm elemanlarını satır ve sütunlardan oluşan bir tablo biçiminde düzenleyelim:
+\begin{center}
+\begin{tabular}{c|cccc}
+ & $b_1$ & $b_2$ & $\dots$ & $b_n$ \\
+\midrule
+$a_1$ & $(a_1, b_1)$ & $(a_1, b_2)$ & $\dots$ & $(a_1, b_n)$ \\
+$a_2$ & $(a_2, b_1)$ & $(a_2, b_2)$ & $\dots$ & $(a_2, b_n)$ \\
+$\vdots$ & $\vdots$ & $\vdots$ & $\ddots$ & $\vdots$ \\
+$a_m$ & $(a_m, b_1)$ & $(a_m, b_2)$ & $\dots$ & $(a_m, b_n)$ \\
+\end{tabular}
+\end{center}
+Bu tablonun $m$ satırı ve her satırında $n$ elemanı vardır. Tablodaki hiçbir eleman birbiriyle aynı değildir ve olası tüm $(a_i, b_j)$ çiftleri bu tabloda yer alır. O hâlde toplam eleman sayısı satır sayısı ile sütun sayısının çarpımıdır:
+\[ |A \times B| = m \cdot n = |A| \cdot |B| \]
+Böylece eşitlik gösterilmiş olur.
+\end{proof}
+
+\textbf{Önemli Bir Ayrım:} Çarpma kuralında adımların birbirinden bağımsız olması, her adımda seçilen nesnelerin aynı kümeden gelmesi gerektiği anlamına gelmez. Önemli olan, \textbf{seçenek sayısının sabit kalmasıdır}. Örneğin $5$ kişi arasından bir başkan ve bir başkan yardımcısı seçecek olalım:
+\begin{itemize}
+  \item Başkan için $5$ aday vardır ($n_1 = 5$).
+  \item Başkan kim seçilirse seçilsin, seçilen kişi başkan yardımcısı olamayacağından geriye $4$ aday kalır ($n_2 = 4$).
+  \item İkinci adımdaki adayların kimler olduğu birinci adımdaki seçime bağlıdır; ancak adayların \textbf{sayısı} her durumda $4$'tür.
+  \item Dolayısıyla çarpma kuralı geçerlidir: Toplam $5 \times 4 = 20$ farklı seçim yapılabilir.
+\end{itemize}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+$\{1, 2, 3, 4, 5\}$ kümesinin elemanları kullanılarak:
+\begin{enumerate}
+  \item Üç basamaklı kaç farklı doğal sayı yazılabilir?
+  \item Rakamları birbirinden farklı üç basamaklı kaç farklı doğal sayı yazılabilir?
+\end{enumerate}
+\end{example}
+\begin{proof}[Çözüm]
+Üç basamaklı bir sayıyı oluşturmak, yüzler, onlar ve birler basamağını belirlemekten oluşan $3$ adımlı bir işlemdir.
+\begin{enumerate}
+  \item \textbf{Rakam tekrarı serbestken:}
+  \begin{itemize}
+    \item Yüzler basamağı için $\{1, 2, 3, 4, 5\}$ kümesinden $5$ seçenek vardır.
+    \item Onlar basamağı için yine $5$ seçenek vardır (kullanılan rakam tekrar seçilebilir).
+    \item Birler basamağı için yine $5$ seçenek vardır.
+  \end{itemize}
+  Çarpma kuralı uyarınca:
+  \[ 5 \times 5 \times 5 = 5^3 = 125 \]
+  farklı sayı yazılabilir.
+
+  \item \textbf{Rakamları farklıyken:}
+  \begin{itemize}
+    \item Yüzler basamağı için $5$ seçenekten biri seçilir.
+    \item Onlar basamağı için, yüzler basamağında kullanılan rakam hariç kalan $4$ seçenekten biri seçilir.
+    \item Birler basamağı için, ilk iki basamakta kullanılan rakamlar hariç kalan $3$ seçenekten biri seçilir.
+  \end{itemize}
+  Çarpma kuralı uyarınca:
+  \[ 5 \times 4 \times 3 = 60 \]
+  farklı sayı yazılabilir.
+\end{enumerate}
+\end{proof}
+
+\begin{example}
+Bilgisayar biliminde temel bilgi birimi bit'tir ($0$ veya $1$). Sekiz bitten oluşan bir dizgiye bir \textbf{bayt} (byte) denir (örneğin \texttt{10110010}). Bir bayt ile kaç farklı bilgi (karakter ya da sayı) temsil edilebilir?
+\end{example}
+\begin{proof}[Çözüm]
+Bir bayt oluşturmak, art arda $8$ pozisyonun her birine bir bit ($0$ veya $1$) yerleştirmek anlamına gelir:
+\[ \overline{\quad} \;\; \overline{\quad} \;\; \overline{\quad} \;\; \overline{\quad} \;\; \overline{\quad} \;\; \overline{\quad} \;\; \overline{\quad} \;\; \overline{\quad} \]
+Her pozisyon için $2$ farklı seçenek vardır ($0$ veya $1$):
+\begin{itemize}
+  \item 1. bit: $2$ seçenek
+  \item 2. bit: $2$ seçenek
+  \item \dots
+  \item 8. bit: $2$ seçenek
+\end{itemize}
+Çarpma kuralı gereğince toplam farklı dizgi sayısı:
+\[ \underbrace{2 \times 2 \times 2 \times 2 \times 2 \times 2 \times 2 \times 2}_{8 \text{ adım}} = 2^8 = 256 \]
+olur. Bu nedenle $1$ baytlık bellekte $0$ ile $255$ arasındaki tam sayılar ya da standart ASCII tablosundaki $256$ farklı karakter saklanabilir.
+\end{proof}
+
+\begin{example}
+$4$ farklı mektup, $3$ farklı posta kutusuna her kutuda istenen sayıda mektup bulunabilecek şekilde kaç farklı biçimde atılabilir?
+\end{example}
+\begin{proof}[Çözüm]
+Bu tip sorularda sık karşılaşılan tereddüt, cevabın $3^4$ mü yoksa $4^3$ mü olduğudur. Bu ayrımı yapmanın pratik yolu şudur: \textbf{``Kararı veren kimdir?''}
+\begin{itemize}
+  \item Posta kutuları mektupları seçemez; kutu seçim yapmaya kalkarsa hangi mektubun hangi kutuya gideceği belirsizleşir.
+  \item Karar mektuplar üzerinden verilir: Her mektup sırayla ele alınır ve hangi kutuya atılacağı belirlenir.
+\end{itemize}
+Adımları tanımlayalım:
+\begin{itemize}
+  \item 1. mektup için $3$ farklı kutu seçeneği vardır.
+  \item 2. mektup için $3$ farklı kutu seçeneği vardır.
+  \item 3. mektup için $3$ farklı kutu seçeneği vardır.
+  \item 4. mektup için $3$ farklı kutu seçeneği vardır.
+\end{itemize}
+Her mektubun seçimi bağımsız olduğundan çarpma kuralı uygulanır:
+\[ 3 \times 3 \times 3 \times 3 = 3^4 = 81 \]
+farklı dağıtım yapılabilir.
+\end{proof}
+
+\begin{example}
+$A$ şehrinden $B$ şehrine $3$ farklı kara yolu, $B$ şehrinden $C$ şehrine ise $4$ farklı kara yolu bulunmaktadır.
+\begin{enumerate}
+  \item $A$'dan $C$'ye $B$ üzerinden kaç farklı yoldan gidilebilir?
+  \item $A$'dan $C$'ye gidip tekrar $A$'ya dönecek olan bir sürücü, dönerken gittiği yolları \textbf{tekrar kullanmamak} şartıyla kaç farklı gidiş-dönüş rotası izleyebilir?
+\end{enumerate}
+\end{example}
+\begin{proof}[Çözüm]
+\begin{enumerate}
+  \item $A$'dan $C$'ye gitmek $2$ adımlı bir işlemdir: Önce $A \to B$ ($3$ seçenek), ardından $B \to C$ ($4$ seçenek). Çarpma kuralı uyarınca:
+  \[ 3 \times 4 = 12 \]
+  farklı rota vardır.
+
+  \item Gidiş-dönüş işlemi toplam $4$ adımdan oluşur:
+  \begin{itemize}
+    \item $A \to B$ gidiş: $3$ yol seçeneği.
+    \item $B \to C$ gidiş: $4$ yol seçeneği.
+    \item $C \to B$ dönüş: Giderken kullanılan yol kullanılamayacağından geriye kalan $4 - 1 = 3$ seçenek.
+    \item $B \to A$ dönüş: Giderken kullanılan yol kullanılamayacağından geriye kalan $3 - 1 = 2$ seçenek.
+  \end{itemize}
+  Çarpma kuralı gereğince toplam rota sayısı:
+  \[ 3 \times 4 \times 3 \times 2 = 72 \]
+  farklı biçimde belirlenebilir.
+\end{enumerate}
+\end{proof}
+
+
+% ============================================================
+% 3.2 TOPLAMA KURALI
+% ============================================================
+\section{Toplama Kuralı}
+
+Çarpma kuralında adımlar birbirini izliyordu (``önce bunu yap \textbf{ve} sonra şunu yap''). Seçenekler ardışık adımlar yerine birbirinin alternatifi olan ayrık yollardan oluşuyorsa toplama kuralı devreye girer.
+
+Örneğin Ankara'dan İstanbul'a seyahat etmek istediğinizi varsayalım. İki ulaşım türü bulunmaktadır: Uçak veya hızlı tren. Gün içinde $3$ farklı uçak seferi ve $5$ farklı hızlı tren seferi vardır. Bu yolculuk için kaç farklı sefer seçeneği bulunur?
+
+Burada bir uçak seferi ve bir tren seferi aynı anda seçilemez; ya bir uçak seferi \textbf{veya} bir tren seferi seçilir. Bu iki seçenek grubu birbirini dışlar (ayrıktır). Dolayısıyla toplam seçenek sayısı:
+\[ 3 + 5 = 8 \]
+olur. Bu mantık \textbf{toplama kuralı}dır.
+
+\begin{definition}[Toplama Kuralı / Ayrık Durumlar İlkesi]
+Bir işlem, birbirini dışlayan $k$ farklı durumdan biriyle yapılabilsin:
+\begin{itemize}
+  \item 1. durum $n_1$ farklı yolla,
+  \item 2. durum $n_2$ farklı yolla,
+  \item \dots
+  \item $k$. durum $n_k$ farklı yolla gerçekleşebiliyorsa;
+\end{itemize}
+ve bu durumların hiçbiri aynı anda gerçekleşemiyorsa (yani durumlar ikili olarak ayrıksa), bu işlem toplam
+\[ n_1 + n_2 + \dots + n_k \]
+farklı yolla yapılabilir.
+\end{definition}
+
+\subsection{Kümeler Kuramı Açısından Toplama Kuralı}
+
+Bölüm 1'de ayrık kümeleri $A \cap B = \emptyset$ olarak tanımlamıştık. Toplama kuralı, ayrık kümelerin birleşiminin eleman sayısını verir.
+
+\begin{theorem}
+$A_1, A_2, \dots, A_k$ sonlu kümeler olsun. Bu kümeler ikili olarak ayrıksa (yani her $i \neq j$ için $A_i \cap A_j = \emptyset$), birleşimlerinin eleman sayısı kümelerin eleman sayıları toplamına eşittir:
+\[ |A_1 \cup A_2 \cup \dots \cup A_k| = |A_1| + |A_2| + \dots + |A_k| \]
+\end{theorem}
+\begin{proof}
+Kümeler ikili olarak ayrık olduğundan, hiçbir eleman birden fazla kümede yer almaz. Dolayısıyla birleşimdeki tüm elemanları saymak, her kümenin elemanlarını bağımsız olarak sayıp bu değerleri toplamaktan ibarettir.
+\end{proof}
+
+\textbf{Önemli Bir Uyarı (Ayrık Olmama Durumu):} Toplama kuralını doğrudan uygulayabilmek için durumların \textbf{kesişimsiz} olması şarttır. İki kümenin ortak elemanları varsa ($A \cap B \neq \emptyset$), doğrudan toplama işlemi ortak elemanların ikişer kez sayılmasına yol açar. 
+
+Bölüm 1'de gördüğümüz gibi genel durumda:
+\[ |A \cup B| = |A| + |B| - |A \cap B| \]
+bağıntısı geçerlidir. İncelenen durumların ayrık olduğundan emin olunmadıkça doğrudan toplama yapılamaz; kesişim kümesinin çıkarılması gerekir (bu yaklaşım Bölüm 8'de İçerme-Dışarma İlkesi başlığı altında ayrıntılı biçimde incelenecektir).
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Bir öğrencinin kitaplığında $6$ farklı matematik, $4$ farklı fizik ve $5$ farklı kimya kitabı bulunmaktadır. Bu öğrenci masasına koyup çalışmak üzere bu kitaplar arasından \textbf{tek bir kitap} seçecektir. Kaç farklı seçim yapabilir?
+\end{example}
+\begin{proof}[Çözüm]
+Öğrenci tek bir kitap seçecektir. Bu kitap:
+\begin{itemize}
+  \item Ya bir matematik kitabı ($6$ seçenek),
+  \item Ya bir fizik kitabı ($4$ seçenek),
+  \item Ya da bir kimya kitabı ($5$ seçenek) olur.
+\end{itemize}
+Bir kitap aynı anda birden fazla kategoriye ait olamayacağından bu seçenekler ikili olarak ayrıktır. Toplama kuralı uyarınca:
+\[ 6 + 4 + 5 = 15 \]
+farklı kitap seçimi yapılabilir.
+\end{proof}
+
+\begin{example}
+İki standart zar birlikte atılıyor. Zarların üst yüzüne gelen sayıların toplamının $7$ veya $11$ olma durumlarının sayısını bulunuz.
+\end{example}
+\begin{proof}[Çözüm]
+Zarlar atıldığında toplam aynı anda hem $7$ hem de $11$ olamaz; bu iki durum birbirini dışlar. Durumları ayrı ayrı ele alalım:
+\begin{itemize}
+  \item \textbf{1. Durum (Toplamın $7$ olması):} Zarların gelme çiftlerini $(z_1, z_2)$ olarak listeleyelim:
+  \[ (1, 6), (2, 5), (3, 4), (4, 3), (5, 2), (6, 1) \implies 6 \text{ farklı durum.} \]
+  \item \textbf{2. Durum (Toplamın $11$ olması):}
+  \[ (5, 6), (6, 5) \implies 2 \text{ farklı durum.} \]
+\end{itemize}
+İki durum ayrık olduğundan toplama kuralı uygulanır:
+\[ 6 + 2 = 8 \]
+farklı durumda toplam $7$ veya $11$ gelir.
+\end{proof}
+
+\begin{example}
+$1$ ile $100$ arasındaki (1 ve 100 dahil) tam sayılardan kaç tanesi $3$'e veya $5$'e tam bölünür?
+\end{example}
+\begin{proof}[Çözüm]
+Durumların ayrık olup olmadığını kontrol edelim:
+\begin{itemize}
+  \item $3$'e bölünen sayılar kümesi $A$ olsun: $3, 6, 9, \dots, 99$. 
+  $99 = 3 \times 33$ olduğundan $|A| = 33$'tür.
+  \item $5$'e bölünen sayılar kümesi $B$ olsun: $5, 10, 15, \dots, 100$. 
+  $100 = 5 \times 20$ olduğundan $|B| = 20$'dir.
+\end{itemize}
+Hem $3$'e hem $5$'e bölünen sayılar (Bölüm 11 ve 13'te ele alınan bölünebilme ve EKOK kavramları uyarınca) $15$'in katlarıdır ($A \cap B$):
+\[ 15, 30, 45, 60, 75, 90 \implies |A \cap B| = 6 \]
+Kümeler ayrık olmadığından doğrudan $33 + 20$ toplanamaz; $15$'in katları iki kez sayılmış olur. Birleşim formülü uygulanır:
+\[ |A \cup B| = |A| + |B| - |A \cap B| = 33 + 20 - 6 = 47 \]
+Buna göre bu aralıkta $3$'e veya $5$'e bölünen $47$ sayı vardır.
+
+Alternatif olarak, problem \textbf{ayrık alt kümelere ayrılarak} da çözülebilir:
+\begin{itemize}
+  \item Yalnızca $3$'e bölünüp $5$'e bölünmeyenler: $33 - 6 = 27$
+  \item Yalnızca $5$'e bölünüp $3$'e bölünmeyenler: $20 - 6 = 14$
+  \item Hem $3$'e hem $5$'e bölünenler: $6$
+\end{itemize}
+Bu üç grup ikili olarak ayrıktır. Toplama kuralı uygulanırsa:
+\[ 27 + 14 + 6 = 47 \]
+aynı sonuca ulaşılır.
+\end{proof}
+
+
+% ============================================================
+% 3.3 AĞAÇ DİYAGRAMLARI VE LİSTELEME
+% ============================================================
+\section{Ağaç Diyagramları ve Listeleme}
+
+Çarpma kuralı son derece kullanışlıdır; ancak her adımda var olan seçenek sayısının önceki seçimlerden bağımsız olarak \textbf{sabit} kalmasını gerektirir. 
+
+Sonraki adımın seçenekleri önceki adımlardaki tercihe göre değişiyorsa, bazı seçimler süreci sonlandırıp bazıları yeni dallar açıyorsa çarpma formülü doğrudan uygulanamaz. Böyle durumlarda \textbf{ağaç diyagramları} (tree diagrams) ve sistematik listeleme yöntemlerine başvurulur.
+
+\begin{definition}[Ağaç Diyagramı]
+Bir sürecin tüm aşamalarını görselleştiren dallanmış yapıya \textbf{ağaç diyagramı} denir:
+\begin{itemize}
+  \item Süreç en tepedeki tek bir noktadan (\textbf{kök}) başlar.
+  \item Her karar veya olay, o noktadan çıkan \textbf{dallar} ile gösterilir.
+  \item Dallar boyunca ilerleyerek sürecin tamamlandığı uç noktalara \textbf{yaprak} denir.
+  \item Kökten herhangi bir yaprağa uzanan her kesintisiz yol, sürecin olası \textbf{bir sonucunu} temsil eder.
+\end{itemize}
+\end{definition}
+
+Ağaç diyagramları; bilgisayar biliminde karar ağaçlarının (\textit{decision trees}), oyun kuramı algoritmalarının ve sözdizim çözümleyicilerinin (\textit{parsers}) temel modelini oluşturur.
+
+\subsection{Sistematik Listeleme ve Sözlük Sırası}
+
+Elemanları elle listelerken bazı durumları atlamamak ya da aynı durumu birden fazla kez saymamak için \textbf{sözlük sırası} (lexicographical order) kullanılır. Sözlükte kelimelerin alfabetik dizilmesinde olduğu gibi, sayma durumları da belirli bir öncelik kuralına göre düzenlenir.
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}[Klasik Turnuva Problemi]
+İki takım ($A$ ve $B$) bir dizi maç yapacaktır. Kurallar şöyledir:
+\begin{itemize}
+  \item Beraberlik yoktur; her maçı ya $A$ ya da $B$ kazanır.
+  \item \textbf{Üst üste $2$ maç kazanan} takım turnuva şampiyonu olur ve turnuva biter.
+  \item Veya takımlardan biri \textbf{toplam $3$ maç kazandığında} turnuva sona erer.
+\end{itemize}
+Bu turnuva kaç farklı maç dizilimi ile sonuçlanabilir?
+\end{example}
+\begin{proof}[Çözüm]
+Turnuvanın kaç maç süreceği önceden sabit değildir; süreç $2$ maçta da bitebilir, $5$ maça da uzayabilir.
+
+İlk maçı $A$'nın kazandığı senaryoları ($A$ ile başlayan dalları) adım adım izleyelim:
+\begin{itemize}
+  \item \textbf{2. Maç:}
+  \begin{itemize}
+    \item $A$ kazanırsa: Dizi $AA$ olur. $A$ üst üste $2$ maç kazandığı için turnuva biter (\textbf{1. Senaryo: $AA$} -- 2 maç).
+    \item $B$ kazanırsa: Dizi $AB$ olur, turnuva sürer.
+  \end{itemize}
+  \item \textbf{3. Maç ($AB$'den sonra):}
+  \begin{itemize}
+    \item $B$ kazanırsa: Dizi $ABB$ olur. $B$ üst üste $2$ maç kazandığından turnuva biter (\textbf{2. Senaryo: $ABB$} -- 3 maç).
+    \item $A$ kazanırsa: Dizi $ABA$ olur, turnuva sürer.
+  \end{itemize}
+  \item \textbf{4. Maç ($ABA$'dan sonra):}
+  \begin{itemize}
+    \item $A$ kazanırsa: Dizi $ABAA$ olur. $A$ üst üste $2$ maç kazandığı için turnuva biter (\textbf{3. Senaryo: $ABAA$} -- 4 maç).
+    \item $B$ kazanırsa: Dizi $ABAB$ olur, turnuva sürer.
+  \end{itemize}
+  \item \textbf{5. Maç ($ABAB$'den sonra):}
+  \begin{itemize}
+    \item $A$ kazanırsa: Dizi $ABABA$ olur. $A$ toplam $3$ galibiyete ulaştığı için turnuva biter (\textbf{4. Senaryo: $ABABA$} -- 5 maç).
+    \item $B$ kazanırsa: Dizi $ABABB$ olur. $B$ hem üst üste $2$ maç kazanmış hem de toplam $3$ galibiyete ulaşmış olur (\textbf{5. Senaryo: $ABABB$} -- 5 maç).
+  \end{itemize}
+\end{itemize}
+
+İlk maçı $A$'nın kazandığı durumda $5$ farklı bitiş senaryosu elde edilir:
+\[ AA, \;\; ABB, \;\; ABAA, \;\; ABABA, \;\; ABABB \]
+
+Takımların rolleri simetriktir (bu tür simetri argümanlarını Bölüm 17'de daha ayrıntılı inceleyeceğiz). Dolayısıyla ilk maçı $B$'nin kazandığı dal da simetrik biçimde $5$ farklı senaryo üretir:
+\[ BB, \;\; BAA, \;\; BABB, \;\; BABAB, \;\; BABAA \]
+
+Toplama kuralı gereğince turnuva toplam:
+\[ 5 + 5 = 10 \]
+farklı şekilde sonuçlanabilir.
+\end{proof}
+
+\begin{example}
+Bir madeni para havaya atılıyor. Oyun şu iki koşuldan biri sağlandığında derhâl durmaktadır:
+\begin{itemize}
+  \item Art arda iki kez Tura ($T$) gelmesi, ya da
+  \item Toplamda üç kez Yazı ($Y$) gelmesi.
+\end{itemize}
+Bu oyun en fazla kaç atış sürebilir ve kaç farklı atış dizilimi ile sonlanabilir?
+\end{example}
+\begin{proof}[Çözüm]
+Oyunun olası bitiş dizilimlerini, Yazı ($Y$) sayısına göre ayrık durumlara ayırarak listeleyelim:
+\begin{itemize}
+  \item \textbf{0 Yazı içeren bitiş:} $TT$ (2 atış).
+  \item \textbf{1 Yazı içeren bitişler:} $YTT, TYTT$ (3 ve 4 atış).
+  \item \textbf{2 Yazı içeren bitişler:} $YYTT, YTYTT, TYYTT, TYTYTT$ (4, 5 ve 6 atış).
+  \item \textbf{3 Yazı içeren bitişler (3 Yazı'ya ulaşıldığı an biter):}
+  Art arda iki $T$ gelmeden $3$ adet $Y$ biriktiren dizilimlerdir:
+$YYY$, $TYYY$, $YTYY$, $YYTY$, $TYTYY$, $TYYTY$, $YTYTY$, $TYTYTY$.
+\end{itemize}
+Ağaç diyagramının tüm dalları incelendiğinde, art arda iki Tura gelmeden en uzun süre devam edebilen salınım dizilimi $TYTYTY$ olup 6. atışta 3. Yazı kuralıyla biter; bu yüzden en uzun bitiş tam olarak 6 atıştır. Toplam bitiş dizilimi sayısı incelendiğinde, 2 Yazı'dan az içeren bitişler 7 tanedir ($TT$, $YTT$, $TYTT$, $YYTT$, $YTYTT$, $TYYTT$, $TYTYTT$), 3 Yazı içeren bitişler 8 tanedir; dolayısıyla toplam $7 + 8 = 15$ farklı dizilim vardır ve süreç sonlu sayıda yaprak üretir.
+\end{proof}
+
+\begin{example}
+$S = \{1, 2, 3\}$ kümesinin elemanlarıyla yazılabilecek rakamları farklı tüm iki basamaklı sayıları sözlük sırasıyla listeleyiniz ve sayısını çarpma kuralıyla doğrulayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Sözlük sırasıyla listeleme yapalım (önce onlar basamağı küçük olanlar):
+\begin{itemize}
+  \item Onlar basamağı $1$ olanlar: $12, 13$
+  \item Onlar basamağı $2$ olanlar: $21, 23$
+  \item Onlar basamağı $3$ olanlar: $31, 32$
+\end{itemize}
+Toplam $6$ sayı listelenmiştir.
+
+Çarpma kuralı ile doğrulama:
+\begin{itemize}
+  \item Onlar basamağı için $3$ seçenek vardır.
+  \item Birler basamağı için geriye kalan $2$ seçenek vardır.
+\end{itemize}
+Toplam $3 \times 2 = 6$ sayıdır. Doğrudan listeleme sonucu ile formül örtüşmektedir.
+\end{proof}
+
+
+% ============================================================
+% 3.4 İKİ İLKEYİ BİRLİKTE KULLANMA
+% ============================================================
+\section{İki İlkeyi Birlikte Kullanma}
+
+Birçok sayma probleminde çarpma ve toplama kuralları birlikte kullanılır. Karmaşık bir problem önce \textbf{birbirini dışlayan ana senaryolara (ayrık durumlara)} ayrılır; her senaryodaki seçenek sayısı \textbf{çarpma kuralı} ile hesaplanır ve elde edilen sonuçlar \textbf{toplama kuralı} ile birleştirilir:
+
+\[ \text{Toplam Sonuç} = \text{Senaryo}_1 + \text{Senaryo}_2 + \dots + \text{Senaryo}_k \]
+
+Bunun yanı sıra, doğrudan sayım yerine \textbf{tüm durumların sayısından istenmeyen durumların sayısını çıkarmak} işlem yükünü belirgin biçimde azaltabilir. Bu yaklaşıma \textbf{tümleyen yoluyla sayma} (komplementer sayma) denir.
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+$\{0, 1, 2, 3, 4, 5\}$ kümesinin elemanları kullanılarak rakamları birbirinden farklı, dört basamaklı ve \textbf{$5$ ile tam bölünebilen} kaç farklı doğal sayı yazılabilir?
+\end{example}
+\begin{proof}[Çözüm]
+Burada sıfır ($0$) rakamının iki farklı kısıtlaması vardır: Dört basamaklı bir sayının en başına gelemez; ancak $5$'e bölünebilme gereği son basamakta bulunabilir.
+
+Sıfırın son basamakta kullanılıp kullanılmaması binler basamağındaki seçenek sayısını değiştirdiğinden, çarpma kuralı tek adımda uygulanamaz. Problem, \textbf{son basamağa göre iki ayrık duruma} ayrılarak çözülür:
+
+\textbf{1. Durum: Son basamağın $0$ olması ($\overline{\;a\;b\;c\;0\;}$):}
+\begin{itemize}
+  \item Birler basamağı için tek seçenek vardır: $\{0\}$ ($1$ seçenek).
+  \item Binler basamağı için: $0$ birler basamağında kullanıldığından geriye kalan $\{1, 2, 3, 4, 5\}$ kümesinden $5$ rakam da seçilebilir ($5$ seçenek).
+  \item Yüzler basamağı için: Kalan $4$ rakamdan biri ($4$ seçenek).
+  \item Onlar basamağı için: Kalan $3$ rakamdan biri ($3$ seçenek).
+\end{itemize}
+Çarpma kuralı gereğince 1. durumdaki sayı adedi:
+\[ 5 \times 4 \times 3 \times 1 = 60 \]
+olur.
+
+\textbf{2. Durum: Son basamağın $5$ olması ($\overline{\;a\;b\;c\;5\;}$):}
+\begin{itemize}
+  \item Birler basamağı için tek seçenek vardır: $\{5\}$ ($1$ seçenek).
+  \item Binler basamağı için: $5$ kullanılmıştır ve $0$ da başa gelemez; dolayısıyla $\{1, 2, 3, 4\}$ arasından seçim yapılır ($4$ seçenek).
+  \item Yüzler basamağı için: Bu basamakta $0$ kullanılabilir. Toplam $6$ rakamdan $2$'si kullanıldığından geriye $6 - 2 = 4$ seçenek kalır ($4$ seçenek).
+  \item Onlar basamağı için: Kalan $3$ seçenekten biri ($3$ seçenek).
+\end{itemize}
+Çarpma kuralı gereğince 2. durumdaki sayı adedi:
+\[ 4 \times 4 \times 3 \times 1 = 48 \]
+olur.
+
+\textbf{Birleştirme:}
+Bu iki durumun son basamakları farklı olduğundan durumlar ayrıktır. Toplama kuralı gereği:
+\[ 60 + 48 = 108 \]
+farklı sayı yazılabilir.
+\end{proof}
+
+\begin{example}
+$\{0, 1, 2, 3, 4, 5\}$ kümesinin elemanları ile rakamları tekrarsız, üç basamaklı ve \textbf{$300$'den büyük tek sayılar} yazılmak isteniyor. Kaç farklı sayı yazılabilir?
+\end{example}
+\begin{proof}[Çözüm]
+Koşulları inceleyelim:
+\begin{enumerate}
+  \item Üç basamaklı sayı: $\overline{a b c}$.
+  \item $300$'den büyük olması için $a \in \{3, 4, 5\}$ olmalıdır.
+  \item Tek sayı olması için $c \in \{1, 3, 5\}$ olmalıdır.
+\end{enumerate}
+$3$ ve $5$ rakamları hem yüzler hem birler basamağı için adaydır. Yüzler basamağında çift rakam olan $4$ seçilirse birler basamağına $3$ tek sayı seçeneği kalır. Ancak yüzler basamağında $3$ veya $5$ seçilirse birler basamağının seçeneği $2$'ye düşer.
+
+Bu çakışmayı yönetmek için yüzler basamağının tek veya çift olma durumuna göre iki ayrık durum incelenir:
+
+\textbf{1. Senaryo: Yüzler basamağının çift olması ($a = 4$):}
+\begin{itemize}
+  \item Yüzler basamağı ($a$): Yalnızca $\{4\}$ seçilebilir ($1$ seçenek).
+  \item Birler basamağı ($c$): Tek sayılardan $\{1, 3, 5\}$ herhangi biri seçilebilir ($3$ seçenek).
+  \item Onlar basamağı ($b$): Toplam $6$ rakamdan $2$'si kullanılmıştır; geriye kalan $4$ rakamdan biri seçilir ($4$ seçenek).
+\end{itemize}
+1. senaryodaki sayı adedi:
+\[ 1 \times 4 \times 3 = 12 \]
+
+\textbf{2. Senaryo: Yüzler basamağının tek olması ($a \in \{3, 5\}$):}
+\begin{itemize}
+  \item Yüzler basamağı ($a$): $\{3, 5\}$ kümesinden biri seçilir ($2$ seçenek).
+  \item Birler basamağı ($c$): $\{1, 3, 5\}$ kümesinden yüzler basamağında kullanılan rakam hariç kalan $2$ seçenekten biri seçilir ($2$ seçenek).
+  \item Onlar basamağı ($b$): Kalan $4$ rakamdan biri seçilir ($4$ seçenek).
+\end{itemize}
+2. senaryodaki sayı adedi:
+\[ 2 \times 4 \times 2 = 16 \]
+
+Bu iki senaryo yüzler basamağının değerine göre ayrık olduğundan, toplama kuralı uyarınca:
+\[ 12 + 16 = 28 \]
+farklı sayı yazılabilir.
+\end{proof}
+
+\begin{example}[Tümleyen Yoluyla Sayma: Güvenli Şifre Problemi]
+Bir banka sistemi için $4$ haneli şifreler üretilecektir. Her hanede $0$'dan $9$'a kadar olan $10$ rakamdan biri kullanılabilir (rakam tekrarı serbesttir). 
+
+İçinde \textbf{en az bir adet $7$ rakamı} barındıran kaç farklı şifre oluşturulabilir?
+\end{example}
+\begin{proof}[Çözüm]
+Bu problemi doğrudan çözmek için tam $1$, tam $2$, tam $3$ ve $4$ tane $7$ içeren durumları ayrı ayrı hesaplamak gerekir.
+
+Bunun yerine \textbf{tümleyen yoluyla sayma} kullanılır:
+\[ \text{İstenen Durumlar} = \text{Tüm Durumlar} - \text{İstenmeyen Durumlar} \]
+Burada:
+\begin{itemize}
+  \item \textbf{Tüm Durumlar:} Hiçbir kısıtlama olmaksızın yazılabilecek tüm $4$ haneli şifreler.
+  Her hanede $10$ rakam seçeneği olduğundan:
+  \[ 10 \times 10 \times 10 \times 10 = 10^4 = 10000 \]
+  \item \textbf{İstenmeyen Durumlar:} ``En az bir tane $7$ bulunması'' koşulunun tersi, şifrede \textbf{hiç $7$ bulunmamasıdır}.
+  Hiç $7$ kullanmamak, her hane için $7$ hariç kalan $9$ rakamdan birini seçmek demektir:
+  \[ 9 \times 9 \times 9 \times 9 = 9^4 = 6561 \]
+\end{itemize}
+O hâlde en az bir $7$ içeren şifrelerin sayısı:
+\[ 10000 - 6561 = 3439 \]
+olarak tek bir çıkarma işlemiyle elde edilir.
+\end{proof}
+
+\begin{example}
+$8 \times 8$ boyutlarındaki standart bir satranç tahtasına, birbirini tehdit edemeyecek (yani aynı satırda veya aynı sütunda yer almayacak) biçimde biri beyaz biri siyah iki kale kaç farklı şekilde yerleştirilebilir?
+\end{example}
+\begin{proof}[Çözüm]
+İki aşamalı bir seçim süreci kuralım:
+\begin{enumerate}
+  \item \textbf{1. Aşama (Beyaz kalenin yerleştirilmesi):}
+  Satranç tahtasında toplam $8 \times 8 = 64$ kare vardır. Beyaz kale bu $64$ kareden herhangi birine yerleştirilebilir ($64$ seçenek).
+  
+  \item \textbf{2. Aşama (Siyah kalenin yerleştirilmesi):}
+  Beyaz kale bir kareye konulduğunda, siyah kalenin konulamayacağı kareler şunlardır:
+  \begin{itemize}
+    \item Beyaz kalenin durduğu kare ($1$ kare).
+    \item Beyaz kalenin bulunduğu satırdaki diğer kareler ($7$ kare).
+    \item Beyaz kalenin bulunduğu sütundaki diğer kareler ($7$ kare).
+  \end{itemize}
+  Bu satır ve sütun yalnızca beyaz kalenin bulunduğu karede kesiştiğinden, toplam yasaklı kare sayısı:
+  \[ 1 + 7 + 7 = 15 \]
+  olur.
+  
+  Buna göre siyah kale için geriye kalan kare sayısı:
+  \[ 64 - 15 = 49 \]
+  olur. (Alternatif olarak: Siyah kale beyazın bulunduğu satırın dışındaki $7$ satırdan birinde ve beyazın bulunduğu sütunun dışındaki $7$ sütundan birinde bulunmalıdır; yani $7 \times 7 = 49$ karedir).
+\end{enumerate}
+Çarpma kuralı gereğince iki kalenin yerleştirilme sayısı:
+\[ 64 \times 49 = 3136 \]
+farklı şekilde hesaplanır.
+\end{proof}
+
+\subsection{C Kodu ile Doğrulama ve Döngü Sezgisi}
+
+Algoritma analizinde iç içe döngülerin adım sayısını hesaplarken çarpma ve toplama kurallarından yararlanırız. 
+
+Aşağıdaki C kod bloklarını inceleyelim:
+
+\begin{lstlisting}[language=CTemel]
+// Ornek A: Carpmali yapi (bagimsiz ic ice donguler)
+int sayacA = 0;
+for (int i = 0; i < M; i++) {
+    for (int j = 0; j < N; j++) {
+        sayacA++;
+    }
+}
+// sayacA degeri tam olarak M * N olur.
+
+// Ornek B: Toplamali yapi (ardisik ayrik donguler)
+int sayacB = 0;
+for (int i = 0; i < M; i++) {
+    sayacB++;
+}
+for (int j = 0; j < N; j++) {
+    sayacB++;
+}
+// sayacB degeri tam olarak M + N olur.
+\end{lstlisting}
+
+Bir algoritmada işlemler ardışık bloklar hâlindeyse zaman maliyeti toplanır ($M + N$). İşlemler iç içe geçmiş döngülerle yürütülüyorsa adım sayıları çarpılır ($M \times N$). Saymanın temel ilkeleri, algoritma analizinde $O(N)$ ve $O(N^2)$ gibi karmaşıklık sınıflarını (Bölüm 21) belirlemenin de zeminini oluşturur.

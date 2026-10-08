@@ -1,0 +1,610 @@
+\chapter[Matematiğin Dili · \textit{Temel}]{Matematiğin Dili}
+\chaptermark{Matematiğin Dili}
+
+Matematiksel düşüncenin ve bilgisayar biliminin temeli, düşünceleri hiçbir belirsizliğe yer bırakmayacak açıklıkta ifade etmektir. Günlük konuşma dili; sezgileri ve gündelik durumları aktarmakta zengin olsa da kesin mantıksal çıkarımlar söz konusu olduğunda çoğunlukla muğlaktır. Örneğin, ``Herkes bu soruyu çözemez'' cümlesi, hiç kimsenin soruyu çözemediğini mi anlatır, yoksa bazı kişilerin çözüp bazılarının çözemediğini mi? Günlük dilde bağlamdan ne kastedildiğini anlarız; fakat bir algoritmanın doğruluğunu kanıtlarken veya bir sayma problemini modellerken bu tür belirsizlikler hataya yol açar.
+
+Olimpiyatlarda ve teorik bilgisayar biliminde karşılaştığımız problemler; girdi koşullarının net tanımlanmasını, durumların eksiksiz incelenmesini ve her adımın mantıksal olarak gerekçelendirilmesini gerektirir. Burada; ilerleyen bölümlerde kombinatorik, sayılar teorisi ve algoritmalar inşa edilirken başvuracağımız temel dili kuracağız: kümeler, mantıksal önermeler ve niceleyiciler.
+
+% ============================================================
+% 1.1 KÜMELER VE GÖSTERİM
+% ============================================================
+\section{Kümeler ve Gösterim}
+
+Matematikte en yalın kavramlar genellikle tanımlanması en güç olanlardır. Bir sepetteki elmalar, bir okuldaki öğrenciler veya $1$ ile $100$ arasındaki tek sayılar... Zihnimiz, belirli ortak özelliklere sahip nesneleri bir araya getirip tek bir bütün olarak düşünmeye yatkındır. Küme kavramı, bu sezgisel gruplamanın matematiksel olarak kesinleştirilmiş hâlidir.
+
+Modern küme kuramının öncüsü Georg Cantor, kümeyi ``iyi tanımlanmış, birbirinden farklı nesneler topluluğu'' olarak ifade etmiştir. Buradaki en belirleyici ölçüt \textbf{iyi tanımlanmış} olma koşuludur. Bir topluluğun küme sayılabilmesi için, evrendeki herhangi bir nesnenin o topluluğa ait olup olmadığının nesnel bir kurala bağlı olması gerekir. Örneğin ``TÜBİTAK sınavına hazırlanan çalışkan öğrenciler'' ifadesi bir küme oluşturmaz; çünkü ``çalışkanlık'' kişiden kişiye değişen öznel bir nitelemedir. Buna karşılık ``TÜBİTAK 1. Aşama sınavında 60 ve üzeri puan alan öğrenciler'' kesin bir küme tanımlar.
+
+\begin{definition}[Küme, Eleman ve Aidiyet]
+Bir kümeyi oluşturan nesnelerin her birine o kümenin bir \textbf{elemanı} denir. Kümeler genellikle $A, B, C, S$ gibi büyük harflerle, elemanlar ise $a, b, x, y$ gibi küçük harflerle gösterilir.
+\begin{itemize}
+  \item $x$ nesnesi $A$ kümesinin bir elemanı ise bu durum $x \in A$ biçiminde yazılır ve ``$x$ elemanıdır $A$'' diye okunur.
+  \item $x$ nesnesi $A$ kümesine ait değilse bu durum $x \notin A$ biçiminde yazılır ve ``$x$ elemanı değildir $A$'' diye okunur.
+\end{itemize}
+\end{definition}
+
+Kümeleri yazarken iki temel yöntem kullanılır:
+\begin{enumerate}
+  \item \textbf{Liste Yöntemi:} Eleman sayısı az olduğunda elemanlar süslü parantez içine virgülle ayrılarak açıkça yazılır:
+  \[ A = \{1, 3, 5, 7, 9\} \]
+  Bir kümede aynı elemanın birden fazla yazılması kümeyi değiştirmez; yani $\{1, 2, 2, 3\} = \{1, 2, 3\}$ kabul edilir. Ayrıca elemanların yazılış sırası önemsizdir: $\{1, 2\} = \{2, 1\}$.
+  
+  \item \textbf{Ortak Özellik Yöntemi:} Elemanları sağladıkları bir kural ile ifade etmektir:
+  \[ S = \{x \mid P(x)\} \quad \text{veya} \quad S = \{x : P(x)\} \]
+  Bu gösterim, ``$P(x)$ koşulunu sağlayan tüm $x$ nesnelerinin kümesi'' anlamına gelir.
+\end{enumerate}
+
+Matematikte sıkça başvurulan standart sayı kümeleri için özel harfler kullanılır:
+\begin{itemize}
+  \item $\mathbb{N} = \{0, 1, 2, 3, \dots\}$: Doğal sayılar kümesi (bu kitapta aksi belirtilmedikçe $0$ doğal sayı kabul edilir). Pozitif doğal sayılar kümesi $\mathbb{N}^+ = \{1, 2, 3, \dots\}$ ile gösterilir.
+  \item $\mathbb{Z} = \{\dots, -2, -1, 0, 1, 2, \dots\}$: Tam sayılar kümesi.
+  \item $\mathbb{Q}$: Rasyonel sayılar kümesi; $a, b \in \mathbb{Z}$ ve $b \neq 0$ olmak üzere $\frac{a}{b}$ biçiminde yazılabilen sayılardır.
+  \item $\mathbb{R}$: Reel (gerçel) sayılar kümesi; sayı doğrusundaki tüm noktaları temsil eder.
+\end{itemize}
+
+\begin{definition}[Boş Küme ve Kümenin Büyüklüğü]
+Hiçbir elemanı bulunmayan kümeye \textbf{boş küme} denir ve $\emptyset$ simgesiyle (veya $\{\}$ biçiminde) gösterilir. 
+
+Sonlu bir $A$ kümesinin içerdiği farklı elemanların sayısına o kümenin \textbf{eleman sayısı} (veya kardinalitesi) denir ve $|A|$ ile gösterilir. Boş kümenin hiçbir elemanı olmadığından $|\emptyset| = 0$'dır.
+\end{definition}
+
+\textbf{Dikkat edilecek bir ayrıntı:} $\emptyset$ ile $\{\emptyset\}$ aynı kavramlar değildir. $\emptyset$ boş bir kümedir; $\{\emptyset\}$ ise içinde boş kümeyi barındıran tek elemanlı bir kümedir. Dolayısıyla $|\emptyset| = 0$ iken $|\{\emptyset\}| = 1$'dir.
+
+\begin{definition}[Alt Küme ve Küme Eşitliği]
+$A$ ve $B$ iki küme olsun. $A$'nın her elemanı aynı zamanda $B$'nin de bir elemanı oluyorsa, $A$'ya $B$'nin bir \textbf{alt kümesi} denir ve bu ilişki
+\[ A \subseteq B \]
+biçiminde gösterilir. Eğer $A$ kümesi $B$'nin bir alt kümesi değilse (yani $A$'da olup $B$'de olmayan en az bir eleman bulunabiliyorsa) $A \nsubseteq B$ yazılır.
+
+Eğer $A \subseteq B$ ve $A \neq B$ ise (yani $B$'de bulunup $A$'da yer almayan en az bir eleman varsa), $A$'ya $B$'nin bir \textbf{öz alt kümesi} denir ve $A \subsetneq B$ veya $A \subset B$ ile gösterilir.
+
+İki kümenin birbirine eşit olması ($A = B$), her iki kümenin de tam olarak aynı elemanlara sahip olması demektir. Bu durum iki taraflı kapsama ile ifade edilir:
+\[ A = B \iff (A \subseteq B \text{ ve } B \subseteq A) \]
+\end{definition}
+
+\begin{lemma}[Boş Kümenin Evrenselliği]
+Herhangi bir $A$ kümesi için, $\emptyset \subseteq A$ ve $A \subseteq A$'dır.
+\end{lemma}
+\begin{proof}
+$A \subseteq A$ olduğu açıktır; çünkü $A$'dan alınan her eleman tanım gereği $A$'nın bir elemanıdır. $\emptyset \subseteq A$ olduğunu görmek için alt küme tanımının olumsuzuna bakalım: Eğer $\emptyset \nsubseteq A$ olsaydı, boş kümede bulunup $A$'da bulunmayan en az bir eleman gösterebilmemiz gerekirdi. Ancak boş kümenin hiçbir elemanı yoktur; dolayısıyla böyle bir karşı örnek bulmak imkânsızdır. O hâlde iddia zorunlu olarak doğrudur (bu mantıksal duruma \textit{boş gerektirme} ya da \textit{vacuous truth} denir).
+\end{proof}
+
+\subsection{Küme İşlemleri ve Venn Şemaları}
+
+Yeni kümeler oluşturmak ve kümeleri birleştirmek için dört temel işlem kullanılır:
+
+\begin{definition}[Birleşim, Kesişim, Fark ve Tümleyen]
+$A$ ve $B$ iki küme, $U$ ise incelenen tüm nesneleri kapsayan evrensel küme olsun.
+\begin{enumerate}
+  \item \textbf{Birleşim ($A \cup B$):} $A$'da veya $B$'de (veya her ikisinde) bulunan tüm elemanların kümesidir:
+  \[ A \cup B = \{x \mid x \in A \text{ veya } x \in B\} \]
+  \item \textbf{Kesişim ($A \cap B$):} Hem $A$'da hem de $B$'de aynı anda bulunan ortak elemanların kümesidir:
+  \[ A \cap B = \{x \mid x \in A \text{ ve } x \in B\} \]
+  Eğer iki kümenin hiçbir ortak elemanı yoksa ($A \cap B = \emptyset$), bu kümelere \textbf{ayrık kümeler} denir.
+  \item \textbf{Fark ($A \setminus B$ veya $A - B$):} $A$'da olup $B$'de olmayan elemanların kümesidir:
+  \[ A \setminus B = \{x \mid x \in A \text{ ve } x \notin B\} \]
+  \item \textbf{Tümleyen ($A^c$ veya $\overline{A}$):} Evrensel kümede bulunup $A$'da yer almayan elemanların kümesidir ($A^c = U \setminus A$):
+  \[ A^c = \{x \in U \mid x \notin A\} \]
+\end{enumerate}
+\end{definition}
+
+Küme işlemlerini görselleştirmenin en pratik yolu \textbf{Venn şemaları}dır. Düzlem üzerinde evrensel küme bir dikdörtgenle, alt kümeler ise bu dikdörtgenin içine çizilen kapalı eğrilerle (genellikle dairelerle) temsil edilir. Dairelerin kesişen bölgesi ortak elemanları, kapladıkları toplam alan birleşimi, dairenin dışında kalan bölge ise tümleyeni gösterir. Dört işlemi tek bir şemada topluca görelim:
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \begin{scope}[shift={(0,0)}]
+    \fill[kitapvurguacik] (-0.38,0) circle (0.6);
+    \fill[kitapvurguacik] (0.38,0) circle (0.6);
+    \draw[kitap-cizgi] (-0.38,0) circle (0.6);
+    \draw[kitap-cizgi] (0.38,0) circle (0.6);
+    \draw[kitap-cizgi] (-1.15,-0.85) rectangle (1.15,0.85);
+    \node[etiket] at (-0.72,0.55) {$A$};
+    \node[etiket] at (0.72,0.55) {$B$};
+    \node[etiket] at (0,-1.25) {$A \cup B$};
+  \end{scope}
+  \begin{scope}[shift={(3.4,0)}]
+    \begin{scope}
+      \clip (0.38,0) circle (0.6);
+      \fill[kitapvurguacik] (-0.38,0) circle (0.6);
+    \end{scope}
+    \draw[kitap-cizgi] (-0.38,0) circle (0.6);
+    \draw[kitap-cizgi] (0.38,0) circle (0.6);
+    \draw[kitap-cizgi] (-1.15,-0.85) rectangle (1.15,0.85);
+    \node[etiket] at (-0.72,0.55) {$A$};
+    \node[etiket] at (0.72,0.55) {$B$};
+    \node[etiket] at (0,-1.25) {$A \cap B$};
+  \end{scope}
+  \begin{scope}[shift={(0,-2.5)}]
+    \fill[kitapvurguacik] (-0.38,0) circle (0.6);
+    \begin{scope}
+      \clip (-0.38,0) circle (0.6);
+      \fill[white] (0.38,0) circle (0.6);
+    \end{scope}
+    \draw[kitap-cizgi] (-0.38,0) circle (0.6);
+    \draw[kitap-cizgi] (0.38,0) circle (0.6);
+    \draw[kitap-cizgi] (-1.15,-0.85) rectangle (1.15,0.85);
+    \node[etiket] at (-0.72,0.55) {$A$};
+    \node[etiket] at (0.72,0.55) {$B$};
+    \node[etiket] at (0,-1.25) {$A \setminus B$};
+  \end{scope}
+  \begin{scope}[shift={(3.4,-2.5)}]
+    \fill[kitapvurguacik] (-1.15,-0.85) rectangle (1.15,0.85);
+    \fill[white] (-0.38,0) circle (0.6);
+    \draw[kitap-cizgi] (-0.38,0) circle (0.6);
+    \draw[kitap-cizgi] (-1.15,-0.85) rectangle (1.15,0.85);
+    \node[etiket] at (-0.72,0.55) {$A$};
+    \node[etiket] at (0,-1.25) {$A^c$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Dört temel küme işleminin Venn gösterimi: taralı bölge işlemin sonucudur;
+evrensel küme $U$ dikdörtgenle temsil edilir.}
+\end{figure}
+
+\begin{theorem}[De Morgan Kuralları]
+$A$ ve $B$ iki küme olmak üzere:
+\[ (A \cup B)^c = A^c \cap B^c \]
+\[ (A \cap B)^c = A^c \cup B^c \]
+\end{theorem}
+\begin{proof}
+İlk eşitliği ispatlayalım. İki kümenin eşit olduğunu göstermek için her birinin diğerini kapsadığını, yani $(A \cup B)^c \subseteq A^c \cap B^c$ ve $A^c \cap B^c \subseteq (A \cup B)^c$ olduğunu doğrulamalıyız.
+
+Önce $x \in (A \cup B)^c$ olsun. Tanım gereği $x \notin (A \cup B)$'dir. Bir eleman birleşimde değilse, ne $A$'da ne de $B$'de bulunabilir; yani $x \notin A$ ve $x \notin B$ olmalıdır. Buradan $x \in A^c$ ve $x \in B^c$ çıkar. Her iki kümede de yer aldığı için $x \in (A^c \cap B^c)$ bulunur. Böylece $(A \cup B)^c \subseteq A^c \cap B^c$ doğrulanmış olur.
+
+Tersine, $y \in (A^c \cap B^c)$ olsun. O hâlde $y \in A^c$ ve $y \in B^c$'dir; bu da $y \notin A$ ve $y \notin B$ demektir. $y$ ne $A$'da ne de $B$'de olduğuna göre, $y \notin (A \cup B)$ olmalıdır. Dolayısıyla $y \in (A \cup B)^c$ elde edilir. Bu da $A^c \cap B^c \subseteq (A \cup B)^c$ kapsamasını tamamlar. İki yönlü kapsama sağlandığından eşitlik geçerlidir. İkinci kural da benzer adımlarla gösterilir.
+\end{proof}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Evrensel küme $U = \{1, 2, 3, 4, 5, 6, 7, 8, 9, 10\}$ olsun. Bu evrende şu iki kümeyi tanımlayalım:
+\[ A = \{x \in U \mid x \text{ çift sayıdır}\} = \{2, 4, 6, 8, 10\} \]
+\[ B = \{x \in U \mid x \ge 6\} = \{6, 7, 8, 9, 10\} \]
+Aşağıdaki kümeleri liste yöntemiyle bulunuz:
+a) $A \cap B$ \quad b) $A \cup B$ \quad c) $A \setminus B$ \quad d) $B \setminus A$ \quad e) $(A \cup B)^c$
+\end{example}
+\begin{proof}[Çözüm]
+Tanımları doğrudan uygulayalım:
+\begin{itemize}
+  \item a) $A \cap B$, her iki kümede ortak bulunan elemanlardır: $A \cap B = \{6, 8, 10\}$.
+  \item b) $A \cup B$, iki kümedeki tüm elemanların tekrarsız listesidir: $A \cup B = \{2, 4, 6, 7, 8, 9, 10\}$.
+  \item c) $A \setminus B$, $A$'da olup $B$'de olmayan (yani $6$'dan küçük çift) elemanlardır: $A \setminus B = \{2, 4\}$.
+  \item d) $B \setminus A$, $B$'de olup $A$'da olmayan (yani $6$'dan büyük tek) elemanlardır: $B \setminus A = \{7, 9\}$.
+  \item e) $(A \cup B)^c$, evrensel kümede bulunup $A \cup B$'de yer almayan elemanlardır. $U$'dan $\{2, 4, 6, 7, 8, 9, 10\}$ kümesini çıkardığımızda geriye $\{1, 3, 5\}$ kalır. De Morgan kuralı uyarınca $A^c = \{1, 3, 5, 7, 9\}$ ve $B^c = \{1, 2, 3, 4, 5\}$ kesiştirildiğinde de aynı sonuç, $A^c \cap B^c = \{1, 3, 5\}$, elde edilir.
+\end{itemize}
+\end{proof}
+
+\begin{example}
+$n$ elemanlı sonlu bir $S$ kümesinin toplam kaç farklı alt kümesi vardır? Küçük değerler için inceleyip genel kuralı bulunuz.
+\end{example}
+\begin{proof}[Çözüm]
+Küçük değerleri listeleyerek örüntüyü görelim:
+\begin{itemize}
+  \item $n = 0$ ise: $S = \emptyset$. Yalnızca $1$ alt kümesi vardır: $\emptyset$. ($2^0 = 1$)
+  \item $n = 1$ ise: $S = \{a_1\}$. Alt kümeler: $\emptyset, \{a_1\}$. Toplam $2$ tane. ($2^1 = 2$)
+  \item $n = 2$ ise: $S = \{a_1, a_2\}$. Alt kümeler: $\emptyset, \{a_1\}, \{a_2\}, \{a_1, a_2\}$. Toplam $4$ tane. ($2^2 = 4$)
+  \item $n = 3$ ise: $S = \{a_1, a_2, a_3\}$. Alt kümeler:
+  \[ \emptyset, \{a_1\}, \{a_2\}, \{a_3\}, \{a_1, a_2\}, \{a_1, a_3\}, \{a_2, a_3\}, \{a_1, a_2, a_3\} \]
+  Toplam $8$ alt küme oluşur. ($2^3 = 8$)
+\end{itemize}
+Genel kuralı şöyle kurabiliriz: Bir alt küme oluşturmak, $S$'deki her bir eleman için bağımsız bir seçim yapmak demektir. $a_1$ elemanı oluşturacağımız alt kümede ya yer alacaktır ya da almayacaktır ($2$ seçenek). Benzer biçimde $a_2$ için $2$, $a_3$ için $2$ ve nihayet $a_n$ için $2$ seçenek bulunur.
+
+Bölüm 3'te ele alacağımız çarpma kuralı uyarınca, her eleman için yapılan bu bağımsız seçimlerin toplam sonucu çarpımla belirlenir:
+\[ \underbrace{2 \times 2 \times \dots \times 2}_{n \text{ tane}} = 2^n \]
+Demek ki $n$ elemanlı bir kümenin tam $2^n$ alt kümesi vardır. (Bu yaklaşım, Bölüm 32'de göreceğimiz üzere bilgisayar biliminde alt kümelerin $n$ bitlik ikili sayılarla temsil edilmesinin de doğrudan temelidir).
+\end{proof}
+
+\begin{example}
+Bir okulun bilgisayar kulübünde $25$ öğrenci vardır. Bu öğrencilerden $16$'sı Python, $13$'ü C dilini bilmektedir. $4$ öğrenci ise her iki dili de bilmemektedir. Yalnızca C dilini bilen kaç öğrenci vardır?
+\end{example}
+\begin{proof}[Çözüm]
+Evrensel küme kulüpteki tüm öğrenciler olsun: $|U| = 25$. 
+Python bilenlerin kümesi $P$, C bilenlerin kümesi $C$ olsun.
+Her iki dili de bilmeyen $4$ öğrenci olduğuna göre, en az bir dili bilenlerin sayısı:
+\[ |P \cup C| = |U| - 4 = 25 - 4 = 21 \]
+olmalıdır.
+
+Birleşim formülü gereğince (bu formülü Bölüm 8'de içerme-dışarma ilkesi başlığı altında genelleştireceğiz):
+\[ |P \cup C| = |P| + |C| - |P \cap C| \]
+Bilinen değerleri yerine yazalım:
+\[ 21 = 16 + 13 - |P \cap C| \implies 21 = 29 - |P \cap C| \implies |P \cap C| = 8 \]
+Her iki dili de bilen $8$ öğrenci vardır.
+
+Yalnızca C bilenler $C \setminus P$ kümesidir:
+\[ |C \setminus P| = |C| - |P \cap C| = 13 - 8 = 5 \]
+Dolayısıyla yalnızca C dilini bilen $5$ öğrenci bulunmaktadır.
+\end{proof}
+
+\begin{example}
+Herhangi iki $A$ ve $B$ kümesi için $(A \setminus B) \cap B = \emptyset$ olduğunu eleman bazında gösteriniz.
+\end{example}
+\begin{proof}[Çözüm]
+İddiayı çelişki yöntemiyle gösterelim (bu yöntemin ayrıntılarını Bölüm 2'de ele alacağız). Kesişimin boş küme olmadığını, yani bu kesişime ait en az bir $x$ elemanı bulunduğunu varsayalım:
+\[ x \in (A \setminus B) \cap B \]
+Kesişim tanımı gereği:
+\begin{enumerate}
+  \item $x \in (A \setminus B)$
+  \item $x \in B$
+\end{enumerate}
+Birinci maddedeki $x \in (A \setminus B)$ ifadesini fark kümesi tanımına göre açarsak:
+\[ x \in A \quad \text{ve} \quad x \notin B \]
+elde edilir. Bu durumda hem $x \notin B$ hem de ikinci maddeden gelen $x \in B$ aynı anda sağlanmalıdır. Bir eleman bir kümenin hem elemanı olup hem elemanı olmamazlık edemez; bu açık bir mantıksal çelişkidir.
+
+Bu çelişki, kesişimin boş küme olmadığı varsayımından doğmuştur. O hâlde varsayım yanlıştır ve $(A \setminus B) \cap B = \emptyset$ olmak zorundadır.
+\end{proof}
+
+
+% ============================================================
+% 1.2 MANTIK: ÖNERMELER VE BAĞLAÇLAR
+% ============================================================
+\section{Mantık: Önermeler ve Bağlaçlar}
+
+Kümeler dünyasında nesneleri tanımladıktan sonra, bu nesneler hakkında kesin yargılarda bulunabilmek için \textbf{önermeler mantığı}ndan yararlanırız. Bir programda yer alan \texttt{if} koşullarından algoritmaların değişmezlerine kadar birçok yapı mantık kuralları üzerine oturur.
+
+\begin{definition}[Önerme ve Doğruluk Değeri]
+Doğru ya da yanlış kesin bir hüküm bildiren ifadelere \textbf{önerme} denir. Önermeler genellikle $p, q, r, s$ gibi harflerle gösterilir.
+\begin{itemize}
+  \item Bir önerme ya \textbf{doğru} ($D$ veya $1$) ya da \textbf{yanlış} ($Y$ veya $0$) değerini alır. Bu değere önermenin \textbf{doğruluk değeri} denir.
+  \item Soru, emir, ünlem veya kişisel yargı belirten cümleler önerme değildir.
+\end{itemize}
+\end{definition}
+
+Örneğin:
+\begin{itemize}
+  \item ``$2 + 3 = 5$'' bir önermedir ve doğruluk değeri $1$'dir.
+  \item ``$7$ bir çift sayıdır'' bir önermedir ve doğruluk değeri $0$'dır.
+  \item ``Lütfen kapıyı kapat'' bir önerme değildir (emir cümlesidir).
+  \item ``Bu kitap çok sürükleyici'' bir önerme değildir (öznel beğeni bildirir).
+\end{itemize}
+
+\subsection{Mantıksal Bağlaçlar ve Doğruluk Tabloları}
+
+Tekil önermeleri birbirine bağlayarak bileşik önermeler elde ederiz. Bu bağlaçların davranışı \textbf{doğruluk tabloları} ile kesinleşir.
+
+\begin{definition}[Değil, Ve, Veya]
+$p$ ve $q$ iki önerme olsun.
+\begin{enumerate}
+  \item \textbf{Değil ($\neg p$ veya $p'$):} $p$ doğru ise $\neg p$ yanlış, $p$ yanlış ise $\neg p$ doğrudur.
+  \item \textbf{Ve ($\land$):} $p \land q$ bileşik önermesi, yalnızca hem $p$ hem de $q$ doğru olduğunda doğrudur; diğer tüm durumlarda yanlıştır.
+  \item \textbf{Veya ($\lor$):} $p \lor q$ bileşik önermesi, $p$ veya $q$'dan en az biri doğru olduğunda doğrudur; yalnızca her iki önerme de yanlış olduğunda yanlıştır.
+\end{enumerate}
+\end{definition}
+
+Aşağıdaki tablo, bu üç temel işlemin doğruluk değerlerini özetler:
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{cc|c|c|c}
+\toprule
+$p$ & $q$ & $\neg p$ & $p \land q$ & $p \lor q$ \\
+\midrule
+$1$ & $1$ & $0$ & $1$ & $1$ \\
+$1$ & $0$ & $0$ & $0$ & $1$ \\
+$0$ & $1$ & $1$ & $0$ & $1$ \\
+$0$ & $0$ & $1$ & $0$ & $0$ \\
+\bottomrule
+\end{tabular}
+\caption{Temel Mantık Bağlaçlarının Doğruluk Tablosu}
+\end{table}
+
+\textbf{Dikkat:} Günlük dildeki ``veya'' sözcüğü bazen dışlayıcı anlamda (``çay veya kahve alabilirsiniz'' dendiğinde yalnızca birinin seçilmesi kastedilir) kullanılır. Ancak matematikteki $\lor$ bağlacı daima \textbf{kapsayıcı veya}dır; her iki durumun birlikte doğru olması da kabul edilir.
+
+\subsection{Koşullu Önerme (Gerektirme) ve Karşıt Pozitif}
+
+Matematiksel savların büyük bir kısmı ``Eğer ... ise ...'' yapısındadır. Bu ilişkiyi koşullu önerme temsil eder.
+
+\begin{definition}[Koşullu Önerme / Gerektirme: $p \Rightarrow q$]
+$p$ ve $q$ iki önerme olsun. ``$p$ ise $q$'' önermesi $p \Rightarrow q$ sembolüyle gösterilir. Burada $p$'ye \textbf{hipotez} (varsayım), $q$'ya ise \textbf{hüküm} (sonuç) denir.
+
+$p \Rightarrow q$ önermesi, yalnızca hipotezin doğru ($1$) fakat hükmün yanlış ($0$) olduğu durumda \textbf{yanlış} kabul edilir. Diğer tüm durumlarda \textbf{doğru}dur.
+\end{definition}
+
+Hipotez yanlışken ($p = 0$), $p \Rightarrow q$ önermesinin neden doğru kabul edildiğini anlamak için bir \textbf{taahhüt} benzetmesi yapılabilir: Bir öğretmen öğrencisine, ``Eğer bu sınavdan 100 alırsan ($p$), sana bir kitap hediye edeceğim ($q$)'' demiş olsun. Öğretmen hangi durumda sözünü tutmamış sayılır?
+\begin{itemize}
+  \item Öğrenci 100 alır ($p = 1$) ve öğretmen kitabı verirse ($q = 1$): Söz yerine getirilmiştir ($1$).
+  \item Öğrenci 100 alır ($p = 1$) fakat öğretmen kitabı vermezse ($q = 0$): Söz çiğnenmiştir ($0$).
+  \item Öğrenci 100 alamazsa ($p = 0$): Öğretmen öğrenciye yine de bir kitap hediye etse ($q = 1$) veya etmese ($q = 0$), verdiği sözü bozmuş sayılmaz; çünkü sözün önkoşulu gerçekleşmemiştir. Dolayısıyla her iki durumda da koşul ihlal edilmemiştir ($1$).
+\end{itemize}
+
+\begin{definition}[Karşıt, Ters ve Karşıt Pozitif]
+Verilen bir $p \Rightarrow q$ koşullu önermesi için:
+\begin{itemize}
+  \item $q \Rightarrow p$ önermesine bu koşulun \textbf{karşıtı} denir.
+  \item $\neg p \Rightarrow \neg q$ önermesine bu koşulun \textbf{tersi} denir.
+  \item $\neg q \Rightarrow \neg p$ önermesine bu koşulun \textbf{karşıt pozitifi} (contrapositive) denir.
+\end{itemize}
+\end{definition}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{cc|c|c|c|c}
+\toprule
+$p$ & $q$ & $p \Rightarrow q$ & Karşıt: $q \Rightarrow p$ & Ters: $\neg p \Rightarrow \neg q$ & Karşıt Pozitif: $\neg q \Rightarrow \neg p$ \\
+\midrule
+$1$ & $1$ & $1$ & $1$ & $1$ & $1$ \\
+$1$ & $0$ & $0$ & $1$ & $1$ & $0$ \\
+$0$ & $1$ & $1$ & $0$ & $0$ & $1$ \\
+$0$ & $0$ & $1$ & $1$ & $1$ & $1$ \\
+\bottomrule
+\end{tabular}
+\caption{Koşullu Önerme Türevlerinin Doğruluk Tablosu}
+\end{table}
+
+Bu tablo incelendiğinde temel bir teorem ortaya çıkar:
+
+\begin{theorem}[Karşıt Pozitifin Denkliği]
+Bir koşullu önerme ile onun karşıt pozitifi mantıksal olarak birbirine denktir:
+\[ (p \Rightarrow q) \equiv (\neg q \Rightarrow \neg p) \]
+Buna karşılık bir önerme, kendi karşıtına veya tersine denk olmak zorunda DEĞİLDİR:
+\[ (p \Rightarrow q) \not\equiv (q \Rightarrow p) \]
+\end{theorem}
+
+Bu denklik, ispat yöntemlerinde sıkça kullanılır. Bir iddianın doğrudan ispatlanması zor olduğunda, karşıt pozitifini ele almak aynı sonucu verir. Örneğin ``$n^2$ tek sayı ise $n$ tek sayıdır'' önermesini doğrudan ispatlamak yerine, onun karşıt pozitifi olan ``$n$ çift sayı ise $n^2$ çift sayıdır'' iddiasını göstermek çok daha pratiktir (Bölüm 2'de bunu ayrıntısıyla ele alacağız).
+
+\begin{definition}[İki Yönlü Koşullu Önerme / Ancak ve Ancak: $p \Leftrightarrow q$]
+$p$ ile $q$ önermelerinin birbirini karşılıklı gerektirmesi durumudur:
+\[ (p \Leftrightarrow q) \equiv (p \Rightarrow q) \land (q \Rightarrow p) \]
+$p \Leftrightarrow q$ önermesi; $p$ ile $q$ aynı doğruluk değerine sahipken doğru, farklı değerlere sahipken yanlıştır.
+\end{definition}
+
+\begin{theorem}[Mantıksal De Morgan Kuralları ve Dağılma Özellikleri]
+Herhangi $p, q, r$ önermeleri için aşağıdaki mantıksal denklikler geçerlidir:
+\begin{align*}
+\neg(p \land q) &\equiv \neg p \lor \neg q \\
+\neg(p \lor q) &\equiv \neg p \land \neg q \\
+p \land (q \lor r) &\equiv (p \land q) \lor (p \land r) \\
+p \lor (q \land r) &\equiv (p \lor q) \land (p \lor r) \\
+p \Rightarrow q &\equiv \neg p \lor q
+\end{align*}
+\end{theorem}
+
+$p \Rightarrow q \equiv \neg p \lor q$ denkliği, koşullu önermenin temel bağlaçlarla nasıl ifade edilebileceğini gösterir.
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+$\neg(p \Rightarrow q) \equiv p \land \neg q$ denkliğini doğruluk tablosuyla gösteriniz.
+\end{example}
+\begin{proof}[Çözüm]
+$p$ ve $q$'nun alabileceği dört farklı doğruluk değeri kombinasyonu için değerleri adım adım hesaplayalım:
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{cc|c|c|c|c}
+\toprule
+$p$ & $q$ & $p \Rightarrow q$ & $\neg(p \Rightarrow q)$ & $\neg q$ & $p \land \neg q$ \\
+\midrule
+$1$ & $1$ & $1$ & $0$ & $0$ & $0$ \\
+$1$ & $0$ & $0$ & $1$ & $1$ & $1$ \\
+$0$ & $1$ & $1$ & $0$ & $0$ & $0$ \\
+$0$ & $0$ & $1$ & $0$ & $1$ & $0$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Tablonun 4. sütunu ($\neg(p \Rightarrow q)$) ile 6. sütunundaki ($p \land \neg q$) doğruluk değerlerinin her satırda aynı ($0, 1, 0, 0$) olduğu görülür. Dolayısıyla iki ifade birbirine denktir.
+
+Bu sonucun günlük dildeki karşılığı şudur: ``Eğer yağmur yağarsa yerler ıslanır'' iddiasını çürütmek için yağmurun yağdığını fakat yerlerin ıslanmadığını göstermek gerekir ($p \land \neg q$).
+\end{proof}
+
+\begin{example}
+Aşağıdaki önermelerin karşıtını, tersini ve karşıt pozitifini yazınız:
+\begin{enumerate}
+  \item ``Bir sayı $4$'e tam bölünüyorsa, o sayı çifttir.''
+  \item ``$x > 3$ ise $x^2 > 9$'dur ($x \in \mathbb{R}$).''
+\end{enumerate}
+\end{example}
+\begin{proof}[Çözüm]
+İlk önermeyi bileşenlerine ayıralım:
+$p$: ``Sayı $4$'e tam bölünür'', $q$: ``Sayı çifttir''.
+\begin{itemize}
+  \item \textbf{Karşıtı ($q \Rightarrow p$):} ``Bir sayı çift ise, o sayı $4$'e tam bölünür.'' (Görüleceği gibi bu iddia yanlıştır; örneğin $6$ çifttir ama $4$'e bölünmez).
+  \item \textbf{Tersi ($\neg p \Rightarrow \neg q$):} ``Bir sayı $4$'e tam bölünmüyorsa, o sayı tek sayıdır.'' (Bu da yanlıştır; $6$ sayısı $4$'e bölünmez fakat çifttir).
+  \item \textbf{Karşıt Pozitifi ($\neg q \Rightarrow \neg p$):} ``Bir sayı tek ise (çift değilse), o sayı $4$'e tam bölünmez.'' (Bu ifade doğrudur ve ana önermeye denktir).
+\end{itemize}
+
+İkinci önerme için:
+$p$: ``$x > 3$'', $q$: ``$x^2 > 9$''.
+\begin{itemize}
+  \item \textbf{Karşıtı ($q \Rightarrow p$):} ``$x^2 > 9$ ise $x > 3$'tür.'' (Yanlıştır; $x = -4$ için $x^2 = 16 > 9$ olur fakat $-4 > 3$ sağlanmaz).
+  \item \textbf{Tersi ($\neg p \Rightarrow \neg q$):} ``$x \le 3$ ise $x^2 \le 9$'dur.'' (Yanlıştır; $x = -5 \le 3$ iken $x^2 = 25 \le 9$ değildir).
+  \item \textbf{Karşıt Pozitifi ($\neg q \Rightarrow \neg p$):} ``$x^2 \le 9$ ise $x \le 3$'tür.'' (Doğrudur; $x^2 \le 9 \iff -3 \le x \le 3$ olduğundan $x \le 3$ zorunlu olarak sağlanır).
+\end{itemize}
+\end{proof}
+
+\begin{example}[Klasik Mantık Bulmacası: Şövalyeler ve Yalancılar]
+Yalnızca iki tür insanın yaşadığı bir adadasınız: \textbf{Şövalyeler} daima doğruyu söyler, \textbf{Yalancılar} ise daima yalan söyler. Adada iki yerliyle ($A$ ve $B$) karşılaşıyorsunuz. 
+
+$A$ kişisi şöyle bir cümle kuruyor: ``İkimizden en az biri yalancıdır.'' 
+
+$A$ ve $B$'nin kimliklerini mantıksal olarak belirleyiniz.
+\end{example}
+\begin{proof}[Çözüm]
+Durum analizi yaparak ilerleyelim. $A$'nın olası iki durumunu inceleyelim:
+
+\textbf{1. Durum:} $A$ bir yalancı olsun.
+\begin{itemize}
+  \item $A$ yalancı ise söylediği cümle mantıksal olarak \textbf{yanlış} ($0$) olmalıdır.
+  \item İfade şudur: ``$A$ yalancıdır VEYA $B$ yalancıdır.''
+  \item Bu ifadenin yanlış olabilmesi için her iki bileşenin de yanlış olması gerekir; yani hem $A$ hem de $B$ yalancı olmamalıdır.
+  \item Buradan $A$'nın şövalye olması gerektiği çıkar.
+  \item Fakat başlangıç varsayımı $A$'nın yalancı olduğuydu. Bir kişi aynı anda hem yalancı hem şövalye olamayacağından bu bir çelişkidir.
+  \item O hâlde $A$ yalancı olamaz.
+\end{itemize}
+
+\textbf{2. Durum:} $A$ bir şövalye olsun.
+\begin{itemize}
+  \item $A$ şövalye ise söylediği cümle mantıksal olarak \textbf{doğru} ($1$) olmalıdır.
+  \item İfadenin doğru olması için ``$A$ yalancıdır VEYA $B$ yalancıdır'' önermesi doğru olmalıdır.
+  \item $A$ şövalye olduğundan birinci kısım (``$A$ yalancıdır'') yanlıştır ($0$).
+  \item VEYA bağlacında sonucun $1$ çıkabilmesi için ikinci kısmın zorunlu olarak doğru olması gerekir; yani ``$B$ yalancıdır'' önermesi doğru ($1$) olmalıdır.
+  \item Buradan $B$'nin yalancı olduğu sonucuna varılır.
+\end{itemize}
+
+Sonuç olarak $A$ kesinlikle bir \textbf{şövalye}, $B$ ise kesinlikle bir \textbf{yalancı}dır.
+\end{proof}
+
+\begin{example}
+Bir yazılımda iki tamsayı değişkeni $x$ ve $y$ olsun. Şu kontrol bloğunu ele alalım:
+\begin{lstlisting}[language=CTemel]
+if (!(x > 0 && y <= 5)) {
+    // Calisacak kod blogu
+}
+\end{lstlisting}
+Bu \texttt{if} koşulunu, başında olumsuzlama işareti (\texttt{!}) kalmayacak biçimde mantıksal De Morgan kurallarını kullanarak sadeleştiriniz.
+\end{example}
+\begin{proof}[Çözüm]
+Önermeleri adlandıralım:
+\begin{itemize}
+  \item $p$: \texttt{x > 0}
+  \item $q$: \texttt{y <= 5}
+\end{itemize}
+Koşul ifadesi $\neg (p \land q)$ biçimindedir. De Morgan kuralı uyarınca:
+\[ \neg(p \land q) \equiv \neg p \lor \neg q \]
+Tekil önermelerin olumsuzları:
+\begin{itemize}
+  \item $\neg p$: \texttt{x > 0} ifadesinin olumsuzu \texttt{x <= 0}'dır.
+  \item $\neg q$: \texttt{y <= 5} ifadesinin olumsuzu \texttt{y > 5}'tir.
+\end{itemize}
+Böylece koşul doğrudan şuna dönüşür:
+\begin{lstlisting}[language=CTemel]
+if (x <= 0 || y > 5) {
+    // Calisacak kod blogu
+}
+\end{lstlisting}
+Bu iki koşul tüm olası $x$ ve $y$ değerleri için tamamen aynı mantıksal sonucu üretir.
+\end{proof}
+
+
+% ============================================================
+% 1.3 NİCELEYİCİLER
+% ============================================================
+\section{Niceleyiciler}
+
+Önermeler mantığında sabit önermelerle ($p, q$) çalıştık. Ancak matematikte sıklıkla bir değişkene bağlı olan ve o değişkenin değerine göre doğruluğu değişen ifadeler yer alır. Örneğin ``$x > 0$'' cümlesi tek başına bir önerme belirtmez; çünkü $x$'in değeri bilinmeden doğruluktan söz edilemez. Bu tür ifadelere \textbf{açık önerme} denir ve $P(x)$ ile gösterilir. $x = 5$ için $P(5)$ doğru iken, $x = -2$ için $P(-2)$ yanlıştır.
+
+Bir açık önermeyi kesin bir önermeye dönüştürmek için değişkenin hangi kapsamda ele alındığını belirten \textbf{niceleyiciler} kullanılır.
+
+\begin{definition}[Evrensel ve Varlıksal Niceleyiciler]
+$P(x)$ bir $A$ evrensel kümesi üzerinde tanımlı açık bir önerme olsun.
+\begin{enumerate}
+  \item \textbf{Evrensel Niceleyici ($\forall$, ``her'' ya da ``bütün''):} 
+  \[ \forall x \in A, P(x) \]
+  ifadesi, ``$A$ kümesindeki her $x$ elemanı için $P(x)$ doğrudur'' anlamına gelir. Bu ifadenin doğru sayılması için istisnasız tüm elemanların koşulu sağlaması gerekir. Tek bir aykırı eleman önermeyi yanlış kılar.
+  
+  \item \textbf{Varlıksal Niceleyici ($\exists$, ``en az bir'', ``bazı'' ya da ``vardır''):}
+  \[ \exists x \in A, P(x) \]
+  ifadesi, ``$A$ kümesinde $P(x)$ koşulunu sağlayan en az bir $x$ elemanı vardır'' anlamına gelir. Bu ifadenin doğru olması için koşulu sağlayan tek bir örnek bulmak yeterlidir. Yalnızca hiçbir eleman koşulu sağlamadığında önerme yanlış olur.
+\end{enumerate}
+\end{definition}
+
+\subsection{Niceleyicilerin Olumsuzlanması}
+
+Matematiksel ispatlarda bir savın olumsuzunu doğru kurmak esastır. Bir iddiayı çürütmek, onun olumsuzunun doğru olduğunu göstermekle eşdeğerdir.
+
+\begin{theorem}[Niceleyicilerin Olumsuzlanması Kuralı]
+$P(x)$ bir açık önerme olmak üzere:
+\[ \neg (\forall x \in A, P(x)) \equiv \exists x \in A, \neg P(x) \]
+\[ \neg (\exists x \in A, P(x)) \equiv \forall x \in A, \neg P(x) \]
+\end{theorem}
+\begin{proof}
+İlk denkliği inceleyelim: ``Bir sınıftaki tüm öğrenciler gözlüklüdür'' ($\forall x, P(x)$) iddiasını çürütmek için bütün öğrencilerin gözlüksüz olduğunu göstermek gerekmez. Sınıfta gözlük takmayan tek bir öğrenci bulmak ($\exists x, \neg P(x)$) iddianın yanlış olduğunu kanıtlamaya yeterlidir. Bu tek aykırı örneğe matematikte \textbf{karşı örnek} (counterexample) denir (karşı örnekle çürütme tekniği Bölüm 2'de ele alınacaktır).
+
+İkinci denklik de benzer biçimde çalışır: ``Bu odada bir yabancı var'' ($\exists x, P(x)$) iddiasının olumsuzu, odadaki herkesin tanıdık olduğunu; yani odadaki her bireyin yabancı olmadığını ($\forall x, \neg P(x)$) ifade etmektir.
+\end{proof}
+
+\subsection{Çoklu Niceleyiciler ve Sıralamanın Önemi}
+
+Birden fazla değişken içeren açık önermelerde ($P(x, y)$ gibi) niceleyicilerin yazılış sırası cümlenin anlamını bütünüyle değiştirir. Bu ayrım, niceleyicileri anlamadaki en önemli noktalardan biridir.
+
+İnsanlar evreninde tanımlı şu iki önermeyi karşılaştıralım:
+\begin{enumerate}
+  \item $\forall x, \exists y, \text{Anne}(y, x)$: ``Her $x$ insanı için, $x$'in annesi olan bir $y$ insanı vardır.'' (Bu önerme \textbf{doğrudur}; her insanın bir annesi bulunur).
+  \item $\exists y, \forall x, \text{Anne}(y, x)$: ``Öyle bir $y$ insanı vardır ki, herkesin ($x$) annesidir.'' (Bu önerme \textbf{yanlıştır}; tüm insanların ortak tek bir biyolojik annesi yoktur).
+\end{enumerate}
+
+Niceleyicilerin sırasının değişmesi önermenin anlamını tamamen başkalaştırır:
+\begin{itemize}
+  \item $\forall x \exists y$ ifadesinde seçilecek $y$ elemanı, $x$'e \textbf{bağlı olabilir} (her $x$ için farklı bir $y$ belirlenebilir).
+  \item $\exists y \forall x$ ifadesinde ise tek ve sabit bir $y$ bulunmalıdır; bu $y$, istisnasız tüm $x$'ler için koşulu aynı anda sağlamalıdır.
+\end{itemize}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Aşağıdaki matematiksel ifadelerin doğruluk değerlerini belirleyiniz ve her birinin olumsuzunu alınız:
+\begin{enumerate}
+  \item $\forall x \in \mathbb{R}, x^2 \ge 0$
+  \item $\exists x \in \mathbb{Z}, x + 5 = 2$
+  \item $\forall x \in \mathbb{N}, x - 1 \in \mathbb{N}$
+\end{enumerate}
+\end{example}
+\begin{proof}[Çözüm]
+Sırasıyla inceleyelim:
+\begin{enumerate}
+  \item $\forall x \in \mathbb{R}, x^2 \ge 0$:
+  Her reel sayının karesi sıfırdan büyük veya eşittir (pozitif sayıların karesi pozitif, negatiflerin karesi pozitif, sıfırın karesi sıfırdır). Dolayısıyla doğruluk değeri \textbf{$1$ (doğru)}dur.
+  
+  Olumsuzu: $\neg (\forall x \in \mathbb{R}, x^2 \ge 0) \equiv \exists x \in \mathbb{R}, x^2 < 0$. 
+  (``Karesi sıfırdan küçük en az bir reel sayı vardır'').
+
+  \item $\exists x \in \mathbb{Z}, x + 5 = 2$:
+  Denklem çözüldüğünde $x = 2 - 5 = -3$ bulunur. $-3$ bir tam sayı ($\mathbb{Z}$) olduğundan koşulu sağlayan bir eleman mevcuttur. Dolayısıyla doğruluk değeri \textbf{$1$ (doğru)}dur.
+  
+  Olumsuzu: $\neg (\exists x \in \mathbb{Z}, x + 5 = 2) \equiv \forall x \in \mathbb{Z}, x + 5 \neq 2$.
+  (``Her $x$ tam sayısı için $x + 5 \neq 2$'dir'').
+
+  \item $\forall x \in \mathbb{N}, x - 1 \in \mathbb{N}$:
+  Doğal sayılar kümesi $\mathbb{N} = \{0, 1, 2, \dots\}$ biçimindedir. $x = 0$ doğal sayısı için $0 - 1 = -1$ elde edilir. Fakat $-1 \notin \mathbb{N}$'dir. Tek bir karşı örnek iddiayı geçersiz kılmaya yeterlidir. Dolayısıyla doğruluk değeri \textbf{$0$ (yanlış)}dır.
+  
+  Olumsuzu: $\neg (\forall x \in \mathbb{N}, x - 1 \in \mathbb{N}) \equiv \exists x \in \mathbb{N}, x - 1 \notin \mathbb{N}$.
+  ($x = 0$ karşı örneği nedeniyle bu olumsuz ifade doğrudur).
+\end{enumerate}
+\end{proof}
+
+\begin{example}
+Reel sayılar evreninde ($\mathbb{R}$) şu iki önermeyi ele alalım:
+\begin{enumerate}
+  \item $P_1: \forall x \in \mathbb{R}, \exists y \in \mathbb{R}, (x + y = 10)$
+  \item $P_2: \exists y \in \mathbb{R}, \forall x \in \mathbb{R}, (x + y = 10)$
+\end{enumerate}
+Bu iki önermenin doğruluk değerlerini belirleyip aralarındaki farkı açıklayınız.
+\end{example}
+\begin{proof}[Çözüm]
+\textbf{$P_1$ önermesi:} Verilen herhangi bir $x$ reel sayısı için, onunla toplandığında $10$ sonucunu veren bir $y$ reel sayısı seçilebilir mi? 
+$x$ ne olursa olsun $y = 10 - x$ seçilirse:
+\[ x + y = x + (10 - x) = 10 \]
+sağlanır. $x \in \mathbb{R}$ olduğundan $10 - x$ de daima bir reel sayıdır. Her $x$ için uygun bir $y$ üretilebildiği için $P_1$ önermesi \textbf{doğru ($1$)}dur. Burada $y$'nin değeri seçilen $x$'e bağlı olarak değişir.
+
+\textbf{$P_2$ önermesi:} Öyle sabit bir $y$ reel sayısı var mıdır ki, hangi $x$ reel sayısı seçilirse seçilsin $x + y = 10$ eşitliği korunsun?
+Böyle bir $y$ sayısı olduğunu varsayalım. Bu eşitlik $x = 0$ için de sağlanmalıdır:
+\[ 0 + y = 10 \implies y = 10 \]
+Fakat aynı $y = 10$ değeri $x = 1$ için de geçerli olmalıdır:
+\[ 1 + 10 = 10 \implies 11 = 10 \]
+Bu açık bir çelişkidir. Tüm $x$'ler için aynı anda çalışan tek bir $y$ reel sayısı bulunamaz. Dolayısıyla $P_2$ önermesi \textbf{yanlış ($0$)}dır.
+\end{proof}
+
+\begin{example}
+Bir algoritma tasarımcısı, $N$ elemanlı bir tamsayı dizisinin ($A[0], A[1], \dots, A[N-1]$) sıralı olduğunu iddia etmektedir. 
+\begin{enumerate}
+  \item Bu iddiayı niceleyicilerle matematiksel olarak ifade ediniz.
+  \item İddianın olumsuzunu yazınız.
+  \item Bu iddiayı doğrulayan bir algoritmanın neden tüm diziyi incelemek zorunda olduğunu, iddiayı çürütmek isteyen bir testin ise neden bazen tek adımda sonlanabileceğini açıklayınız.
+\end{enumerate}
+\end{example}
+\begin{proof}[Çözüm]
+\textbf{1. İddianın Niceleyici ile İfadesi:}
+Dizinin küçükten büyüğe sıralı olması, ardışık her eleman çiftinde soldakinin sağdakinden küçük ya da ona eşit olması demektir:
+\[ \forall i \in \{0, 1, \dots, N-2\}, \quad A[i] \le A[i+1] \]
+
+\textbf{2. İddianın Olumsuzu:}
+Niceleyicinin olumsuzunu alma kuralını uygulayalım ($\neg \forall \to \exists$):
+\[ \exists i \in \{0, 1, \dots, N-2\}, \quad A[i] > A[i+1] \]
+Yani dizinin sıralı olmadığını göstermek, soldaki elemanın sağdakinden büyük olduğu en az bir $i$ indisi bulmak anlamına gelir.
+
+\textbf{3. Algoritmik Çıkarım:}
+Evrensel iddiaların ($\forall$) doğrulanması ile çürütülmesi arasındaki yapısal fark, Bölüm 21'de göreceğimiz algoritma karmaşıklığının da temel nedenlerinden biridir:
+\begin{itemize}
+  \item Dizinin sıralı olduğunu \textbf{doğrulamak} istiyorsak, tek bir ihlalin dahi bulunmadığından emin olmak zorundayız. Bu nedenle algoritma $i = 0$'dan $N-2$'ye kadar tüm indisleri denetlemeli, yani diziyi bütünüyle taramalıdır ($O(N)$ işlem).
+  \item Buna karşılık iddiayı \textbf{çürütmek} için tek bir karşı örnek ($\exists$) yeterlidir. Örneğin $A[0] = 9$ ve $A[1] = 2$ ise, algoritma ilk adımda $A[0] > A[1]$ ihlalini yakalar ve dizinin kalan $N-2$ elemanına bakmadan doğrudan ``dizi sıralı değildir'' yanıtını verebilir.
+\end{itemize}
+Bu mantık, programlamadaki kısa devre değerlendirmesi (short-circuit evaluation) ve arama algoritmalarındaki erken sonlanma (early exit) stratejilerinin temelini oluşturur.
+\end{proof}

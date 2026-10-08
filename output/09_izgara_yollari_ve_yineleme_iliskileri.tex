@@ -1,0 +1,756 @@
+\chapter[Izgara Yolları ve Yineleme Bağıntıları · \textit{İleri}]{Izgara Yolları ve Yineleme Bağıntıları}
+\chaptermark{Izgara Yolları ve Yineleme Bağıntıları}
+
+Kombinatorik sayma problemlerinde nesneleri tek tek listelemek çoğu zaman imkânsızdır. Ancak problem iki temel yaklaşımdan birine izin verdiğinde karmaşıklık ortadan kalkar: Ya nesneleri geometrik veya sembolik olarak iyi bilinen başka bir yapıya (örneğin iki boyutlu bir ızgara üzerindeki yollara) eşleriz ya da problemi kendisinin daha küçük kopyalarına parçalayarak bir \emph{yineleme bağıntısı} (rekürsiyon) kurarız. 
+
+Kafes yolları, ardışık durumlar arasındaki geçişleri modelleyen yineleme ilişkileri, Fibonacci dizisi ve dizilerin kapalı formlarına ulaşmamızı sağlayan karakteristik denklem yöntemi olimpiyat matematiği ile bilgisayar biliminin kesiştiği temel konulardır.
+
+\section{Izgara Yolları}
+
+Bir robotun sokakları kare şeklinde parsellenmiş bir şehirde sadece doğuya (sağa) ve kuzeye (yukarı) hareket edebildiğini düşünelim. Robot başlangıç kavşağından hedef kavşağa kaç farklı rota izleyerek gidebilir? Bu soru, ilk bakışta basit bir yol bulma problemi gibi görünse de kombinatorik ve dinamik programlama arasındaki temel köprülerden biridir.
+
+\subsection{Kafes Yolu Modeli ve Temel Sayma}
+
+Somut bir örnekle başlayalım. Robotumuz Kartezyen düzlemde $(0,0)$ noktasında bulunsun ve her adımda yalnızca bir birim sağa ($S$) ya da bir birim yukarı ($Y$) gidebilsin. Robotun $(2,1)$ noktasına ulaşmasını istiyoruz.
+
+Hedefe varmak için robotun toplamda tam olarak 2 birim sağa ve 1 birim yukarı gitmesi gerektiği açıktır. Hareketlerin sırası değişebilir, ancak atılan toplam adım sayısı daima $2 + 1 = 3$ olmak zorundadır. Olası tüm rotaları yazalım:
+\[
+SSY, \quad SYS, \quad YSS
+\]
+Toplam 3 farklı yol vardır. Bu listeyi dikkatle incelediğimizde, her yolun 3 harfli bir kelime olduğunu ve bu kelimelerin her birinde tam olarak 2 tane $S$ (ve 1 tane $Y$) bulunduğunu fark ederiz. Aslında Bölüm 5'te gördüğümüz kombinasyon mantığıyla, 3 boşlukluk bir dizilimde sağa gideceğimiz 2 konumu seçmekteyiz:
+\[
+\binom{3}{2} = \binom{3}{1} = 3.
+\]
+
+Bu üç rotayı ızgara üzerinde görelim:
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \begin{scope}[shift={(0,0)}]
+    \draw[black!40, line width=0.5pt] (0,0) grid[xstep=0.5, ystep=0.5] (1,0.5);
+    \draw[vurgulu-kenar] (0,0) -- (1,0) -- (1,0.5);
+    \fill (0,0) circle (0.05);
+    \fill (1,0.5) circle (0.05);
+    \node[etiket] at (0.5,-0.35) {SSY};
+  \end{scope}
+  \begin{scope}[shift={(2.0,0)}]
+    \draw[black!40, line width=0.5pt] (0,0) grid[xstep=0.5, ystep=0.5] (1,0.5);
+    \draw[vurgulu-kenar] (0,0) -- (0.5,0) -- (0.5,0.5) -- (1,0.5);
+    \fill (0,0) circle (0.05);
+    \fill (1,0.5) circle (0.05);
+    \node[etiket] at (0.5,-0.35) {SYS};
+  \end{scope}
+  \begin{scope}[shift={(4.0,0)}]
+    \draw[black!40, line width=0.5pt] (0,0) grid[xstep=0.5, ystep=0.5] (1,0.5);
+    \draw[vurgulu-kenar] (0,0) -- (0,0.5) -- (1,0.5);
+    \fill (0,0) circle (0.05);
+    \fill (1,0.5) circle (0.05);
+    \node[etiket] at (0.5,-0.35) {YSS};
+  \end{scope}
+\end{tikzpicture}
+\caption{$(0,0)$'dan $(2,1)$'e üç rota: SSY (alttan), SYS (ortadan), YSS
+(üstten). Robot yalnızca sağa ($S$) ve yukarı ($Y$) adım atabilir.}
+\end{figure}
+
+\begin{definition}[Kafes Yolu]
+Tamsayı koordinatlı noktaların oluşturduğu ızgaraya \emph{kafes} (lattice) denir. $(x_1, y_1)$ noktasından $(x_2, y_2)$ noktasına giden, her adımda koordinatları yalnızca $(x+1, y)$ ya da $(x, y+1)$ yapan yollara \emph{kuzeydoğu kafes yolu} veya kısaca \emph{ızgara yolu} denir.
+\end{definition}
+
+\begin{theorem}[Temel Izgara Yolu Teoremi]
+$(0,0)$ noktasından $(m,n)$ noktasına, yalnızca 1 birim sağa ($S$) ve 1 birim yukarı ($Y$) adımlar atılarak gidilebilecek farklı yolların sayısı
+\[
+\binom{m+n}{m} = \binom{m+n}{n} = \frac{(m+n)!}{m! \, n!}
+\]
+ile verilir.
+\end{theorem}
+
+\begin{proof}
+$(0,0)$ noktasından $(m,n)$ noktasına ulaşmak isteyen bir hareketli, $x$ koordinatını 0'dan $m$'ye çıkarmak için tam $m$ adet sağa ($S$) adım, $y$ koordinatını 0'dan $n$'ye çıkarmak için tam $n$ adet yukarı ($Y$) adım atmalıdır. 
+
+Toplam adım sayısı zorunlu olarak $m+n$ adettir. Bu adımların hangi sıralamayla atılacağı yolu tekil olarak belirler. Toplam $m+n$ adımdan oluşan bir dizilimde, hangi $m$ tanesinin sağa adım olacağını seçmek $\binom{m+n}{m}$ farklı biçimde yapılabilir. Geriye kalan $n$ pozisyonun tamamı zorunlu olarak yukarı adım ($Y$) olacaktır. Benzer şekilde, $n$ adet yukarı adımın yerini seçmek de $\binom{m+n}{n}$ yolla yapılabilir ve bu iki değer birbirine eşittir.
+\end{proof}
+
+Başlangıç noktası $(0,0)$ yerine keyfi bir $(x_1, y_1)$ noktası ve hedef $(x_2, y_2)$ olduğunda (burada $x_2 \ge x_1$ ve $y_2 \ge y_1$), düzlemi öteleyerek aynı sonucu elde ederiz. Atılması gereken sağa adım sayısı $\Delta x = x_2 - x_1$, yukarı adım sayısı $\Delta y = y_2 - y_1$ olur. Toplam yol sayısı:
+\[
+\binom{\Delta x + \Delta y}{\Delta x} = \binom{(x_2 - x_1) + (y_2 - y_1)}{x_2 - x_1}
+\]
+olur.
+
+\subsection{Ara Noktalardan Geçme ve Engellerden Kaçınma}
+
+Yarışma problemlerinde doğrudan $(0,0)$'dan $(m,n)$'ye gitmek nadiren sorulur. Genellikle yolda zorunlu olarak uğranması gereken duraklar veya kesinlikle basılmaması gereken "engelli" noktalar bulunur.
+
+\begin{example}
+Bir robot $(0,0)$ noktasından $(6,5)$ noktasına gidecektir.
+\begin{enumerate}
+    \item[a)] Robotun $(2,3)$ noktasından geçmesi zorunluysa kaç farklı yol izleyebilir?
+    \item[b)] Robotun $(2,3)$ noktasındaki çukura düşmemesi (bu noktadan geçmemesi) gerekiyorsa kaç farklı yol izleyebilir?
+\end{enumerate}
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \draw[black!40, line width=0.5pt] (0,0) grid[xstep=0.45, ystep=0.45] (2.7,2.25);
+  \draw[vurgulu-kenar] (0,0) -- (0.9,0) -- (0.9,1.35) -- (2.7,1.35) -- (2.7,2.25);
+  \fill (0,0) circle (0.055);
+  \fill (2.7,2.25) circle (0.055);
+  \fill[kitapvurgu] (0.9,1.35) circle (0.055);
+  \node[etiket, anchor=west] at (1.05,1.55) {$(2,3)$};
+\end{tikzpicture}
+\caption{Örnekteki $6 \times 5$ ızgara: $(2,3)$ noktası (a) şıkkında zorunlu durak,
+(b) şıkkında kaçınılması gereken çukurdur; vurgulu çizgi bu noktadan geçen örnek
+bir rotadır.}
+\end{figure}
+
+\begin{proof}[Çözüm]
+(a) şıkkında yolu iki bağımsız etaba bölebiliriz: Önce $(0,0)$'dan zorunlu ara nokta olan $(2,3)$'e ulaşmalı, ardından $(2,3)$'ten hedef $(6,5)$'e devam etmeliyiz. Çarpma kuralı bize toplam yolu verecektir.
+
+(b) şıkkında ise "yasaklı noktadan geçmeme" koşulunu doğrudan saymak yerine, tüm serbest yollardan yasaklı noktadan geçen yolları çıkarmak (tümleyen sayma) çok daha pratiktir.
+
+\textbf{a)} 
+\begin{enumerate}
+    \item Aşama: $(0,0)$ noktasından $(2,3)$ noktasına:
+$\Delta x_1 = 2$, $\Delta y_1 = 3$. Yol sayısı:
+\[
+N_1 = \binom{2+3}{2} = \binom{5}{2} = \frac{5 \times 4}{2} = 10.
+\]
+\item Aşama: $(2,3)$ noktasından $(6,5)$ noktasına:
+$\Delta x_2 = 6 - 2 = 4$, $\Delta y_2 = 5 - 3 = 2$. Yol sayısı:
+\[
+N_2 = \binom{4+2}{4} = \binom{6}{2} = \frac{6 \times 5}{2} = 15.
+\]
+\end{enumerate}
+Çarpma kuralı gereği, $(2,3)$ üzerinden geçen toplam yol sayısı:
+\[
+N_{\text{zorunlu}} = N_1 \times N_2 = 10 \times 15 = 150.
+\]
+
+\textbf{b)} 
+Hiçbir kısıtlama olmasaydı $(0,0)$'dan $(6,5)$'e gidilebilecek tüm yolların sayısı:
+\[
+N_{\text{tüm}} = \binom{6+5}{6} = \binom{11}{5} = \frac{11 \times 10 \times 9 \times 8 \times 7}{5 \times 4 \times 3 \times 2 \times 1} = 462.
+\]
+$(2,3)$ noktasından geçmeyen yolların sayısı:
+\[
+N_{\text{temiz}} = N_{\text{tüm}} - N_{\text{zorunlu}} = 462 - 150 = 312.
+\]
+\end{proof}
+
+Birden fazla engelli nokta olduğunda Bölüm 8'de ele aldığımız İçerme-Dışarma İlkesi devreye girer.
+
+\begin{example}
+$(0,0)$ noktasından $(5,5)$ noktasına giden bir hareketli $A(2,1)$ ve $B(3,4)$ noktalarından geçmek \emph{istememektedir}. Bu koşulu sağlayan kaç geçerli rota vardır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Tüm yolların kümesine $U$, $A$'dan geçen yolların kümesine $\mathcal{A}$, $B$'den geçen yolların kümesine $\mathcal{B}$ diyelim. İstenen değer $|\mathcal{A}^c \cap \mathcal{B}^c| = |U| - |\mathcal{A} \cup \mathcal{B}|$'dir.
+İçerme-Dışarma İlkesi ile:
+\[
+|\mathcal{A} \cup \mathcal{B}| = |\mathcal{A}| + |\mathcal{B}| - |\mathcal{A} \cap \mathcal{B}|.
+\]
+Her bir bileşeni ayrı ayrı hesaplayalım:
+\begin{align*}
+|U| &= \binom{5+5}{5} = \binom{10}{5} = 252, \\
+|\mathcal{A}| &= \binom{2+1}{2} \times \binom{(5-2)+(5-1)}{5-2} = \binom{3}{2} \times \binom{7}{3} = 3 \times 35 = 105, \\
+|\mathcal{B}| &= \binom{3+4}{3} \times \binom{(5-3)+(5-4)}{5-3} = \binom{7}{3} \times \binom{3}{2} = 35 \times 3 = 105.
+\end{align*}
+Hem $A$'dan hem $B$'den geçen yollar için rota zorunlu olarak $(0,0) \to A(2,1) \to B(3,4) \to (5,5)$ sırasını izlemelidir:
+\begin{multline*}
+|\mathcal{A} \cap \mathcal{B}|
+= \binom{2+1}{2} \times \binom{(3-2)+(4-1)}{3-2} \times \binom{(5-3)+(5-4)}{5-3} \\
+= \binom{3}{2} \times \binom{4}{1} \times \binom{3}{2} = 3 \times 4 \times 3 = 36.
+\end{multline*}
+Dolayısıyla en az bir engelden geçen yollar:
+\[
+|\mathcal{A} \cup \mathcal{B}| = 105 + 105 - 36 = 174.
+\]
+Her iki engeli de atlatan yolların sayısı:
+\[
+252 - 174 = 78.
+\]
+\end{proof}
+
+\begin{example}[Köşegeçen Sınırı — Yansıma Fikrine Giriş]
+$(0,0)$ noktasından $(n,n)$ noktasına giden ve $y > x$ bölgesine \emph{asla geçmeyen} (yani daima köşegen üzerinde veya altında kalan, $y \le x$ şartını sağlayan) ızgara yollarının sayısını $n=3$ için elle listeleyelim ve genel formülü tartışalım.
+\end{example}
+
+\begin{proof}[Çözüm]
+Her adımda $x$ koordinatımız sağa adımların sayısını, $y$ koordinatımız ise yukarı adımların sayısını verir. $y \le x$ koşulu, yolun herhangi bir anında atılan yukarı adım sayısının sağa adım sayısını aşamayacağı anlamına gelir. Bu, açılan ve kapanan parantezlerin dengeli olma şartıyla birebir aynıdır: Her $S$ adımını bir sol parantez ``(' ve her $Y$ adımını bir sağ parantez ``)' olarak görebiliriz.
+
+$n=3$ için toplam 3 adet $S$ ve 3 adet $Y$ vardır. Geçerli dizilimleri yazalım:
+\begin{enumerate}
+    \item $SSSYYY \longleftrightarrow ((()))$
+    \item $SSYSYY \longleftrightarrow (()())$
+    \item $SSYY SY \longleftrightarrow (())()$
+    \item $SYSSYY \longleftrightarrow ()(())$
+    \item $SYSYSY \longleftrightarrow ()()()$
+\end{enumerate}
+Toplam 5 yol bulunur. 
+
+Genel durumda $(0,0)$'dan $(n,n)$'ye serbest tüm yolların sayısı $\binom{2n}{n}$'dir. $y=x$ çizgisinin üstüne çıkan (yani $y=x+1$ doğrusuna değen) geçersiz yolların sayısı André'nin Yansıma İlkesi (Reflection Principle) ile hesaplandığında $\binom{2n}{n-1}$ çıkar. Dolayısıyla geçerli yol sayısı:
+\[
+C_n = \binom{2n}{n} - \binom{2n}{n-1} = \frac{1}{n+1}\binom{2n}{n}
+\]
+olur. Bu sayılara $n$. \emph{Catalan sayısı} denir. $n=3$ için $C_3 = \frac{1}{4}\binom{6}{3} = \frac{20}{4} = 5$ doğrulanır.
+\end{proof}
+
+\subsection{Izgara Yollarının Kodlanması}
+
+Büyük ızgaralarda yolların sayısını bir modulo değerinde (örneğin $10^9+7$) hesaplarken iki temel yol vardır: Faktöriyeller üzerinden kombinasyon almak ($O(n)$) veya dinamik programlama ile kafesi doldurmak ($O(m \times n)$). Engel sayısı çok olduğunda dinamik programlama doğrudan uygulanır:
+
+\begin{lstlisting}
+FUNCTION countGridPaths(m, n, obstacles)
+    MOD = 10^9 + 7
+    INITIALIZE 2D array dp of size (m + 1) x (n + 1) with 0
+
+    IF (0, 0) NOT IN obstacles THEN
+        dp[0][0] = 1
+    ELSE
+        dp[0][0] = 0
+    END IF
+
+    FOR i FROM 0 TO m DO
+        FOR j FROM 0 TO n DO
+            IF (i, j) IN obstacles OR (i == 0 AND j == 0) THEN
+                CONTINUE
+            END IF
+
+            fromTop = (i > 0) ? dp[i - 1][j] : 0
+            fromLeft = (j > 0) ? dp[i][j - 1] : 0
+
+            dp[i][j] = (fromTop + fromLeft) MOD MOD
+        END FOR
+    END FOR
+
+    RETURN dp[m][n]
+END FUNCTION\end{lstlisting}
+
+\begin{lstlisting}[language=CTemel]
+#define MOD 1000000007
+
+int dp[1005][1005];
+int engel[1005][1005]; // 1 ise engelli, 0 ise serbest
+
+int izgara_yollari(int m, int n) {
+    for (int i = 0; i <= m; i++) {
+        for (int j = 0; j <= n; j++) {
+            if (engel[i][j]) {
+                dp[i][j] = 0;
+                continue;
+            }
+            if (i == 0 && j == 0) {
+                dp[i][j] = 1;
+            } else {
+                long long sol = (i > 0) ? dp[i - 1][j] : 0;
+                long long asagi = (j > 0) ? dp[i][j - 1] : 0;
+                dp[i][j] = (sol + asagi) % MOD;
+            }
+        }
+    }
+    return dp[m][n];
+}
+\end{lstlisting}
+
+Bu tablodaki $dp[i][j] = dp[i-1][j] + dp[i][j-1]$ geçişi, bir durumu önceki durumlar cinsinden ifade etmenin doğal bir örneğidir. Doldurmayı küçük bir ızgarada görelim:
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \foreach \i in {0,...,3} {
+    \foreach \j in {0,...,3} {
+      \node[kutu] (d\i\j) at (\j*0.95, -\i*0.95) {};
+    }
+  }
+  \node at (d00) {1}; \node at (d01) {1}; \node at (d02) {1}; \node at (d03) {1};
+  \node at (d10) {1}; \node at (d11) {2}; \node at (d12) {3}; \node at (d13) {4};
+  \node at (d20) {1}; \node at (d21) {3}; \node at (d22) {6}; \node at (d23) {10};
+  \node at (d30) {1}; \node at (d31) {4}; \node at (d32) {10};
+  \node[kutu, vurgulu] (d33) at (3*0.95,-3*0.95) {20};
+\end{tikzpicture}
+\caption{Izgaranın yukarıdan aşağıya, soldan sağa doldurulması: her hücre üst ve
+sol komşularının toplamıdır ($dp[i][j] = dp[i-1][j] + dp[i][j-1]$). Değerler binom
+katsayılarıdır — Bölüm 6'daki Pascal üçgeninin karesel düzenlenmiş hâli.}
+\end{figure}
+
+\section{Yineleme Bağıntısı Kavramı}
+
+Doğrudan kombinatorik bir formül (örneğin tek bir binom katsayısı) bulmak her zaman kolay değildir. Karmaşık sayma problemlerinde temel strateji şudur: \textbf{"Boyutu $n$ olan bir problemin çözümünü, boyutu $n$'den daha küçük olan aynı problemin çözümleri cinsinden yazabilir miyiz?"} 
+
+Bu soruya verilen olumlu yanıt bir \emph{yineleme bağıntısı} (recurrence relation) kurmamızı sağlar.
+
+\begin{definition}[Yineleme Bağıntısı ve Başlangıç Koşulları]
+Bir $\{a_n\}$ dizisinde, $n$. terimi kendisinden önceki terimler ($a_{n-1}, a_{n-2}, \dots, a_{n-k}$) cinsinden ifade eden bir eşitliğe \emph{yineleme bağıntısı} denir. Bağıntının çözülebilmesi ve her terimin tek bir sayısal değere karşılık gelebilmesi için verilen ilk terimlere \emph{başlangıç koşulları} (taban durumlar) denir.
+\end{definition}
+
+\subsection{"Son Hamleye Bakma" Tekniği}
+
+Yineleme bağıntısı kurarken izlenen temel kural, \textbf{yapılan en son işlemi veya dizilimin en son elemanını sınıflandırmaktır.}
+
+Somut bir problemle bu yaklaşımı inceleyelim:
+Uzunluğu $n$ olan ve yalnızca ``A', ``B', ``C' harflerinden oluşan kelimeler yazmak istiyoruz. Kısıtlamamız şudur: ``A' harfinden hemen sonra yine ``A' harfi gelemez (yan yana iki ``A' bulunamaz). Bu şartı sağlayan $n$ uzunluğundaki kelime sayısına $a_n$ diyelim.
+
+$n=1$ için: "A", "B", "C" $\implies a_1 = 3$.
+$n=2$ için: Toplam $3^2 = 9$ kelimeden sadece "AA" yasaktır $\implies a_2 = 9 - 1 = 8$.
+
+Peki $a_n$'i $a_{n-1}$ cinsinden nasıl kurarız? Boyutu $n$ olan geçerli bir kelimenin \textbf{son harfine} bakalım:
+\begin{itemize}
+    \item \textbf{Durum 1: Kelime ``B' ile bitiyor.}
+    Son harfi sildiğimizde geriye kalan $n-1$ uzunluğundaki kelime geçerli bir kelimedir. ``B' harfi herhangi bir yasak oluşturmadığından, $n-1$ uzunluğundaki \emph{her} geçerli kelimenin sonuna ``B' ekleyebiliriz. Buradan $a_{n-1}$ tane durum gelir.
+    
+    \item \textbf{Durum 2: Kelime ``C' ile bitiyor.}
+    Tıpkı ``B' gibi, $n-1$ uzunluğundaki her geçerli kelimenin sonuna ``C' eklenebilir. Buradan da $a_{n-1}$ tane durum gelir.
+    
+    \item \textbf{Durum 3: Kelime ``A' ile bitiyor.}
+    Son harf ``A' ise bir önceki harf ``A' olamaz. O halde son iki harf ya "BA" ya da "CA" şeklinde bitmelidir. Son iki harfi sildiğimizde geriye $n-2$ uzunluğunda geçerli bir kelime kalır. Tersine, $n-2$ uzunluğundaki herhangi bir geçerli kelimenin sonuna "BA" veya "CA" eklersek, yan yana iki ``A' içermeyen $n$ uzunluğunda geçerli bir kelime elde ederiz. Buradan $2 a_{n-2}$ durum gelir.
+\end{itemize}
+
+Bu durumlar ayrık ve olası tüm dizilimleri kapsadığından:
+\[
+a_n = 2a_{n-1} + 2a_{n-2}, \quad (n \ge 3)
+\]
+bağıntısını buluruz. Başlangıç koşulları $a_1 = 3$ ve $a_2 = 8$'dir. Bağıntıyı test edelim:
+\[
+a_3 = 2a_2 + 2a_1 = 2(8) + 2(3) = 16 + 6 = 22.
+\]
+Tek tek sayarak da $3^3 - (\text{"AAA", "AAB", "AAC", "BAA", "CAA"}) = 27 - 5 = 22$ olduğunu doğrulayabiliriz.
+
+\subsection{Modelleme Örnekleri}
+
+\begin{example}[Hanoi Kuleleri]
+3 direk ve farklı boyutlarda $n$ adet disk verilmiştir. Başlangıçta tüm diskler küçük disk daima büyük diskin üzerinde olacak şekilde A direğindedir. Her hamlede yalnızca bir disk başka bir direğe taşınabilir ve hiçbir disk kendisinden küçük bir diskin üzerine konulamaz. Tüm diskleri C direğine taşımak için gereken minimum hamle sayısı $H_n$ kaçtır?
+\end{example}
+
+\begin{proof}[Çözüm]
+En büyük diski (en alttaki $n$. diski) A direğinden C direğine taşıyabilmek için üzerindeki $n-1$ diskin tamamı B direğinde toplanmış olmalıdır. 
+
+\begin{enumerate}
+    \item Adım: En üstteki $n-1$ diski C'yi ara durak olarak kullanarak B'ye taşı. Bu işlem $H_{n-1}$ hamle sürer.
+    \item Adım: A'da yalnız kalan en büyük diski doğrudan C'ye taşı. Bu işlem 1 hamle sürer.
+    \item Adım: B'de duran $n-1$ diski A'yı ara durak olarak kullanarak C'ye, en büyük diskin üzerine taşı. Bu işlem de $H_{n-1}$ hamle sürer.
+\end{enumerate}
+
+Bu üç adım zorunludur ve daha az hamleyle bu transfer yapılamaz. O halde:
+\[
+H_n = 2H_{n-1} + 1, \quad H_1 = 1.
+\]
+İlk birkaç terimi hesaplayarak yapıyı görelim:
+\begin{align*}
+H_1 &= 1, \\
+H_2 &= 2(1) + 1 = 3, \\
+H_3 &= 2(3) + 1 = 7, \\
+H_4 &= 2(7) + 1 = 15.
+\end{align*}
+Bu değerler genel formülün $H_n = 2^n - 1$ olduğunu düşündürür. Bölüm 2'deki tümevarım yöntemiyle kanıtlayalım:
+$H_1 = 2^1 - 1 = 1$ doğrudur. $H_{k} = 2^k - 1$ kabul edersek,
+\[
+H_{k+1} = 2(2^k - 1) + 1 = 2^{k+1} - 2 + 1 = 2^{k+1} - 1
+\]
+elde edilir ve ispat tamamlanır.
+\end{proof}
+
+\begin{example}[Düzlemi Bölen Doğrular]
+Düzlemde bulunan $n$ adet doğru, hiçbir ikisi birbirine paralel olmayacak ve hiçbir üçü tek bir noktada kesişmeyecek şekilde çizilmiştir (genel konumdalar). Bu $n$ doğrunun düzlemi kaç ayrık bölgeye ayırdığını ($R_n$) bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Düzlemde halihazırda $n-1$ doğru çizilmiş olsun. $n$. doğruyu çizdiğimizde yeni kaç bölge oluşur? 
+Yeni çizilen doğru, mevcut $n-1$ doğrunun her birini farklı bir noktada keser (paralel değiller ve üçü aynı noktadan geçmiyor). Dolayısıyla $n$. doğru üzerinde $n-1$ adet kesişim noktası oluşur.
+Bu $n-1$ nokta, $n$. doğruyu tam $n$ adet parçaya (ışın ve doğru parçalarına) ayırır. Bu $n$ parçanın her biri, önceden var olan bir bölgeyi tam ikiye böler; yani düzleme $n$ adet yeni bölge eklenir.
+
+Buradan yineleme bağıntısı:
+\[
+R_n = R_{n-1} + n, \quad R_0 = 1 \text{ (sıfır doğru varken düzlem 1 tek parçadır)}.
+\]
+Teleskopik toplam yaparsak:
+\begin{align*}
+R_n - R_{n-1} &= n \\
+R_{n-1} - R_{n-2} &= n-1 \\
+&\ \ \vdots \\
+R_1 - R_0 &= 1
+\end{align*}
+Taraf tarafa topladığımızda:
+\[
+R_n - R_0 = 1 + 2 + \dots + n = \frac{n(n+1)}{2} \implies R_n = \frac{n(n+1)}{2} + 1 = \frac{n^2 + n + 2}{2}.
+\]
+\end{proof}
+
+\begin{example}[Ardışık Sıfır İçermeyen İkili Diziler]
+Uzunluğu $n$ olan ve yan yana iki tane ``0' içermeyen ikili ($0-1$) dizilerin sayısı $a_n$ olsun. $a_n$ için bir yineleme bağıntısı bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Son bite odaklanalım:
+\begin{itemize}
+    \item Dizi ``1' ile bitiyorsa: Önündeki $n-1$ bit, yan yana iki 0 içermeyen herhangi bir geçerli dizi olabilir. Buradan $a_{n-1}$ durum gelir.
+    \item Dizi ``0' ile bitiyorsa: Yan yana iki sıfır olamayacağından, bir önceki bit zorunlu olarak ``1' olmalıdır. Yani dizi "10" ile bitmelidir. Bu son iki biti kaldırdığımızda, önünde kalan $n-2$ bit geçerli bir dizi olmalıdır. Buradan $a_{n-2}$ durum gelir.
+\end{itemize}
+O halde bağıntımız:
+\[
+a_n = a_{n-1} + a_{n-2}
+\]
+olur. Taban durumlar:
+$n=1$ için: "0", "1" $\implies a_1 = 2$.
+$n=2$ için: "01", "10", "11" $\implies a_2 = 3$.
+Bu dizi bizi doğrudan Fibonacci sayılarına ulaştırır.
+\end{proof}
+
+\begin{caution}
+Yineleme bağıntısı kurarken en sık yapılan hata, durumları ayrıştırırken \textbf{ayrık} olduklarından emin olmamaktır. Durumlar kesişiyorsa aynı nesne birden fazla sayılır ve sonuç hatalı çıkar; ortak eleman içerip içermedikleri her zaman denetlenmelidir.
+\end{caution}
+
+\section{Fibonacci ve Uygulamaları}
+
+Fibonacci dizisi, doğadaki biçimsel yapılardan algoritmaların çalışma zamanı analizine kadar matematikte ve bilgisayar biliminde en sık karşılaşılan dizilerden biridir.
+
+\begin{definition}[Fibonacci Dizisi]
+$F_0 = 0$, $F_1 = 1$ olmak üzere, $n \ge 2$ için
+\[
+F_n = F_{n-1} + F_{n-2}
+\]
+biçiminde tanımlanan diziye \emph{Fibonacci dizisi} denir. İlk birkaç terimi:
+\[
+0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, \dots
+\]
+\end{definition}
+
+Olimpiyatlarda Fibonacci bağıntısı pek çok farklı kılıkta karşımıza çıkar.
+
+\subsection{Merdiven Çıkma Problemi}
+
+Bir çocuk $n$ basamaklı bir merdiveni tırmanmaktadır. Çocuk her adımında ya 1 basamak ya da 2 basamak yukarı çıkabilmektedir. Çocuğun $n$ basamağı çıkması için kaç farklı adım dizilimi vardır?
+
+Merdivenin tepesine ($n$. basamağa) ulaşacak son adımı ele alalım. Çocuk son hamlesinde ya $(n-1)$. basamaktan 1 basamak çıkmıştır ya da $(n-2)$. basamaktan 2 basamak çıkmıştır. 
+
+\begin{itemize}
+    \item Eğer son adım 1 basamaklık ise önceki $n-1$ basamağı çıkmanın yollarının sayısı $M_{n-1}$'dir.
+    \item Eğer son adım 2 basamaklık ise önceki $n-2$ basamağı çıkmanın yollarının sayısı $M_{n-2}$'dir.
+\end{itemize}
+Bu iki durum birbirini dışlar ve tüm olası bitişleri kapsar:
+\[
+M_n = M_{n-1} + M_{n-2}.
+\]
+Taban durumlar:
+1 basamak için: (1) $\implies M_1 = 1$.
+2 basamak için: (1+1), (2) $\implies M_2 = 2$.
+3 basamak için: (1+1+1), (1+2), (2+1) $\implies M_3 = 3$.
+Dizimiz $1, 2, 3, 5, 8, \dots$ şeklinde devam eder. Görüldüğü üzere $M_n = F_{n+1}$ eşitliği geçerlidir.
+
+\subsection{$2 \times n$ Boyutlu Tahtayı Domino Taşlarıyla Kaplama}
+
+Elimizde sınırsız sayıda $2 \times 1$ ve $1 \times 2$ boyutunda domino taşları bulunmaktadır. Bu taşlarla $2 \times n$ boyutundaki bir tahtayı hiç boşluk bırakmadan ve taşlar üst üste gelmeden kaplamak istiyoruz. Kaç farklı kaplama yapılabilir?
+
+Tahtanın en sağ sütununa odaklanalım:
+\begin{itemize}
+    \item En sağ sütunu dikey bir domino ($2 \times 1$) ile kapatabiliriz. Bu durumda geriye $2 \times (n-1)$ boyutunda bir tahta kalır. Bu tahtayı kaplamanın yolu $D_{n-1}$ tanedir.
+    \item Eğer en sağ sütunun üst karesine yatay bir domino ($1 \times 2$) koyarsak, altındaki kareyi kapatmak için onun altına da mecburen ikinci bir yatay domino koymak zorundayız. Bu iki yatay domino birlikte $2 \times 2$'lik bir blok oluşturur. Geriye $2 \times (n-2)$ boyutunda bir tahta kalır. Bu tahtayı kaplamanın yolu $D_{n-2}$ tanedir.
+\end{itemize}
+Başka bir ihtimal yoktur. Dolayısıyla:
+\[
+D_n = D_{n-1} + D_{n-2}.
+\]
+Taban durumlar: $D_1 = 1$ (tek dikey domino), $D_2 = 2$ (iki dikey ya da iki yatay).
+Burada da $D_n = F_{n+1}$ bağıntısı karşımıza çıkar.
+
+\subsection{Fibonacci Özdeşlikleri ve İki Yoldan Sayma}
+
+Fibonacci sayıları arasında pek çok cebirsel özdeşlik mevcuttur. Bu özdeşlikleri cebirsel manipülasyonlarla veya tümevarımla ispatlayabileceğimiz gibi, Bölüm 10'da ayrıntılandıracağımız iki yoldan sayma (çifte sayım) yöntemiyle de doğrudan gösterebiliriz.
+
+\begin{theorem}[Fibonacci Kareleri Toplamı]
+Tüm $n \ge 1$ için:
+\[
+F_1^2 + F_2^2 + F_3^2 + \dots + F_n^2 = F_n F_{n+1}.
+\]
+\end{theorem}
+
+\begin{proof}
+Kenar uzunlukları $F_1, F_2, F_3, \dots, F_n$ olan kareleri sırasıyla yan yana ve üst üste ekleyerek geometrik bir dikdörtgen inşa edelim:
+\begin{itemize}
+    \item Kenarı $F_1=1$ olan bir kare ile başlarız.
+    \item Yanına kenarı $F_2=1$ olan bir kare koyarız: $1 \times 2$'lik dikdörtgen oluşur.
+    \item Altına kenarı $F_3=2$ olan kareyi koyarız: $2 \times 3$'lük dikdörtgen oluşur ($F_3 \times (F_1+F_2) = F_3 \times F_3$).
+    \item Yanına kenarı $F_4=3$ olan kareyi koyarız: $3 \times 5$'lik dikdörtgen oluşur ($F_4 \times (F_2+F_3) = F_4 \times F_4$).
+    \item Bu şekilde $n$. kareyi eklediğimizde, oluşan büyük şekil bir dikdörtgendir ve kenar uzunlukları $F_n$ ile $F_{n+1}$ olur.
+\end{itemize}
+Büyük dikdörtgenin alanı iki farklı yoldan hesaplanabilir:
+\begin{enumerate}
+    \item İçindeki karelerin alanlarının toplamı: $F_1^2 + F_2^2 + \dots + F_n^2$.
+    \item Büyük dikdörtgenin eni ile boyunun çarpımı: $F_n \times F_{n+1}$.
+\end{enumerate}
+Her iki ifade aynı alanı temsil ettiğinden eşitlik sağlanır.
+\end{proof}
+
+\begin{theorem}[Fibonacci Toplamı]
+Tüm $n \ge 1$ için:
+\[
+\sum_{i=1}^n F_i = F_1 + F_2 + \dots + F_n = F_{n+2} - 1.
+\]
+\end{theorem}
+
+\begin{proof}
+Fibonacci tanımından $F_k = F_{k+2} - F_{k+1}$ yazabiliriz. Bu eşitliği $k=1$'den $n$'ye kadar alt alta yazalım:
+\begin{align*}
+F_1 &= F_3 - F_2 \\
+F_2 &= F_4 - F_3 \\
+F_3 &= F_5 - F_4 \\
+&\ \ \vdots \\
+F_n &= F_{n+2} - F_{n+1}
+\end{align*}
+Taraf tarafa topladığımızda sağ taraftaki terimler teleskopik olarak birbirini götürür:
+\[
+\sum_{i=1}^n F_i = F_{n+2} - F_2.
+\]
+$F_2 = 1$ olduğundan $\sum_{i=1}^n F_i = F_{n+2} - 1$ elde edilir.
+\end{proof}
+
+\subsection{Fibonacci Sayılarının Hesaplanması}
+
+Bir bilgisayar yarışmasında $F_n \pmod{10^9+7}$ istendiğinde doğrudan rekürsiyon ($F(n) = F(n-1) + F(n-2)$ çağrısı) $O(2^n)$ karmaşıklığa yol açacağı için zaman sınırını aşar ($n=45$ bile saniyeler sürer).
+
+Doğrusal zamanda ($O(n)$) döngü ile çözüm:
+\begin{lstlisting}
+FUNCTION fibonacci(n, mod = 10^9 + 7)
+    IF n = 0 THEN
+        RETURN 0
+    END IF
+
+    a = 0
+    b = 1
+
+    FOR i FROM 2 TO n DO
+        next_val = (a + b) MOD mod
+        a = b
+        b = next_val
+    END FOR
+
+    RETURN b
+END FUNCTION\end{lstlisting}
+
+\begin{lstlisting}[language=CTemel]
+#define MOD 1000000007
+
+int fibonacci(int n) {
+    if (n == 0) return 0;
+    long long a = 0, b = 1;
+    for (int i = 2; i <= n; i++) {
+        long long c = (a + b) % MOD;
+        a = b;
+        b = c;
+    }
+    return (int)b;
+}
+\end{lstlisting}
+
+\section{Kapalı Form Sezgisi}
+
+Yineleme bağıntısı terimleri adım adım üretmemizi sağlar. Ancak bir problemde $n = 10^9$ verildiğinde, $O(n)$ karmaşıklığındaki bir döngü bile zaman aşımına uğrar. Bu durumda doğrudan $n$'i yerine koyup terimi hesaplayabileceğimiz bir bağıntı gerekir. Buna \emph{kapalı form} (closed form) denir.
+
+\subsection{Karakteristik Denklem Fikrinin Doğuşu}
+
+Birinci dereceden bir yineleme bağıntısını ele alalım:
+\[
+a_n = r \cdot a_{n-1}
+\]
+Bu bir geometrik dizidir ve çözümü doğrudan $a_n = a_0 \cdot r^n$ şeklindedir.
+
+İkinci dereceden homojen doğrusal bir bağıntı verildiğinde:
+\[
+a_n - c_1 a_{n-1} - c_2 a_{n-2} = 0
+\]
+Çözümün yine geometrik dizi formunda, yani $a_n = r^n$ biçiminde olabileceğini varsayabilir miyiz?
+
+$a_n = r^n$ ifadesini bağıntıda yerine koyalım ($r \ne 0$ varsayımıyla):
+\[
+r^n - c_1 r^{n-1} - c_2 r^{n-2} = 0.
+\]
+Eşitliğin her iki tarafını $r^{n-2}$ ile bölelim:
+\[
+r^2 - c_1 r - c_2 = 0.
+\]
+Yineleme bağıntısı böylece $r$ değişkenine bağlı ikinci dereceden bir cebirsel denkleme dönüşür. Bu denkleme bağıntının \emph{karakteristik denklemi} denir.
+
+\begin{theorem}[Farklı Kökler Durumu]
+$r^2 - c_1 r - c_2 = 0$ karakteristik denkleminin iki farklı kökü $r_1$ ve $r_2$ olsun ($r_1 \ne r_2$). O halde $a_n = c_1 a_{n-1} + c_2 a_{n-2}$ bağıntısının genel çözümü, $A$ ve $B$ başlangıç koşulları tarafından belirlenen sabitler olmak üzere şöyledir:
+\[
+a_n = A \cdot r_1^n + B \cdot r_2^n.
+\]
+\end{theorem}
+
+\begin{proof}[İspat Sezgisi]
+Eğer $r_1^n$ ve $r_2^n$ denklemi ayrı ayrı sağlıyorsa, bu dizilerin herhangi bir doğrusal kombinasyonu olan $A r_1^n + B r_2^n$ de denklemi sağlar (çünkü sistem doğrusaldır). $n=0$ ve $n=1$ için:
+\begin{align*}
+a_0 &= A + B \\
+a_1 &= A r_1 + B r_2
+\end{align*}
+$r_1 \ne r_2$ olduğundan bu iki bilinmeyenli lineer denklem sistemi $A$ ve $B$ için tekil bir çözüme sahiptir.
+\end{proof}
+
+\subsection{Binet Formülü: Fibonacci'nin Kapalı Formu}
+
+Bu tekniği Fibonacci dizisine uygulayalım:
+\[
+F_n = F_{n-1} + F_{n-2} \implies F_n - F_{n-1} - F_{n-2} = 0.
+\]
+Karakteristik denklem:
+\[
+r^2 - r - 1 = 0.
+\]
+Kökleri bulalım:
+\[
+r_{1,2} = \frac{-(-1) \pm \sqrt{(-1)^2 - 4(1)(-1)}}{2} = \frac{1 \pm \sqrt{5}}{2}.
+\]
+Bu kökler altın oran $\phi = \frac{1+\sqrt{5}}{2} \approx 1.618$ ve onun eşleniği $\psi = \frac{1-\sqrt{5}}{2} \approx -0.618$'dir.
+Genel çözüm:
+\[
+F_n = A \left(\frac{1+\sqrt{5}}{2}\right)^n + B \left(\frac{1-\sqrt{5}}{2}\right)^n.
+\]
+Başlangıç koşullarını ($F_0 = 0, F_1 = 1$) kullanalım:
+\begin{align*}
+n=0 \implies & A + B = 0 \implies B = -A \\
+n=1 \implies & A \left(\frac{1+\sqrt{5}}{2}\right) - A \left(\frac{1-\sqrt{5}}{2}\right) = 1 \\
+& A \left( \frac{1+\sqrt{5} - 1 + \sqrt{5}}{2} \right) = 1 \implies A \sqrt{5} = 1 \implies A = \frac{1}{\sqrt{5}}.
+\end{align*}
+Böylece $B = -\frac{1}{\sqrt{5}}$ olur ve kapalı form elde edilir:
+
+\begin{theorem}[Binet Formülü]
+$n$. Fibonacci sayısı için kapalı form:
+\[
+F_n = \frac{1}{\sqrt{5}} \left[ \left(\frac{1+\sqrt{5}}{2}\right)^n - \left(\frac{1-\sqrt{5}}{2}\right)^n \right].
+\]
+\end{theorem}
+
+İçinde irrasyonel $\sqrt{5}$ terimleri ve kesirler bulunan bu ifade, her $n$ pozitif tamsayısı için bir tamsayı üretir; çünkü Bölüm 6'da gördüğümüz binom açılımı uygulandığında $\sqrt{5}$'li tek dereceli terimler birbirini götürür.
+
+Ayrıca $|\psi| = |\frac{1-\sqrt{5}}{2}| \approx 0.618 < 1$ olduğundan, $n$ büyüdükçe $\psi^n \to 0$ olur. Dolayısıyla değer:
+\[
+F_n = \text{round}\left( \frac{\phi^n}{\sqrt{5}} \right)
+\]
+şeklinde en yakın tamsayıya yuvarlanarak da hesaplanabilir.
+
+\subsection{Karakteristik Denklem Uygulamaları}
+
+\begin{example}
+$a_0 = 1$, $a_1 = 4$ ve her $n \ge 2$ için $a_n = 5a_{n-1} - 6a_{n-2}$ olarak verilen dizinin kapalı formunu bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Terimleri tek tarafa toplayarak karakteristik denklemi yazarız:
+\[
+a_n - 5a_{n-1} + 6a_{n-2} = 0 \implies r^2 - 5r + 6 = 0.
+\]
+Çarpanlarına ayıralım:
+\[
+(r - 2)(r - 3) = 0 \implies r_1 = 2, \quad r_2 = 3.
+\]
+Kökler birbirinden farklı olduğundan genel çözüm:
+\[
+a_n = A \cdot 2^n + B \cdot 3^n.
+\]
+$a_0 = 1$ ve $a_1 = 4$ başlangıç koşullarını uygulayalım:
+\begin{align*}
+n = 0 &\implies A \cdot 2^0 + B \cdot 3^0 = 1 \implies A + B = 1 \\
+n = 1 &\implies A \cdot 2^1 + B \cdot 3^1 = 4 \implies 2A + 3B = 4
+\end{align*}
+Birinci denklemi 2 ile çarpıp ikinciden çıkarırsak:
+\[
+(2A + 3B) - (2A + 2B) = 4 - 2 \implies B = 2.
+\]
+$A + B = 1$ olduğundan $A = 1 - 2 = -1$ bulunur.
+Böylece kapalı form:
+\[
+a_n = -1 \cdot 2^n + 2 \cdot 3^n = 2 \cdot 3^n - 2^n.
+\]
+İlk birkaç terim kontrol edildiğinde:
+$a_0 = 2(1) - 1 = 1$,
+$a_1 = 2(3) - 2 = 4$,
+$a_2 = 5(4) - 6(1) = 14$ ve formülden $a_2 = 2 \cdot 3^2 - 2^2 = 18 - 4 = 14$ eşitliği doğrulanır.
+\end{proof}
+
+\subsection{Çakışık Kök Durumu ($r_1 = r_2$)}
+
+Karakteristik denklemin deltası sıfır olduğunda (örneğin $r^2 - 4r + 4 = 0$ ise tek kök $r = 2$'dir) çözüm yalnızca $a_n = A \cdot 2^n$ olarak yazılamaz; çünkü tek katsayı iki başlangıç koşulunu ($a_0$ ve $a_1$) aynı anda sağlamaya yetmez. 
+
+Lineer diferansiyel denklemlerde olduğu gibi, kök katlı olduğunda ikinci bağımsız çözüm $n \cdot r^n$ teriminden gelir.
+
+\begin{theorem}[Çakışık Kökler Durumu]
+$r^2 - c_1 r - c_2 = 0$ karakteristik denkleminin tek bir çift katlı kökü varsa ($r_1 = r_2 = r$), genel çözüm:
+\[
+a_n = (A + B \cdot n) r^n
+\]
+biçimindedir.
+\end{theorem}
+
+\begin{example}
+$a_0 = 1$, $a_1 = 6$ ve her $n \ge 2$ için $a_n = 4a_{n-1} - 4a_{n-2}$ olan dizinin kapalı formunu bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Karakteristik denklem:
+\[
+r^2 - 4r + 4 = 0 \implies (r - 2)^2 = 0 \implies r = 2 \text{ (çift katlı kök)}.
+\]
+Genel form:
+\[
+a_n = (A + Bn) \cdot 2^n.
+\]
+Başlangıç koşullarını uygulayalım:
+\begin{align*}
+n = 0 &\implies (A + 0) \cdot 2^0 = 1 \implies A = 1 \\
+n = 1 &\implies (1 + B) \cdot 2^1 = 6 \implies 2(1 + B) = 6 \implies 1 + B = 3 \implies B = 2.
+\end{align*}
+Böylece kapalı form:
+\[
+a_n = (1 + 2n) \cdot 2^n
+\]
+olarak bulunur. Doğrulayalım: Yinelemeden $a_2 = 4(6) - 4(1) = 20$, kapalı formdan $a_2 = (1 + 4) \cdot 2^2 = 5 \times 4 = 20$ elde edilir.
+\end{proof}
+
+\subsection{Çözümlü Bir Problem}
+
+\begin{example}
+$n \ge 1$ için, $1 \times n$ boyutundaki bir şerit $1 \times 1$'lik kırmızı, mavi veya yeşil karelerle ya da $1 \times 2$'lik sarı dikdörtgenlerle döşenecektir. Yan yana iki kırmızı karenin bulunmadığı geçerli döşemelerin sayısını $a_n$ olarak tanımlayalım.
+\begin{enumerate}
+    \item[a)] $a_n$ için bir yineleme bağıntısı kurunuz.
+    \item[b)] $a_1$ ve $a_2$ değerlerini hesaplayınız.
+\end{enumerate}
+\end{example}
+
+\begin{proof}[Çözüm]
+Şeridin en son parçasına odaklanarak türüne ve rengine göre durumları ayrıştıralım:
+\begin{itemize}
+    \item \textbf{Son parça $1 \times 2$ sarı dikdörtgen ise:} Geriye $1 \times (n-2)$ şerit kalır. Sarı taş kırmızı kısıtını etkilemediğinden buradan $a_{n-2}$ durum gelir.
+    \item \textbf{Son parça $1 \times 1$ mavi veya yeşil kare ise:} 2 farklı renk seçeneği vardır. Bu renkler kırmızı olmadığından bir önceki kare ne olursa olsun kural bozulmaz. Kalan $1 \times (n-1)$ şerit için $2 a_{n-1}$ durum gelir.
+    \item \textbf{Son parça $1 \times 1$ kırmızı kare ise:} Bir önceki parça kırmızı $1 \times 1$ olamaz. Sondan bir önceki parçanın durumuna bakalım:
+    \begin{itemize}
+        \item Sondan bir önceki parça $1 \times 2$ sarı ise: Son iki parça (sarı, kırmızı) toplam 3 birim kaplar. Kalan $n-3$ uzunluk serbesttir $\implies a_{n-3}$ durum.
+        \item Sondan bir önceki parça $1 \times 1$ mavi veya yeşil ise: Son iki parça (mavi/yeşil, kırmızı) 2 birim kaplar. Kalan $n-2$ uzunluk serbesttir $\implies 2 a_{n-2}$ durum.
+        \item Sondan bir önceki parça kırmızı olamaz.
+    \end{itemize}
+\end{itemize}
+Tüm bu durumları toplayarak homojen bağıntıyı kurarız:
+\[
+a_n = 2a_{n-1} + (a_{n-2} + 2a_{n-2}) + a_{n-3} = 2a_{n-1} + 3a_{n-2} + a_{n-3}.
+\]
+Başlangıç terimlerini belirleyelim:
+\begin{itemize}
+    \item $n=1$: Yalnızca $1 \times 1$ kareler kullanılabilir. Kırmızı, Mavi, Yeşil $\implies a_1 = 3$.
+    \item $n=2$: 
+    \begin{itemize}
+        \item 1 adet $1 \times 2$ sarı: 1 durum.
+        \item 2 adet $1 \times 1$ kare: Toplam $3^2 = 9$ durum vardır. Sadece (Kırmızı, Kırmızı) yasaktır, yani $9 - 1 = 8$ durum.
+    \end{itemize}
+    Toplam: $a_2 = 1 + 8 = 9$.
+    \item $n=3$: Bağıntı için $a_0$'a ihtiyaç duyarız. Boş şeridi döşemenin 1 yolu vardır ($a_0 = 1$).
+    Bağıntıdan:
+    \[
+    a_3 = 2a_2 + 3a_1 + a_0 = 2(9) + 3(3) + 1 = 18 + 9 + 1 = 28.
+    \]
+\end{itemize}
+\end{proof}
+
+\begin{definition}[Tuzak ve Uyarı: İndeks Kayması]
+Yineleme bağıntılarını kodlarken veya kapalı form çözerken sık yapılan hata, başlangıç indekslerinin ($n=0$ veya $n=1$) karıştırılmasıdır. Örneğin merdiven probleminde $M_1 = 1, M_2 = 2$ iken standart Fibonacci tanımında $F_1 = 1, F_2 = 1$'dir; yani $M_n = F_{n+1}$ şeklinde bir indeks kayması mevcuttur. Taban durumlar daima küçük değerlerle ($n=0, 1, 2$) elle kontrol edilmeli ve bağıntının ürettiği ilk terimler doğrulanmalıdır.
+\end{definition}
+
+Izgara yollarının kombinatorik yapısı ile yineleme bağıntılarının tümevarımsal mantığı birleştiğinde, karmaşık sayma problemleri sistematik biçimde çözülebilir. İlerleyen konularda bu yaklaşım dinamik programlama algoritmalarının da temelini oluşturacaktır.

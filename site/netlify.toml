@@ -1,0 +1,27 @@
+# Bu dosya site/ klasörünün İÇİNDEDİR: yalnızca bu klasör doğrudan yayına
+# verildiğinde (sürükle-bırak ya da Netlify'da "Base directory = site") okunur.
+# Depo kökünden yapılan yayında geçerli olan dosya: ../netlify.toml
+#
+# `publish` bilinçli olarak YAZILMAMIŞTIR: Netlify, publish belirtilmezse base
+# directory'yi (yani bu klasörü) yayımlar. Böylece "Base directory = site"
+# ayarında var olmayan `site/site` yolu aranmaz.
+
+[[headers]]
+  for = "/bilgisayar_olimpiyatlarina_hazirlik.pdf"
+  [headers.values]
+    Cache-Control = "public, max-age=300, must-revalidate"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# Eski *.netlify.app adresi özel alan adına yönlendirilir (bkz. KARARLAR.md → D50).
+# Aynı kural site/_redirects dosyasında da durur; sürükle-bırak yayınında her iki
+# yerden hangisi işlenirse işlensin yönlendirme sağlanır.
+
+[[redirects]]
+  from = "https://bilgisayar-olimpiyatlari.netlify.app/*"
+  to = "https://bilgisayar-olimpiyatlari.com/:splat"
+  status = 301
+  force = true

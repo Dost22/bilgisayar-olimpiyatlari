@@ -1,0 +1,45 @@
+{
+  "file": "11_bolunebilme.tex",
+  "findings": [
+    {
+      "file": "11_bolunebilme.tex",
+      "line_hint": 182,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "include <stdbool.h>",
+      "issue": "C kod bloğunda önişlemci direktifinin başındaki '#' karakteri unutulmuştur; 'include <stdbool.h>' geçerli bir C sözdizimi değildir.",
+      "suggested_fix": "#include <stdbool.h>",
+      "confidence": "high"
+    },
+    {
+      "file": "11_bolunebilme.tex",
+      "line_hint": 331,
+      "type": "logic_gap",
+      "severity": "major",
+      "excerpt": "N = \\overline{a_k a_{k-1} \\dots a_2 a_1 a_1 a_2 \\dots a_{k-1} a_k}",
+      "issue": "Palindrom sayının basamakları $N = \\overline{a_k \\dots a_1 a_1 \\dots a_k}$ olarak tanımlandığında birler basamağı $d_0 = a_k$ olur. Ancak takip eden çözümde $a_m$'nin sağ yarıdaki basamak indeksi $m-1$ (dolayısıyla $m=1$ için $d_0 = a_1$) olarak kabul edilmiş ve 'Sağ yarıda sondan m'nci basamak olarak yer alır; indeksi m-1 olduğundan...' denmiştir. Sayının basamak dizilimi ile ispatta kullanılan basamak indeksleri birbiriyle çelişmektedir.",
+      "suggested_fix": "Sayı $N = \\overline{a_1 a_2 \\dots a_k a_k \\dots a_2 a_1}$ şeklinde tanımlanmalı veya $a_m$ rakamının sağ yarıdaki indisi $k-m$, sol yarıdaki indisi $k-1+m$ olarak güncellenmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "11_bolunebilme.tex",
+      "line_hint": 427,
+      "type": "bad_reference",
+      "severity": "major",
+      "excerpt": "Bu ispat, Bölüm 1'de ele aldığımız İyi Sıralama İlkesi'nin (negatif olmayan tam sayılardan oluşan boş olmayan her kümenin en küçük bir elemanı vardır) doğrudan bir uygulamasıdır.",
+      "issue": "Bölüm 1'de ('Matematiğin Dili') İyi Sıralama İlkesi yer almamaktadır. Kitap izlencesinde İyi Sıralılık İlkesi Bölüm 18'de ('Uç Değer ve Tersine Çalışma') ele alınmaktadır.",
+      "suggested_fix": "'Bu ispat, Bölüm 18'de ayrıntılı ele alacağımız İyi Sıralılık İlkesi'nin (negatif olmayan tam sayılardan oluşan boş olmayan her kümenin en küçük bir elemanı vardır) doğrudan bir uygulamasıdır.' şeklinde düzeltilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "11_bolunebilme.tex",
+      "line_hint": 535,
+      "type": "duplicated_example",
+      "severity": "major",
+      "excerpt": "$n > 1$ bir tam sayı olsun. $2^n - 1$ sayısının $n$ ile tam bölünemeyeceğini kanıtlayınız.",
+      "issue": "Bu problem, Bölüm 33'te (33_alistirmalar_sayilar_teknikler.tex) '[Zorluk: Olimpiyat] n > 1 bir tamsayı olsun. n | 2^n - 1 koşulunu sağlayan hiçbir n > 1 tamsayısının bulunmadığını ispatlayınız.' başlığıyla alıştırma sorusu olarak verilmiştir. Ayrıca bu çözüm, henüz Bölüm 11 düzeyinde tanımlanmamış olan modüler aritmetik, mertebe (order) ve Fermat'nın Küçük Teoremi gibi ileri düzey araçları gerektirmektedir.",
+      "suggested_fix": "Bu örnek Bölüm 11'den çıkarılmalı veya Bölüm 11'in müfredatına uygun (yalnızca bölme algoritması ve temel bölünebilme özelliklerini kullanan) temel bir örnek ile değiştirilmelidir.",
+      "confidence": "high"
+    }
+  ]
+}

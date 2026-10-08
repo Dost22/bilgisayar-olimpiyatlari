@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}} — {{AUTHOR}}</title>
+<meta name="description" content="{{DESCRIPTION}}">
+<meta name="author" content="{{AUTHOR}}">
+<link rel="canonical" href="{{SITE_URL}}/">
+<meta name="theme-color" content="#0e6b5b">
+
+<meta property="og:type" content="book">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:site_name" content="{{TITLE}}">
+<meta property="og:title" content="{{TITLE}} — {{AUTHOR}}">
+<meta property="og:description" content="{{DESCRIPTION}}">
+<meta property="og:url" content="{{SITE_URL}}/">
+<meta property="og:image" content="{{SITE_URL}}/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{TITLE}} — {{AUTHOR}}">
+<meta name="twitter:description" content="{{DESCRIPTION}}">
+<meta name="twitter:image" content="{{SITE_URL}}/assets/og.png">
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/cover.png">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">İçeriğe geç</a>
+
+<header class="site-head">
+  <div class="wrap head-inner">
+    <a class="brand" href="#genel-bakis">
+      <span class="brand-mark" aria-hidden="true">Σ</span>
+      <span class="brand-text">
+        <b>Bilgisayar Olimpiyatlarına Hazırlık</b>
+        <span>{{AUTHOR}} · {{PAGES}} sayfa · Ücretsiz</span>
+      </span>
+    </a>
+    <nav class="tabs" role="tablist" aria-label="Bölümler">
+      <button class="tab" role="tab" data-panel="genel-bakis" aria-selected="true" aria-controls="panel-genel-bakis" id="tab-genel-bakis">Genel Bakış</button>
+      <button class="tab" role="tab" data-panel="calisma" aria-selected="false" aria-controls="panel-calisma" id="tab-calisma">Nasıl Çalışılmalı</button>
+      <button class="tab" role="tab" data-panel="icindekiler" aria-selected="false" aria-controls="panel-icindekiler" id="tab-icindekiler">İçindekiler</button>
+      <button class="tab" role="tab" data-panel="cikmis" aria-selected="false" aria-controls="panel-cikmis" id="tab-cikmis">Çıkmış Sorular</button>
+      <button class="tab" role="tab" data-panel="hakkinda" aria-selected="false" aria-controls="panel-hakkinda" id="tab-hakkinda">Hakkında</button>
+      <button class="tab" role="tab" data-panel="onsuz" aria-selected="false" aria-controls="panel-onsuz" id="tab-onsuz">Önsöz</button>
+      <button class="tab" role="tab" data-panel="linkler" aria-selected="false" aria-controls="panel-linkler" id="tab-linkler">Linkler</button>
+      <button class="tab" role="tab" data-panel="iletisim" aria-selected="false" aria-controls="panel-iletisim" id="tab-iletisim">İletişim</button>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+  <!-- ================= GENEL BAKIŞ ================= -->
+  <section class="panel is-active" id="panel-genel-bakis" role="tabpanel" aria-labelledby="tab-genel-bakis" tabindex="-1">
+    <div class="hero">
+      <div class="hero-text">
+        <p class="eyebrow">TÜBİTAK Bilgisayar Olimpiyatı · 1. Aşama</p>
+        <h1>Bilgisayar Olimpiyatlarına Hazırlık</h1>
+        <p class="author">{{AUTHOR}}</p>
+        <p class="lead">{{LEAD}}</p>
+        <ul class="chips">
+          <li class="chip"><b>{{PAGES}}</b> sayfa</li>
+          <li class="chip"><b>{{CHAPTER_COUNT}}</b> bölüm</li>
+          <li class="chip"><b>{{PART_COUNT}}</b> kısım</li>
+          <li class="chip"><b>{{TOPIC_COUNT}}</b> alt konu</li>
+        </ul>
+        <div class="cta">
+          <a class="btn btn-primary" href="{{PDF_FILE}}" download> Kitabı indir (PDF, {{PDF_SIZE}})</a>
+          <a class="btn btn-ghost" href="#icindekiler">İçindekilere göz at</a>
+          <a class="btn btn-ghost" href="#cikmis">Çıkmış sorularla çalış</a>
+          <a class="btn btn-ghost" href="{{LINKEDIN_URL}}" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+        <p class="hint">Tek dosya · B5 sayfa boyutu · Tıklanabilir içindekiler · Ücretsizdir, ücretsiz dağıtılabilir.</p>
+      </div>
+      <div class="cover-frame">
+        <img src="assets/cover.png" width="700" height="994" alt="Bilgisayar Olimpiyatlarına Hazırlık kitabının kapağı">
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h2>Kitabın kurgusu</h2>
+      <p class="lead">Kitap yedi kısma ayrılmıştır ve her kısım bir öncekinin üzerine kurulur. Aşağıdaki sıra, müfredatın da sırasıdır; atlanarak okunduğunda bölümlerdeki atıflar havada kalır.</p>
+      <div class="grid two" style="margin-top:1.2rem">
+        {{PART_CARDS}}
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h2>Kitap nasıl kullanılır?</h2>
+      <div class="grid two">
+        <div class="card">
+          <h3>Sırayı bozmayın</h3>
+          <p>Bölümler önkoşul zinciriyle bağlıdır: her bölüm yalnızca kendinden öncekilere dayanır. Bir bölümde zorlanıyorsanız sorun genellikle bir öncekindedir.</p>
+        </div>
+        <div class="card">
+          <h3>Örnekleri kâğıtta çözün</h3>
+          <p>Çözümlü örnekleri okumak, çözmüş sayılmaz. Cevabı görmeden önce kendi yaklaşımınızı kurmayı deneyin; asıl kazanç orada oluşur.</p>
+        </div>
+        <div class="card">
+          <h3>Kodu çalıştırın</h3>
+          <p>C bölümlerindeki kısa programları derleyip deneyin. Kitaptaki kodlar öğretici örneklerdir; amaç dili ve mantığı göstermektir.</p>
+        </div>
+        <div class="card">
+          <h3>Ekler'e dönün</h3>
+          <p>Son bölümdeki formül listesi ve terimler sözlüğü, konuları tekrar ederken hızlı başvuru kaynağınızdır. Terimler kitap boyunca aynı adla kullanılır.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <h2>Künye</h2>
+      <table class="kunye">
+        {{KUNYE}}
+      </table>
+      <div class="notice" style="margin-top:1.2rem">
+        Bu kitap, hazırlanırken yapay zekâ araçlarından yoğun biçimde yararlanılarak üretilmiş ve denetlenmiştir. Emeğin nasıl dağıldığını <a href="#hakkinda">Hakkında</a> bölümünde olduğu gibi anlatıyoruz.
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= NASIL ÇALIŞILMALI ================= -->
+  <section class="panel" id="panel-calisma" role="tabpanel" aria-labelledby="tab-calisma" tabindex="-1" hidden>
+    <p class="eyebrow">Nasıl Çalışılmalı</p>
+    <h2>Bu kitap nasıl çalışılmalı?</h2>
+    <p class="lead">Bu kitap, sınava az kala okunup bitirilecek bir kaynak değil; masada kâğıt kalemle işlenmesi gereken bir çalışma kitabıdır. Aşağıdaki rehber, kendi hazırlık sürecimden ve alt dönemlerime verdiğim derslerden süzüldü.</p>
+    <ol class="study-list">
+      <li><b>Öncelik etiketlerini kullanın.</b> İçindekiler'de her bölümün yanında bir etiket var: <b>Temel</b> — sınavın omurgası, ilk önce bunlar bitirilmeli; <b>Orta</b> — temeller bittikten sonra; <b>İleri</b> — zaman kalırsa ya da 2. Aşama hedefleniyorsa. Vaktiniz daraldıysa önce tüm Temel bölümleri bitirin.</li>
+      <li><b>Ana fikri kavrayınca hızlı ilerleyin.</b> Bölümler önkoşul zinciriyle bağlıdır; sırayı bozmayın, ama her sayfayı kelime kelime işlemek zorunda da değilsiniz. Bir bölümün ana fikrini kavradıysanız ayrıntılarda oyalanmadan ilerleyin. Zorlandığınız yer genellikle bir önceki bölümdedir — dönüp orayı sağlamlaştırın.</li>
+      <li><b>Önce kendiniz çözün, sonra çözümü okuyun.</b> Her çözümlü örnekte cevaba bakmadan önce beş on dakika kendi yaklaşımınızı kurun. Takılırsanız çözümü okuyun, sonra kâğıdı kapatıp kendi cümlelerinizle yeniden çözün; kazanç o ikinci çözümdedir.</li>
+      <li><b>Az ama düzenli çalışın.</b> Haftada üç dört gün, günde bir iki saatlik düzenli tempo, bir aylık yoğun temponun yerini tutar. Konuların zihinde oturması zaman alır; sınav gecesi çalışması bu kitabın işleyişine uymaz.</li>
+      <li><b>Her konuyu çıkmış sorularla ölçün.</b> Bir bölümü bitirir bitirmez, o bölümle ilişkili geçmiş 1. Aşama sorularını çözün — hepsi <a href="#cikmis">Çıkmış Sorular</a> sekmesinde bölüm bölüm listeli. Resmî arşivin tamamı <a href="#linkler">Linkler</a> sekmesinde. Konunun sınavda nasıl sorulduğunu görmek, hazırlığın en güçlü geri bildirimidir.</li>
+      <li><b>C'ye erken başlamayın.</b> Kitabın algoritma ve C kısımları (Kısım V–VI), matematiksel temellerden (Kısım I–IV) sonra gelir. Sıfırdan başlayan biri için önerilen sıra kısımların kendi sırasıdır: I → II → III → IV → V → VI.</li>
+      <li><b>Takıldığınız yeri işaretleyip devam edin.</b> Bir kavram günlerce oturmuyorsa tek soruya saplanmayın; işaretleyip ilerleyin. Bir sonraki turda çoğu pürüz kendiliğinden çözülür.</li>
+      <li><b>Geri bildiriminiz kitabın yakıtıdır.</b> Anlaşılmayan bölüm ya da hata bulduğunuzda <a href="#iletisim">İletişim</a> sekmesinden yazın; sayfa numarasıyla gelen her bildirim bir sonraki sürümde iz bırakır.</li>
+    </ol>
+  </section>
+
+  <!-- ================= İÇİNDEKİLER ================= -->
+  <section class="panel" id="panel-icindekiler" role="tabpanel" aria-labelledby="tab-icindekiler" tabindex="-1" hidden>
+    <p class="eyebrow">İçindekiler</p>
+    <h2>{{CHAPTER_COUNT}} bölüm, {{PART_COUNT}} kısım</h2>
+    <p class="lead">Aşağıdaki liste kitabın kendi içindekiler sayfasından otomatik üretilir; sayfa numaraları PDF'tekiyle birebir aynıdır. Bir bölüm ya da alt konu satırına tıklayarak doğrudan o sayfada açabilirsiniz.</p>
+    <p class="hint">Bölüm satırlarındaki "Çıkmış sorular" bağlantıları, TÜBİTAK'ın resmî geçmiş sınav kitapçıklarına gider. Tüm bölümlerin ilişkili sorularını topluca görmek için <a href="#cikmis">Çıkmış Sorular</a> sekmesine bakın (çözüm içermez; yalnızca konuyla ilişkili soruları işaret eder).</p>
+    <div style="margin-top:1.6rem">
+      {{TOC}}
+    </div>
+  </section>
+
+  <!-- ================= ÇIKMIŞ SORULAR ================= -->
+  <section class="panel" id="panel-cikmis" role="tabpanel" aria-labelledby="tab-cikmis" tabindex="-1" hidden>
+    <p class="eyebrow">Çıkmış Sorular</p>
+    <h2>Hangi soru, hangi bölümle ilişkili?</h2>
+    <p class="lead">Aşağıda, kitabın her bölümüyle ilişkili geçmiş 1. Aşama soruları listeleniyor. Sorular TÜBİTAK'ın resmî kitapçıklarından birebir alınmıştır; bağlantılar o yılın kitapçığına gider. Çözüm içermez — önce bölümü bitirin, sonra bu soruları kendi kâğıdınızda çözüp kendinizi ölçün.</p>
+    <p class="hint" style="margin-top:.6rem">Eşlenen yıllar: 2021–2026. Yalnızca metni çıkarılabilen sorular eşlenmiştir (görsel ağırlıklı sorular hariç); tam arşiv için <a href="#linkler">Linkler</a> sekmesindeki resmî sayfayı kullanın.</p>
+    <div class="cikmis-list" style="margin-top:1.8rem">
+      {{CIKMIS}}
+    </div>
+  </section>
+
+  <!-- ================= HAKKINDA ================= -->
+  <section class="panel" id="panel-hakkinda" role="tabpanel" aria-labelledby="tab-hakkinda" tabindex="-1" hidden>
+    <p class="eyebrow">Hakkında</p>
+    <h2>Yazar ve kitabın hazırlanışı</h2>
+    <div class="prose" style="max-width:68ch">
+      <img class="author-photo" src="assets/yazar.jpg" width="150" height="156" alt="Dost Seferoğlu">
+      {{ABOUT}}
+    </div>
+  </section>
+
+  <!-- ================= ÖNSÖZ ================= -->
+  <section class="panel" id="panel-onsuz" role="tabpanel" aria-labelledby="tab-onsuz" tabindex="-1" hidden>
+    <p class="eyebrow">Önsöz</p>
+    <h2>Bu kitap neden var?</h2>
+    <div class="prose" style="max-width:68ch">
+      {{PREFACE}}
+    </div>
+  </section>
+
+  <!-- ================= LİNKLER ================= -->
+  <section class="panel" id="panel-linkler" role="tabpanel" aria-labelledby="tab-linkler" tabindex="-1" hidden>
+    <p class="eyebrow">Linkler</p>
+    <h2>Kitabı tamamlayan kaynaklar</h2>
+    <p class="lead">Bu kitap bir sınavın kapısını aralar; gerisi düzenli pratik ve doğru kaynaklarla gelir. Aşağıdaki bağlantılar, hazırlık sürecinde en çok işe yarayan durak noktalarıdır — hepsi ücretsizdir.</p>
+    <div style="margin-top:1.8rem">
+      {{LINKS}}
+    </div>
+    <div class="notice warn">
+      Sınav takvimi ve başvuru koşulları her yıl değişebilir; resmî bilgi için her zaman TÜBİTAK'ın kendi sayfasını esas alın. Bu kitap bağımsız bir çalışma kaynağıdır ve TÜBİTAK ile resmî bir bağı yoktur.
+    </div>
+  </section>
+
+  <!-- ================= İLETİŞİM ================= -->
+  <section class="panel" id="panel-iletisim" role="tabpanel" aria-labelledby="tab-iletisim" tabindex="-1" hidden>
+    <p class="eyebrow">İletişim</p>
+    <h2>Görüş, hata bildirimi ve öneri</h2>
+    <p class="lead" style="margin-inline:auto">Kitapta bulduğunuz bir hata, anlaşılmayan bir bölüm ya da eklenmesini istediğiniz bir konu varsa yazmanız yeterli. Öğrencilerden gelen geri bildirim, sonraki sürümlerin en değerli girdisidir.</p>
+
+    <div class="card contact-card" style="margin-top:1.5rem">
+      <p style="margin-bottom:.2rem"><b>E-posta</b></p>
+      <div class="copy-row">
+        <a class="btn btn-primary big-btn" href="mailto:{{MAIL}}?subject={{MAIL_SUBJECT}}">E-posta gönder</a>
+      </div>
+      <div class="copy-row">
+        <code id="mail-text">{{MAIL}}</code>
+        <button class="btn btn-ghost copy-btn" type="button" data-copy="{{MAIL}}">Adresi kopyala</button>
+      </div>
+
+      <p style="margin:1.6rem 0 .2rem"><b>LinkedIn</b></p>
+      <div class="copy-row">
+        <a class="btn btn-ghost big-btn" href="{{LINKEDIN_URL}}" target="_blank" rel="noopener">LinkedIn profilini aç</a>
+      </div>
+      <div class="copy-row">
+        <code id="linkedin-text">{{LINKEDIN_SHOWN}}</code>
+        <button class="btn btn-ghost copy-btn" type="button" data-copy="{{LINKEDIN_URL}}">Bağlantıyı kopyala</button>
+      </div>
+
+      <p class="hint" style="margin-top:1rem">Yanıtlar şahsen verilir; e-posta adresi yalnızca bu iş için kullanılır. LinkedIn'den de yazabilirsiniz.</p>
+    </div>
+
+    <div class="section-block">
+      <h2>Hata bildirirken</h2>
+      <p class="lead">Bildirimin daha hızlı sonuçlanması için şunları ekleyebilirsiniz: hatanın bulunduğu <b>sayfa numarası</b>, ekranda gördüğünüz ifadenin aynısı ve varsa kitabın <b>sürüm/derleme tarihi</b>. Matematiksel bir hata söz konusuysa karşı örneğinizi de yazmanız yeterlidir.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap foot-inner">
+    <div>
+      <b>Bilgisayar Olimpiyatlarına Hazırlık</b> · {{AUTHOR}}<br>
+      {{PAGES}} sayfa · İlk sürüm: {{BUILD_DATE}}<br>
+      {{COPYRIGHT}} · {{LICENSE_SHORT}} — {{FREE}}
+    </div>
+    <div>
+      Bu sayfa kitabın kaynağından otomatik üretilmiştir.<br>
+      <a href="{{PDF_FILE}}">PDF indir</a> · <a href="#iletisim">İletişim</a> · <a href="#linkler">Linkler</a> · <a href="{{LINKEDIN_URL}}" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/app.js" defer></script>
+</body>
+</html>

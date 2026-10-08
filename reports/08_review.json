@@ -1,0 +1,45 @@
+{
+  "file": "08_icerme_disarma.tex",
+  "findings": [
+    {
+      "file": "08_icerme_disarma.tex",
+      "line_hint": 39,
+      "type": "bad_reference",
+      "severity": "minor",
+      "excerpt": "(Bölüm 11 ve 12'deki bölünebilme ilkeleri uyarınca)",
+      "issue": "Bölüm 8'de bulunulmasına rağmen, daha sonra gelecek olan Bölüm 11 (Bölünebilme) ve Bölüm 12'ye (Asal Sayılar) geçmiş zaman gibi atıf yapılmıştır. Kitap sözleşmesine göre ileriye yapılan atıflar açıkça gelecek zaman kipiyle ('Bölüm ...'de göreceğimiz üzere') verilmelidir.",
+      "suggested_fix": "\"(Bölüm 11 ve 12'de göreceğimiz bölünebilme ilkeleri uyarınca)\" şeklinde düzeltilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "08_icerme_disarma.tex",
+      "line_hint": 147,
+      "type": "bad_reference",
+      "severity": "minor",
+      "excerpt": "(Bölüm 13'te ele aldığımız EKOK tanımıyla)",
+      "issue": "Bölüm 8'de bulunulmasına rağmen, henüz işlenmemiş olan Bölüm 13'e (EBOB ve EKOK) sanki daha önce anlatılmış gibi 'ele aldığımız' şeklinde atıf yapılmıştır.",
+      "suggested_fix": "\"(Bölüm 13'te göreceğimiz en küçük ortak kat / lcm tanımıyla)\" şeklinde ileri referans kipine dönüştürülmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "08_icerme_disarma.tex",
+      "line_hint": 147,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "\\text{EKOK}(4, 6) = 12",
+      "issue": "Terminoloji ve notasyon sözleşmesinde EKOK gösterimi için '\\operatorname{lcm}(a,b)' standart olarak belirlenmiştir. Metinde '\\text{EKOK}' kullanılmıştır.",
+      "suggested_fix": "\"\\operatorname{lcm}(4, 6) = 12\" olarak güncellenmeli ve bu örnekteki diğer \\text{EKOK} kullanımları da \\operatorname{lcm} yapılmalıdır.",
+      "confidence": "high"
+    },
+    {
+      "file": "08_icerme_disarma.tex",
+      "line_hint": 402,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "\\textbf{bitmask} (bitmask) tekniği kullanılır.",
+      "issue": "Sözleşmenin A grubundaki terimlerde (İngilizce korunur) 'bitmask' yer almakta olup Türkçe karşılığı kullanılmaz. 'bitmask (bitmask)' yazımı gereksiz bir tekrar ve hatalı şablon kullanımıdır.",
+      "suggested_fix": "\"\\textbf{bitmask} tekniği kullanılır.\" şeklinde parantez içi tekrar kaldırılmalıdır.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,420 @@
+\chapter[Bitwise Operatörler ve Struct · \textit{Orta}]{Bitwise Operatörler ve Struct}
+\chaptermark{Bitwise Operatörler ve Struct}
+
+Bilgisayar biliminde veriyi temsil etmenin ve işlemenin iki temel boyutu vardır: en alt düzeyde, donanımın doğrudan anladığı bitler ($0$ ve $1$) üzerinde yüksek bir hızla çalışabilmek; daha üst düzeyde ise birbiriyle ilişkili verileri mantıksal bir bütün halinde paketleyip soyutlayabilmek.
+
+TÜBİTAK 1. Aşama sınavlarındaki algoritmik problemler sıklıkla bu iki yaklaşımı bir arada gerektirir. Kimi zaman bir kümenin tüm altkümelerini tek bir tamsayının bitleriyle kodlayıp birkaç adımda taramak, kimi zaman da iki boyutlu düzlemdeki noktaları koordinatları ve ek bilgileriyle tek bir nesne olarak takip etmek gerekir. İlk olarak donanımın temel yapıtaşları olan bitwise işlemleri (bitwise operatörler), ardından C dilinde karmaşık veri modelleri kurmamızı sağlayan yapıları (\lstinline|struct|) ele alacağız.
+
+\section{Bitwise Operatörler}
+
+\subsection{Motivasyon ve Sayıların Bellekteki Temsili}
+
+Bölüm 29'da temel veri tiplerini ve aritmetik operatörleri gördük. Orada $+$, $-$, $*$, $/$ gibi işlemlerle sayıları onluk tabandaki değerleri üzerinden işliyorduk. Ancak Bölüm 15'te incelediğimiz üzere, modern bir işlemcinin yazmaçlarında (register) saklanan her tamsayı ikili tabanda (2 tabanında) dizilmiş bitlerden oluşur. 
+
+Örneğin, 8 bitlik bir işaretsiz tamsayı olarak $43$ sayısını ele alalım. $43 = 32 + 8 + 2 + 1 = 2^5 + 2^3 + 2^1 + 2^0$ olduğundan, ikili tabanda $(43)_{10} = (00101011)_2$ şeklinde yazılır. Buradaki her bir basamağa \textbf{bit} adı verilir. En sağdaki basamağa en önemsiz bit (least significant bit - LSB, $2^0$ basamağı), en soldaki basamağa ise en önemli bit (most significant bit - MSB) denir.
+
+İşte \textbf{bitwise operatörler}, sayıları bir bütün olarak değil, bu bit dizilimlerindeki her bir biti bağımsız biçimde ya da kaydırarak doğrudan yönetmemizi sağlar. Bu operatörler donanım seviyesinde tek bir işlemci çevriminde (cycle) yürütüldüğünden son derece hızlıdır. Dahası, mantıksal durumları ve altkümeleri bitler aracılığıyla kodlamaya imkan tanır.
+
+\subsection{Temel Bitwise Operatörler}
+
+C dilinde 6 temel bitwise operator bulunur:
+\begin{itemize}
+    \item \lstinline|&| (Bitwise VE / AND)
+    \item \lstinline/|/ (Bitwise VEYA / OR)
+    \item \lstinline|^| (Bitwise ÖZEL VEYA / XOR)
+    \item \lstinline|~| (Bitwise DEĞİL / NOT - Bir'e tümleyen)
+    \item \lstinline|<<| (Sola Kaydırma / Left Shift)
+    \item \lstinline|>>| (Sağa Kaydırma / Right Shift)
+\end{itemize}
+
+\begin{definition}[Bitwise VE, VEYA, XOR ve DEĞİL]
+$a$ ve $b$ aynı uzunluktaki iki bit dizisi olsun. Her $i$. bit için:
+\begin{itemize}
+    \item \textbf{Bitwise VE ($a \ \& \ b$):} Ancak ve ancak hem $a$'nın hem de $b$'nin $i$. biti $1$ ise sonuç bit $1$ olur; aksi halde $0$'dır.
+    \item \textbf{Bitwise VEYA ($a \ | \ b$):} $a$ veya $b$'nin $i$. bitinden en az biri $1$ ise sonuç bit $1$ olur; her ikisi de $0$ ise $0$'dır.
+    \item \textbf{Bitwise XOR ($a \ \string^\ b$):} $a$ ve $b$'nin $i$. bitleri birbirinden farklıysa sonuç bit $1$, aynıysa $0$ olur.
+    \item \textbf{Bitwise DEĞİL ($\sim a$):} Tekil (unary) bir operatördür. Sayının her $0$ bitini $1$, her $1$ bitini $0$ yapar.
+\end{itemize}
+\end{definition}
+
+Somut bir örnekle bu işlemleri görelim. $A = 12$ ve $B = 10$ sayılarını 8 bitlik ikili tabanda yazalım:
+\[
+A = 12 = (00001100)_2, \quad B = 10 = (00001010)_2
+\]
+Şimdi operatörleri basamak basamak uygulayalım:
+\begin{align*}
+A \ \& \ B &= (00001100)_2 \ \& \ (00001010)_2 = (00001000)_2 = 8 \\
+A \ | \ B &= (00001100)_2 \ | \ (00001010)_2 = (00001110)_2 = 14 \\
+A \ \string^\ B &= (00001100)_2 \ \string^\ (00001010)_2 = (00000110)_2 = 6 \\
+\sim A &= \sim (00001100)_2 = (11110011)_2
+\end{align*}
+
+\begin{definition}[Bit Kaydırma Operatörleri: \lstinline|<<| ve \lstinline|>>|]
+$x$ pozitif bir tamsayı ve $k \ge 0$ olsun:
+\begin{itemize}
+    \item \textbf{Sola Kaydırma ($x \ll k$):} $x$'in tüm bitleri $k$ pozisyon sola kaydırılır. Sağdan boşalan $k$ adet basamağa $0$ yazılır. Taşma (overflow) olmadığı sürece bu işlem sayıyı $2^k$ ile çarpmaya denktir:
+    \[
+    x \ll k = x \cdot 2^k
+    \]
+    \item \textbf{Sağa Kaydırma ($x \gg k$):} $x$'in tüm bitleri $k$ pozisyon sağa kaydırılır. Sağdan taşan $k$ adet bit atılır. Sayı işaretsiz (unsigned) ise soldan açılan basamaklara $0$ yazılır. Bu işlem sayıyı $2^k$'ye tam bölmeye (aşağı yuvarlamaya) denktir:
+    \[
+    x \gg k = \lfloor x / 2^k \rfloor
+    \]
+\end{itemize}
+\end{definition}
+
+Örneğin $x = 5 = (00000101)_2$ olsun:
+\[
+x \ll 1 = (00001010)_2 = 10 \quad (5 \cdot 2^1)
+\]
+\[
+x \ll 3 = (00101000)_2 = 40 \quad (5 \cdot 2^3)
+\]
+\[
+x \gg 1 = (00000010)_2 = 2 \quad (\lfloor 5 / 2 \rfloor)
+\]
+
+\subsection{Temel Hileler ve Pratik Teknikler}
+
+\textbf{1. Teklik--Çiftlik (Parite) Testi:} 
+Bölüm 17'de ele aldığımız parite kavramını hatırlarsak, normalde bir $n$ sayısının tek mi çift mi olduğunu anlamak için \lstinline|n % 2 == 1| kontrolü yaparız. Ancak $2$'ye bölme işleminde kalan, sayının ikili gösterimindeki son biti ($2^0$ basamağı) tarafından belirlenir. Çift sayıların son biti $0$, tek sayıların son biti $1$'dir. Dolayısıyla:
+\begin{itemize}
+    \item \lstinline|(n & 1) == 1| ise $n$ tektir.
+    \item \lstinline|(n & 1) == 0| ise $n$ çifttir.
+\end{itemize}
+Bitwise VE işlemi işlemcide bölme/mod işleminden belirgin şekilde daha ucuzdur.
+
+\textbf{2. İkiyle Çarpma ve Bölme:}
+\lstinline|n << 1| ifadesi $2n$, \lstinline|n >> 1| ifadesi $\lfloor n/2 \rfloor$ değerini verir.
+
+\textbf{3. $k$. Biti Okuma, Açma (1 Yapma), Kapatma (0 Yapma) ve Tersleme:}
+Sadece $k$. biti $1$, diğer tüm bitleri $0$ olan sayı $1 \ll k$ şeklinde elde edilir. Bu sayıya \textbf{maske} (mask) denir.
+\begin{itemize}
+    \item $n$'in $k$. bitini kontrol etmek: \lstinline|(n >> k) & 1| veya \lstinline|n & (1 << k)|.
+    \item $n$'in $k$. bitini $1$ yapmak: \lstinline|n = n | (1 << k)|.
+    \item $n$'in $k$. bitini $0$ yapmak: \lstinline|n = n & ~(1 << k)|.
+    \item $n$'in $k$. bitini terslemek ($0 \to 1, 1 \to 0$): \lstinline|n = n ^ (1 << k)|.
+\end{itemize}
+
+\textbf{4. $2$'nin Kuvveti Olma Kontrolü:}
+Bir $n > 0$ tamsayısının $2$'nin tam bir kuvveti olup olmadığını doğrudan bit yapısından anlayabiliriz.
+Örneğin $n = 8 = (1000)_2$. Bir eksiğine bakalım: $n - 1 = 7 = (0111)_2$.
+Bu iki sayıyı VE işlemine sokarsak:
+\[
+8 \ \& \ 7 = (1000)_2 \ \& \ (0111)_2 = (0000)_2 = 0
+\]
+Genel kural olarak: $n$ bir $2$'nin kuvveti ise tek bir biti $1$'dir. $n-1$ hesaplandığında o bit $0$ olur ve sağındaki tüm bitler $1$'e dönüşür. Ortak hiçbir $1$ biti kalmaz.
+\begin{theorem}
+Pozitif bir $n$ tamsayısı için $n$ ancak ve ancak \lstinline|(n & (n - 1)) == 0| ise $2$'nin bir tam kuvvetidir.
+\end{theorem}
+
+\textbf{5. En Sağdaki $1$ Bitini Temizleme ve İzole Etme:}
+Yukarıdaki gözlem şunu gösterir: \lstinline|n & (n - 1)| işlemi, $n$ sayısının ikili gösterimindeki en sağda bulunan $1$ bitini siler.
+Öte yandan, negatif sayıların ikinin tümleyeni (two's complement) gösteriminde saklandığını hatırlarsak, $-n = \sim n + 1$ olur. Buradan çıkan kullanışlı bir özdeşlik şudur:
+\[
+\text{En sağdaki } 1 \text{ biti izole etmek} = n \ \& \ (-n)
+\]
+Örneğin $n = 12 = (00001100)_2$ ise, $-n = (11110100)_2$ olur. VE işlemi yapılırsa:
+\[
+(00001100)_2 \ \& \ (11110100)_2 = (00000100)_2 = 4
+\]
+En sağdaki $1$ bitini tek başına elde etmiş oluruz.
+
+\begin{example}
+Verilen bir $n$ tamsayısının ikili yazımında kaç tane $1$ biti (popcount / nüfus sayısı) olduğunu bulan etkin bir algoritma tasarlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+İlk akla gelen yaklaşım sayıyı sürekli $2$'ye bölüp (\lstinline|n >>= 1|) son bitini (\lstinline|n & 1|) sayaca eklemektir. Bu yöntem toplam bit sayısı (örneğin 32 bit tamsayılar için 32) kadar adım sürer. Ancak sayıda az miktarda $1$ biti varsa 32 adım gereksizdir. 
+
+Daha önce gördüğümüz \lstinline|n = n & (n - 1)| özelliğini kullanalım: Bu işlem her adımda en sağdaki bir adet $1$ bitini yok eder. Döngüyü sayı $0$ olana kadar çalıştırdığımızda, adım sayısı doğrudan sayıdaki $1$ bitlerinin sayısına eşit olur. Bu yöntem \emph{Brian Kernighan Algoritması} olarak bilinir.
+
+\begin{lstlisting}[language=CTemel]
+int bit_sayisi(unsigned int n) {
+    int sayac = 0;
+    while (n > 0) {
+        n = n & (n - 1); // en sagdaki 1 bitini siler
+        sayac++;
+    }
+    return sayac;
+}
+\end{lstlisting}
+Bu algoritmanın karmaşıklığı $O(k)$'dir; burada $k$, $n$'deki $1$'lerin sayısıdır. En kötü durumda bile işlem sayısı $O(\log n)$ mertebesinde kalır.
+\end{proof}
+
+\subsection{Kümelerin Bitmask Olarak Temsili}
+
+Olimpiyatlarda bitwise operatörlerin en etkili kullanım alanlarından biri \textbf{küme temsili}dir.
+$S = \{0, 1, 2, \dots, n-1\}$ kümesinin herhangi bir $A \subseteq S$ altkümesini $n$ bitlik tek bir tamsayı ile temsil edebiliriz:
+\[
+i \in A \iff \text{maskenin } i\text{. biti } 1\text{'dir.}
+\]
+Örneğin $n=4$ elemanlı $S=\{0, 1, 2, 3\}$ evrensel kümesini ve $A = \{0, 3\}$ altkümesini ele alalım. $0$. ve $3$. bitler $1$, diğerleri $0$ olmalıdır:
+\[
+\text{mask} = 2^0 + 2^3 = 1 + 8 = 9 = (1001)_2
+\]
+Bu eşleme sayesinde küme işlemleri doğrudan bit operatörleriyle ifade edilir:
+\begin{itemize}
+    \item Kesişim ($A \cap B$): \lstinline|maskA & maskB|
+    \item Birleşim ($A \cup B$): \lstinline|maskA | maskB|
+    \item Simetrik Fark ($A \Delta B$): \lstinline|maskA ^ maskB|
+    \item Tümleyen ($S \setminus A$): \lstinline|((1 << n) - 1) ^ maskA|
+    \item Boş küme $\emptyset$: $0$
+    \item Evrensel küme $S$: $(1 \ll n) - 1$
+\end{itemize}
+
+\begin{example}
+$n$ elemanlı bir kümenin toplam $2^n$ adet altkümesi vardır. Bir dizideki tüm altkümelerin eleman toplamlarını ekrana yazdıran bir program parçasını bitmask kullanarak kurunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Her altküme $0$ ile $2^n - 1$ arasında tek bir tamsayı ile birebir eşlenir. Bir döngüyle \lstinline|mask| değerini $0$'dan $2^n - 1$'e kadar ilerletip, her \lstinline|mask| için hangi bitlerin $1$ olduğuna bakarak ilgili dizi elemanlarını toplamak yeterlidir.
+
+\begin{lstlisting}[language=CTemel]
+void altkume_toplamlari(int arr[], int n) {
+    int toplam_altkume = 1 << n; // 2^n
+    for (int mask = 0; mask < toplam_altkume; mask++) {
+        int toplam = 0;
+        for (int i = 0; i < n; i++) {
+            if ((mask >> i) & 1) { // i. eleman kumedeyse
+                toplam += arr[i];
+            }
+        }
+        printf("Mask %d: Toplam = %d\n", mask, toplam);
+    }
+}
+\end{lstlisting}
+Bu yaklaşım, $n \le 20$ civarındaki arama ve kombinatorik problemlerde altkümeleri dolaşmanın en pratik ve düzenli yoludur.
+\end{proof}
+
+\begin{example}
+Size verilen bir dizide, biri hariç her eleman tam olarak iki kez geçmektedir. Yalnızca bir eleman tek bir kez geçmiştir. Bu elemanı $O(n)$ zamanda ve $O(1)$ ek bellek kullanarak bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Elemanların frekansını saymak için ek bir dizi tutmak $O(n)$ ek bellek gerektirir. Oysa XOR operatörünün temel cebirsel özellikleri bize bellek kullanmadan bir çözüm sunar:
+\begin{enumerate}
+    \item $x \ \string^\ x = 0$ (Bir sayının kendisiyle XOR'u sıfırdır.)
+    \item $x \ \string^\ 0 = x$ (Sıfır etkisiz elemandır.)
+    \item XOR işlemi değişmeli (commutative) ve birleşmelidir (associative).
+\end{enumerate}
+Dizideki tüm elemanları sırayla XOR'larsak, çift sayıda gelen elemanlar birbirini sıfırlar ($x \ \string^\ x = 0$). Geriye yalnızca tek bir kez geçen eleman kalır.
+
+\begin{lstlisting}[language=CTemel]
+int yalniz_eleman(int arr[], int n) {
+    int sonuc = 0;
+    for (int i = 0; i < n; i++) {
+        sonuc ^= arr[i];
+    }
+    return sonuc;
+}
+\end{lstlisting}
+Örneğin dizi $\{4, 1, 2, 1, 2\}$ olsun.
+\[
+4 \ \string^\ 1 \ \string^\ 2 \ \string^\ 1 \ \string^\ 2 = 4 \ \string^\ (1 \ \string^\ 1) \ \string^\ (2 \ \string^\ 2) = 4 \ \string^\ 0 \ \string^\ 0 = 4.
+\]
+Sonuç doğrudan $4$ olarak elde edilir.
+\end{proof}
+
+\subsection*{En Sık Yapılan Hatalar}
+\begin{enumerate}
+    \item \textbf{Operatör Önceliği:} C dilinde karşılaştırma operatörleri ($==, !=, <, >$) bitwise operatörlerden (\lstinline|&|, \lstinline/|/, \lstinline|^|) daha yüksek önceliğe sahiptir. Örneğin:
+    \lstinline|if (x & 1 == 0)| yazıldığında C derleyicisi bunu \lstinline|if (x & (1 == 0))| yani \lstinline|if (x & 0)| olarak yorumlar. Doğru kullanım için mutlaka parantez kullanılmalıdır: \lstinline|if ((x & 1) == 0)|.
+    \item \textbf{Taşma (Overflow) ve 64-bit:} Sola kaydırma yaparken \lstinline|1 << 40| yazılırsa tanımsız davranış (undefined behavior) oluşur; çünkü \lstinline|1| sabiti 32-bit tamsayıdır (\lstinline|int|). 30'dan büyük kaydırmalar için \lstinline|1LL << 40| (\lstinline|long long|) yazılmalıdır.
+\end{enumerate}
+
+\section{Struct (Yapılar)}
+
+\subsection{Motivasyon: İlişkili Verileri Gruplama}
+
+Şimdiye kadar gördüğümüz temel tiplerde (\lstinline|int|, \lstinline|double|, \lstinline|char|) her değişken bağımsız bir bellek hücresiydi. Ancak gerçek hayatta veya geometri/graf problemlerinde veriler parçalanamaz kümeler halinde gelir.
+
+Örneğin, 2 boyutlu Kartezyen düzlemde $N$ adet nokta olduğunu varsayalım. Her noktanın bir $x$ koordinatı, bir $y$ koordinatı ve bir de etiket ismi (örneğin bir karakter) olsun. Noktaları saklamak için ayrı ayrı diziler açabiliriz:
+\begin{lstlisting}[language=CTemel]
+double x[100];
+double y[100];
+char isim[100];
+\end{lstlisting}
+Buna "paralel diziler" (parallel arrays) yaklaşımı denir. Ancak bu modelleme biçimi hata yapmaya çok açıktır:
+\begin{itemize}
+    \item Noktaları $x$ koordinatına göre sıralamak istediğimizde $x$, $y$ ve $isim$ dizilerinin elemanlarını aynı anda tek tek takas (swap) etmemiz gerekir. Biri atlandığında veri bütünlüğü bozulur.
+    \item Bir fonksiyon bir noktayı parametre alacaksa fonksiyona üç ayrı argüman göndermek gerekir: \lstinline|void yazdir(double x, double y, char isim)|.
+\end{itemize}
+
+İşte \lstinline|struct| (yapı), birbiriyle ilişkili farklı türdeki değişkenleri tek bir çatı altında toplayarak kullanıcı tanımlı yeni bir veri tipi oluşturmamızı sağlar.
+
+\subsection{Struct Tanımı ve Kullanımı}
+
+\begin{definition}[Struct Tanımı]
+Bir struct aşağıdaki sözdizimi ile bildirilir:
+\begin{lstlisting}[language=CTemel]
+struct Nokta {
+    double x;
+    double y;
+    char isim;
+};
+\end{lstlisting}
+Buradaki \lstinline|x|, \lstinline|y| ve \lstinline|isim| yapıya ait \textbf{alanlar} (field ya da member) olarak adlandırılır. Artık \lstinline|struct Nokta| ifadesi, tıpkı \lstinline|int| gibi bir tür adıdır.
+\end{definition}
+
+Bu yapıdan değişken oluşturmak ve alanlarına erişmek için nokta (\lstinline|.|) operatörü kullanılır:
+\begin{lstlisting}[language=CTemel]
+struct Nokta p1;
+p1.x = 3.0;
+p1.y = 4.0;
+p1.isim = 'A';
+
+// Veya suslu parantezle dogrudan ilklendirme (initialization):
+struct Nokta p2 = {0.0, 0.0, 'O'};
+\end{lstlisting}
+
+\subsubsection{\lstinline|typedef| ile Kolaylaştırma}
+Her defasında \lstinline|struct Nokta| yazmak kod kalabalığı yaratabilir. C dilindeki \lstinline|typedef| anahtar kelimesi ile bu türe doğrudan bir takma isim verilebilir:
+\begin{lstlisting}[language=CTemel]
+typedef struct {
+    double x;
+    double y;
+} Nokta;
+
+// Artik dogrudan Nokta turunu kullanabiliriz:
+Nokta p = {1.5, 2.5};
+\end{lstlisting}
+
+\begin{example}
+Düzlemde iki nokta arasındaki Öklid mesafesini hesaplayan fonksiyonu \lstinline|Nokta| yapısını kullanarak yazınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+İki nokta $P_1 = (x_1, y_1)$ ve $P_2 = (x_2, y_2)$ arasındaki uzaklık formülü şöyledir:
+\[
+d = \sqrt{(x_1 - x_2)^2 + (y_1 - y_2)^2}
+\]
+Fonksiyonumuza dört ayrı skaler parametre yerine iki \lstinline|Nokta| nesnesi göndermek kodun okunabilirliğini ve yönetimini belirgin biçimde kolaylaştırır.
+
+\begin{lstlisting}[language=CTemel]
+#include <math.h>
+
+typedef struct {
+    double x;
+    double y;
+} Nokta;
+
+double mesafe(Nokta p1, Nokta p2) {
+    double dx = p1.x - p2.x;
+    double dy = p1.y - p2.y;
+    return sqrt(dx * dx + dy * dy);
+}
+\end{lstlisting}
+\end{proof}
+
+\subsection{Struct Dizileri ve İşaretçiler}
+
+Struct nesneleri de tıpkı temel tipler gibi dizilerde saklanabilir. Örneğin $100$ kişilik bir öğrenci listesi için:
+\begin{lstlisting}[language=CTemel]
+typedef struct {
+    int id;
+    int puan;
+} Ogrenci;
+
+Ogrenci liste[100];
+liste[0].id = 101;
+liste[0].puan = 85;
+\end{lstlisting}
+
+Bir fonksiyona struct türünde bir değişkeni değer olarak (by-value) geçtiğimizde yapının tamamı kopyalanır. Struct çok sayıda alan içeriyorsa bu kopyalama işlemi gereksiz maliyet oluşturabilir. Bölüm 31'de incelediğimiz işaretçileri (pointer) kullanarak struct'ın yalnızca bellek adresini fonksiyona aktarabiliriz.
+
+İşaretçi üzerinden bir alana erişirken \lstinline|(*ptr).alan| sözdizimi kullanılır. C dili bu yazımı sadeleştirmek adına \textbf{ok operatörünü} (\lstinline|->|) sunar:
+\[
+\text{\lstinline|ptr->alan|} \iff \text{\lstinline|(*ptr).alan|}
+\]
+
+\begin{example}
+Bir olimpiyat takımındaki öğrencilerin puanlarını tutan ve puanı en yüksek olan öğrenciyi bulan bir program yazınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bir \lstinline|Ogrenci| dizisi üzerinde tek bir geçiş yaparak en yüksek puana sahip olan öğrenciyi belirler ve yapının kendisini saklarız.
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+typedef struct {
+    int id;
+    int puan;
+} Ogrenci;
+
+Ogrenci en_basarili(Ogrenci ogrenciler[], int n) {
+    Ogrenci en_iyi = ogrenciler[0];
+    for (int i = 1; i < n; i++) {
+        if (ogrenciler[i].puan > en_iyi.puan) {
+            en_iyi = ogrenciler[i];
+        }
+    }
+    return en_iyi;
+}
+\end{lstlisting}
+Fonksiyonlar geriye bir \lstinline|struct| nesnesi de döndürebilir. Böylece tek bir çağrıyla birbiriyle ilişkili birden fazla veri geri iletilmiş olur.
+\end{proof}
+
+\subsection{Struct ve Bellek Hizalaması (Padding)}
+
+Struct'lar hakkında teorik sınavlarda sıklıkla karşılaşılan bir ayrıntı, bir yapının bellekte kapladığı alandır (\lstinline|sizeof|).
+İlk bakışta yapının boyutunun, içindeki elemanların boyutlarının toplamına eşit olması beklenir. Ancak işlemciler bellek adresleri $4$'ün veya $8$'in katı olduğunda verilere daha hızlı erişir. Bu nedenle derleyici, alanlar arasına görünmez boşluklar (padding) yerleştirir.
+
+Örneğin:
+\begin{lstlisting}[language=CTemel]
+struct Test {
+    char c;     // 1 bayt
+    int x;      // 4 bayt
+};
+\end{lstlisting}
+Burada \lstinline|sizeof(struct Test)| değeri $1 + 4 = 5$ bayt \textbf{değildir}; çoğu modern 32/64-bit derleyicide $8$ bayttır. Çünkü \lstinline|char|'dan sonra işlemcinin \lstinline|int| verisine 4 baytlık hizalı adresten ulaşabilmesi için 3 baytlık boşluk eklenir.
+
+\begin{example}
+Kesirli sayıları ($a/b$) temsil etmek ve iki kesirli sayıyı çarpmak için bir struct yapısı tasarlayınız. Sonucu sadeleştirilmiş biçimde saklayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bir kesir iki bileşenden oluşur: pay ($a$) ve payda ($b$). Çarpma kuralı doğrudan payların ve paydaların kendi aralarında çarpılmasıdır:
+\[
+\frac{a}{b} \cdot \frac{c}{d} = \frac{a \cdot c}{b \cdot d}
+\]
+Sadeleştirme adımı için Bölüm 13'te ele aldığımız Öklid algoritmasıyla pay ve paydanın en büyük ortak bölenini ($\gcd$) bulur, ardından her iki değeri de bu EBOB'a böleriz.
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+typedef struct {
+    long long pay;
+    long long payda;
+} Kesir;
+
+long long ebob(long long a, long long b) {
+    while (b != 0) {
+        long long t = b;
+        b = a % b;
+        a = t;
+    }
+    return a;
+}
+
+Kesir kesir_carp(Kesir k1, Kesir k2) {
+    Kesir sonuc;
+    sonuc.pay = k1.pay * k2.pay;
+    sonuc.payda = k1.payda * k2.payda;
+    
+    long long g = ebob(sonuc.pay, sonuc.payda);
+    sonuc.pay /= g;
+    sonuc.payda /= g;
+    
+    return sonuc;
+}
+\end{lstlisting}
+Bu yapı sayesinde rasyonel sayılar üzerindeki işlemler modüler ve tutarlı bir çatı altında toplanmış olur.
+\end{proof}
+
+\subsection*{En Sık Yapılan Hatalar}
+\begin{enumerate}
+    \item \textbf{Struct Kopyalamasında Atama vs Karşılaştırma:} C dilinde \lstinline|k1 = k2;| geçerli bir ifadedir ve tüm alanları kopyalar. Ancak \lstinline|if (k1 == k2)| GEÇERSİZDİR. C dili iki struct nesnesini \lstinline|==| ile doğrudan karşılaştırmayı desteklemez; alanların tek tek karşılaştırılması gerekir.
+    \item \textbf{Noktalı Virgülü Unutmak:} Struct tanımının kapanış parantezinden sonra noktalı virgül (\lstinline|};|) koymak zorunludur. Unutulduğunda derleyici yanıltıcı sözdizimi hataları üretebilir.
+\end{enumerate}

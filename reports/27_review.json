@@ -1,0 +1,55 @@
+{
+  "file": "27_graflar_ve_arama.tex",
+  "findings": [
+    {
+      "file": "27_graflar_ve_arama.tex",
+      "line_hint": 361,
+      "type": "notation_violation",
+      "severity": "major",
+      "excerpt": "Kruskal Algoritması (Kenar Odaklı Açgözlülük)",
+      "issue": "Terminoloji sözleşmesinde 'greedy' terimi Kategori A (İngilizce korunur, Türkçe karşılığı KULLANILMAZ) altındadır ve 'açgözlü' kullanımı açıkça yasaklanmıştır. Benzer şekilde alt başlıktaki 'Prim Algoritması (Düğüm Odaklı Açgözlülük)' ifadesinde de 'açgözlülük' kullanılmamalıdır.",
+      "suggested_fix": "Başlıklar sırasıyla 'Kruskal Algoritması (Kenar Odaklı Greedy Yaklaşım)' ve 'Prim Algoritması (Düğüm Odaklı Greedy Yaklaşım)' olarak güncellenmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "27_graflar_ve_arama.tex",
+      "line_hint": 221,
+      "type": "notation_violation",
+      "severity": "major",
+      "excerpt": "Kuyruk (Queue) ile Seviye Seviye İlerleme",
+      "issue": "Terminoloji sözleşmesinde 'queue' terimi Kategori A (İngilizce korunur) altındadır ve 'kuyruk' Türkçe karşılığı kullanılmayacaklar arasında listelenmiştir.",
+      "suggested_fix": "Başlık ve metin içindeki kullanımlarda 'Queue ile Seviye Seviye İlerleme' ve 'queue' terimi tercih edilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "27_graflar_ve_arama.tex",
+      "line_hint": 380,
+      "type": "bad_reference",
+      "severity": "major",
+      "excerpt": "Bölüm 24'te gördüğümüz priority queue (min-heap) yapısı kullanılır.",
+      "issue": "Bölüm 24'te (Temel Veri Yapıları) yalnızca Stack, Queue, Set ve Map ele alınmış olup priority queue (ikili öbek / min-heap) anlatılmamıştır.",
+      "suggested_fix": "'Bölüm 24'te gördüğümüz priority queue' atfı kaldırılarak priority queue kısaca tanıtılmalı veya veri yapısının işlevi parantez içi açıklamayla verilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "27_graflar_ve_arama.tex",
+      "line_hint": 444,
+      "type": "bad_reference",
+      "severity": "major",
+      "excerpt": "En küçük mesafeli düğüme hızla ulaşmak için Bölüm 24'te gördüğümüz priority queue (\\texttt{std::priority\\_queue}) kullanılır.",
+      "issue": "Bölüm 24'te priority queue (veya std::priority_queue) anlatılmamaktadır.",
+      "suggested_fix": "'Bölüm 24'te gördüğümüz' ifadesi kaldırılmalıdır.",
+      "confidence": "high"
+    },
+    {
+      "file": "27_graflar_ve_arama.tex",
+      "line_hint": 344,
+      "type": "logic_gap",
+      "severity": "minor",
+      "excerpt": "\\textbf{zorundadır}. \\textbf{zorundadır}.",
+      "issue": "Teorem metninin sonunda 'zorundadır' ifadesi mükerrer basılmıştır.",
+      "suggested_fix": "Mükerrer olan ikinci '\\textbf{zorundadır}.' ifadesi silinmelidir.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+\chapter{Ekler}
+
+Yarışma ortamında veya yoğun problem çözme kamplarında, ihtiyaç duyulan bir formülü, bir algoritmanın asimptotik karmaşıklığını ya da yabancı kaynaklarda sıkça geçen bir terimin Türkçe karşılığını hızla anımsamak gerekebilir. Bu bölüm, kitabın önceki bölümleri boyunca kurulan teorik çatının derli toplu bir başvuru kılavuzudur.
+
+Burada listelenen formül ve karmaşıklık ifadelerinin dayanakları ilgili bölümlerde ayrıntılı biçimde ele alınmıştır. Bu eklerin amacı ispatları yinelemek değil, temel araçları doğrudan başvurulabilecek biçimde bir arada sunmaktır. Bu eklerde yalnızca kitapta anlatılan kavramlara yer verilmiştir; ileri veri yapıları (Fenwick ağacı, segment tree, sparse table gibi) ve ileri graf algoritmaları (Bellman-Ford, Floyd-Warshall gibi) bu kitabın kapsamı dışındadır.
+
+\section{Formül listesi}
+
+Sınav anında bir özdeşliği yanlış anımsamak (örneğin indisi $1$ kaydırmak ya da çifte sayma düzeltmesini atlamak) çözümü bütünüyle geçersiz kılabilir. En sık başvurulan temel sonuçlar aşağıda tematik başlıklar altında derlenmiştir.
+
+\subsection{Kombinatorik ve Sayma}
+
+\begin{itemize}
+    \item \textbf{Permütasyon ve Kombinasyon (Bölüm 4 ve 5):}
+    $n$ elemanlı bir kümeden $r$ elemanın sıralı seçimi $P(n,r)$, sırasız seçimi $\binom{n}{r}$ ile gösterilir:
+    \[
+    P(n,r) = \frac{n!}{(n-r)!}, \qquad \binom{n}{r} = \frac{n!}{r!(n-r)!} = \frac{P(n,r)}{r!}
+    \]
+    Sınır değerler: $\binom{n}{0} = \binom{n}{n} = 1$ ve $r < 0$ ya da $r > n$ için $\binom{n}{r} = 0$.
+
+    \item \textbf{Pascal Özdeşliği (Bölüm 5 ve 6):}
+    Belirli bir elemanın seçilen grupta bulunup bulunmadığına göre iki duruma ayırarak sayma:
+    \[
+    \binom{n}{r} = \binom{n-1}{r-1} + \binom{n-1}{r}
+    \]
+
+    \item \textbf{Hokey Sopası Özdeşliği (Bölüm 6):}
+    Pascal üçgeninde bir kenardan başlayıp çapraz inen terimlerin toplamı:
+    \[
+    \sum_{i=r}^{n} \binom{i}{r} = \binom{n+1}{r+1}
+    \]
+
+    \item \textbf{Vandermonde Özdeşliği (Bölüm 6 ve 10):}
+    Büyüklükleri $m$ ve $n$ olan iki ayrık kümeden toplam $r$ nesne seçme:
+    \[
+    \sum_{k=0}^{r} \binom{m}{k}\binom{n}{r-k} = \binom{m+n}{r}
+    \]
+
+    \item \textbf{Binom Teoremi ve Katsayı Toplamları (Bölüm 6):}
+    \[
+    (x+y)^n = \sum_{k=0}^{n} \binom{n}{k} x^{n-k} y^k
+    \]
+    $x=1, y=1$ koyulduğunda toplam alt küme sayısı:
+    \[
+    \sum_{k=0}^{n} \binom{n}{k} = 2^n
+    \]
+    $x=1, y=-1$ koyulduğunda tek ve çift büyüklükteki alt kümelerin eşitliği:
+    \[
+    \sum_{k=0}^{n} (-1)^k \binom{n}{k} = 0 \implies \sum_{k \text{ çift}} \binom{n}{k} = \sum_{k \text{ tek}} \binom{n}{k} = 2^{n-1}
+    \]
+
+    \item \textbf{Tekrarlı Kombinasyon / Ayraç Yöntemi (Bölüm 5):}
+    $n$ özdeş nesnenin $k$ farklı kutuya dağıtılması:
+    \begin{itemize}
+        \item Boş kutu kalabilirse (negatif olmayan tam sayı çözümleri, $x_i \ge 0$): $\binom{n+k-1}{k-1}$
+        \item Her kutuda en az bir nesne olacaksa ($x_i \ge 1$, $n \ge k$): $\binom{n-1}{k-1}$
+    \end{itemize}
+
+    \item \textbf{İçerme-Dışarma İlkesi (Bölüm 8):}
+    Sonlu $A_1, A_2, \dots, A_n$ kümeleri için:
+    \begin{multline*}
+    \left| \bigcup_{i=1}^n A_i \right| = \sum_{i=1}^n |A_i| - \sum_{1 \le i < j \le n} |A_i \cap A_j| \\
+    + \sum_{1 \le i < j < k \le n} |A_i \cap A_j \cap A_k| - \dots + (-1)^{n-1} |A_1 \cap \dots \cap A_n|
+    \end{multline*}
+
+    \item \textbf{Güvercin Yuvası İlkesi (Bölüm 7):}
+    $n$ nesne $k$ yuvaya dağıtıldığında, en az bir yuvada en az $\lceil n/k \rceil$ nesne; en az bir yuvada ise en fazla $\lfloor n/k \rfloor$ nesne bulunur.
+
+    \item \textbf{Katalan Sayıları (Bölüm 9):}
+    Dengeli parantez dizilimleri, $n+1$ yapraklı ikili ağaçlar ve köşegeni aşmayan kafes yolları:
+    \[
+    C_n = \frac{1}{n+1}\binom{2n}{n} = \binom{2n}{n} - \binom{2n}{n+1}, \qquad C_0 = 1, \; C_{n+1} = \sum_{i=0}^n C_i C_{n-i}
+    \]
+    İlk terimler: $1, 1, 2, 5, 14, 42, 132, 429, 1430, \dots$
+
+    \item \textbf{Düzensizlik Sayısı / Deranjman (Bölüm 8):}
+    Hiçbir elemanın kendi başlangıç konumunda yer almadığı permütasyonlar:
+    \[
+    D_n = n! \sum_{k=0}^n \frac{(-1)^k}{k!} = (n-1)(D_{n-1} + D_{n-2}) = n D_{n-1} + (-1)^n
+    \]
+    $D_0 = 1, D_1 = 0, D_2 = 1, D_3 = 2, D_4 = 9, D_5 = 44, D_6 = 265, \dots$
+\end{itemize}
+
+\subsection{Sayılar Teorisi}
+
+\begin{itemize}
+    \item \textbf{Bölme Algoritması ve EBOB-EKOK (Bölüm 11 ve 13):}
+    Her $a, b \in \mathbb{Z}^+$ için $a = bq + r$ ($0 \le r < b$) eşitliğini sağlayan $q, r$ tam sayıları tektir.
+    \[
+    \gcd(a, b) \cdot \operatorname{lcm}(a, b) = a \cdot b
+    \]
+
+    \item \textbf{Aritmetiğin Temel Teoremi ve Bölen Fonksiyonları (Bölüm 12):}
+    $n > 1$ sayısının asal çarpan ayrışımı $n = p_1^{a_1} p_2^{a_2} \cdots p_k^{a_k}$ olsun:
+    \begin{itemize}
+        \item Pozitif bölen sayısı: $d(n) = \prod_{i=1}^k (a_i + 1)$
+        \item Pozitif bölenler toplamı: $\sigma(n) = \prod_{i=1}^k \frac{p_i^{a_i+1} - 1}{p_i - 1}$
+    \end{itemize}
+
+\item \textbf{Fermat'nın Küçük Teoremi (Bölüm 14'te ispatlanır; Bölüm 11, 34 ve 37'de kullanılır):}
+    $p$ asal ve $\gcd(a, p) = 1$ ise:
+    \[
+    a^{p-1} \equiv 1 \pmod p \implies a^p \equiv a \pmod p
+    \]
+    Modüler ters hesabı: $p$ asal ise $a^{-1} \equiv a^{p-2} \pmod p$.
+
+    \item \textbf{Legendre Formülü (Bölüm 12):}
+    $n!$ çarpımındaki $p$ asalının en yüksek kuvveti $E_p(n!)$:
+    \[
+    E_p(n!) = \sum_{k=1}^{\infty} \left\lfloor \frac{n}{p^k} \right\rfloor = \left\lfloor \frac{n}{p} \right\rfloor + \left\lfloor \frac{n}{p^2} \right\rfloor + \left\lfloor \frac{n}{p^3} \right\rfloor + \dots
+    \]
+\end{itemize}
+
+\subsection{Cebirsel ve Aritmetik Toplamlar}
+
+\begin{itemize}
+    \item \textbf{Aritmetik ve Geometrik Dizi Toplamları:}
+    \[
+    \sum_{i=1}^n i = \frac{n(n+1)}{2}, \qquad \sum_{i=0}^n r^i = \frac{r^{n+1}-1}{r-1} \quad (r \ne 1)
+    \]
+    \item \textbf{Kuvvet Toplamları:}
+    \[
+    \sum_{i=1}^n i^2 = \frac{n(n+1)(2n+1)}{6}, \qquad \sum_{i=1}^n i^3 = \left( \frac{n(n+1)}{2} \right)^2 = \left( \sum_{i=1}^n i \right)^2
+    \]
+\end{itemize}
+
+\subsection{Logaritma}
+
+\begin{itemize}
+    \item \textbf{Temel Kural: Çarpma $\to$ Toplama (Bölüm 16):}
+    $a > 0$, $a \ne 1$ ve $x, y > 0$ için:
+    \[
+    \log_a (xy) = \log_a x + \log_a y, \qquad
+    \log_a \frac{x}{y} = \log_a x - \log_a y, \qquad
+    \log_a x^k = k \log_a x
+    \]
+    Tanımdan doğrudan çıkan özel değerler: $\log_a 1 = 0$, $\log_a a = 1$ ve $a^{\log_a x} = x$.
+
+    \item \textbf{Taban Değiştirme (Bölüm 16):}
+    \[
+    \log_a x = \frac{\log_b x}{\log_b a}, \qquad \log_a b = \frac{1}{\log_b a}
+    \]
+    Bu eşitlikteki $\frac{1}{\log_b a}$ çarpanı $n$'den bağımsız bir sabittir; bu yüzden büyük $O$ gösteriminde $O(\log n)$ yazarken taban belirtilmez.
+\end{itemize}
+
+\subsection{Graf Teorisi}
+
+\begin{itemize}
+\item \textbf{El Sıkışma Lemması / Çifte Sayım (Bölüm 10 ve 28):}
+Köşe kümesi $V$, kenar kümesi $E$ olan her yönsüz grafta:
+    \[
+    \sum_{v \in V} \deg(v) = 2|E|
+    \]
+    \textit{Doğrudan sonuç:} Tek dereceli köşelerin sayısı daima çifttir.
+
+    \item \textbf{Ağaçların Karakterizasyonu (Bölüm 28):}
+    $|V| = n$ köşeli bir $G$ grafı için aşağıdaki özellikler denktir:
+    \begin{enumerate}
+        \item $G$ bir ağaçtır (bağlantılı ve döngüsüzdür).
+        \item $G$ bağlantılıdır ve $|E| = n - 1$.
+        \item $G$ döngüsüzdür ve $|E| = n - 1$.
+        \item Herhangi iki köşe arasında tam olarak bir basit yol vardır.
+    \end{enumerate}
+
+    \item \textbf{Düzlemsel Graflar için Euler Formülü:}
+    Bağlantılı bir düzlemsel çizimde köşe sayısı $V$, kenar sayısı $E$, yüz sayısı $F$ ise:
+    \[
+    V - E + F = 2
+    \]
+    Grafın $k$ bağlantılı bileşeni varsa: $V - E + F = k + 1$.
+\end{itemize}
+
+\section{Terimler sözlüğü}
+
+Yarışma programlama kaynakları hem Türkçe hem de İngilizce terminolojiyi bir arada kullanır. TÜBİTAK sınav sorularında yerleşik Türkçe terimler tercih edilirken, çevrim içi platformlarda İngilizce terimler öne çıkar. Aşağıdaki sözlük, kitap boyunca kullanılan kavramların iki dildeki karşılıklarını derler.
+
+\begin{center}
+\footnotesize
+\begin{tabular}{p{0.45\textwidth} p{0.47\textwidth}}
+\hline
+\textbf{Türkçe Terim} & \textbf{İngilizce Karşılığı} \\
+\hline
+alt taban & floor ($\lfloor x \rfloor$) \\
+amortize edilmiş analiz & amortized analysis \\
+ayraç yöntemi & stars and bars \\
+ayrık kümeler (Kruskal bağlamında, Bölüm 28) & disjoint set union (DSU) \\
+bağlantılı bileşen (Bölüm 28) & connected component \\
+basit yol & simple path \\
+binom katsayısı & binomial coefficient \\
+bölünebilme & divisibility \\
+çap & diameter \\
+çiftleme (eşleme) & matching \\
+değişmez & invariant \\
+derece & degree \\
+derinlik öncelikli arama & depth-first search (DFS) \\
+dinamik programlama & dynamic programming (DP) \\
+düzensiz dizilim (Bölüm 8) & derangement \\
+döngü (çevrim) & cycle \\
+en büyük ortak bölen (EBOB) & greatest common divisor (GCD) \\
+en küçük ortak kat (EKOK) & least common multiple (LCM) \\
+en kısa yol & shortest path \\
+genişlik öncelikli arama & breadth-first search (BFS) \\
+graf & graph \\
+güvercin yuvası ilkesi & pigeonhole principle \\
+hızlı üs alma & binary exponentiation / modular exponentiation \\
+hokey sopası özdeşliği & hockey-stick identity \\
+topolojik sıralama (Bölüm 28) & topological sort \\
+en kısa yol (Bölüm 28) & shortest path \\
+iki yoldan sayma & double counting \\
+ikili arama & binary search \\
+binary heap (Bölüm 28'de Prim/Dijkstra bağlamında) & binary heap \\
+içerme-dışarma ilkesi (Bölüm 8) & inclusion-exclusion principle \\
+kalan sınıfı (modüler kongruans) & residue class (congruence) \\
+logaritma (Bölüm 16) & logarithm \\
+MST (Bölüm 27-28) & minimum spanning tree (MST) \\
+karşıt durum / uç değer ilkesi (Bölüm 19) & extremal principle \\
+prefix sums (Bölüm 22) & prefix sums \\
+modüler ters eleman & modular inverse \\
+öklid algoritması (Bölüm 13) & Euclidean algorithm \\
+rekürsiyon (Bölüm 2 ve 26) & recursion \\
+paylaştırılmış karmaşıklık & amortized complexity \\
+rekürans bağıntısı & recurrence relation \\
+sayaçla sıralama & counting sort \\
+seyrek tablo & sparse table \\
+taban aritmetiği & base representation \\
+teklik-çiftlik (parite) & parity \\
+tersine çalışma & working backwards \\
+üst tavan & ceiling ($\lceil x \rceil$) \\
+yarı-değişmez & monovariant \\
+yönlendirilmiş döngüsüz graf & directed acyclic graph (DAG) \\
+\hline
+\end{tabular}
+\end{center}
+

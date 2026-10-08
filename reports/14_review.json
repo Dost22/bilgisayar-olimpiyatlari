@@ -1,0 +1,15 @@
+{
+  "file": "14_moduler_aritmetik.tex",
+  "findings": [
+    {
+      "file": "14_moduler_aritmetik.tex",
+      "line_hint": 115,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "r = -17 MOD 5",
+      "issue": "Python dilinde mod alma işleci '%' sembolüdür; 'MOD' şeklinde bir operatör veya anahtar kelime Python sözdiziminde bulunmaz ve SyntaxError üretir. Metinde de Python'daki '%' işlecinin davranışından bahsedilmektedir.",
+      "suggested_fix": "r = -17 % 5  # r degeri 3 cikar",
+      "confidence": "high"
+    }
+  ]
+}

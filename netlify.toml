@@ -1,0 +1,50 @@
+# Netlify yapılandırması — Bilgisayar Olimpiyatlarına Hazırlık
+# (scripts/build_site.py tarafından üretilir; elle düzenlemeyin.)
+#
+# Netlify `netlify.toml` dosyasını YALNIZCA depo kökünden (base directory) okur
+# ve buradaki ayarlar arayüzdeki (UI) ayarları EZER. Bu yüzden yayın klasörü
+# arayüze bağımlı kalmadan burada açıkça bildirilir.
+#
+# Site tamamen STATİKTİR: derleme adımı yoktur (command yazılmamıştır). Yayımlanan
+# içerik `site/` klasörüdür ve DEPODA BULUNMAK ZORUNDADIR. Netlify kitabı
+# derlemez; site yerelde `python3 scripts/build_site.py` ile üretilip depoya
+# işlenir. `site/` depoda yoksa yayın
+# "Deploy directory 'site' does not exist" hatasıyla düşer
+# (bkz. config/KARARLAR.md → D33, D35).
+
+[build]
+  publish = "site"
+
+# Yayın içeriği site/ klasörünün kendisidir. Depo kökünde netlify.toml olduğu
+# sürece arayüzdeki "Base directory" alanı BOŞ kalmalıdır; `site` yazılırsa bu
+# dosya okunmaz ve Netlify site/site yolunu arar.
+#
+# `bilgisayar_olimpiyatlarina_hazirlik.pdf` yayımlanan PDF'in dosya adıdır (build_site.py → PDF_NAME yazarken
+# yerine koyar); adı elle yazmayın ki tek kaynaktan yönetilsin.
+#
+# PDF, her kitap sürümünde içerik olarak DEĞİŞİR; uzun önbellek, yeni sürüm
+# yayımlandığında okuyucuların eski dosyayı görmesine yol açar (bkz.
+# KARARLAR.md → D52). Bu yüzden kısa süre + must-revalidate: tarayıcı/CDN
+# her istekte ETag ile doğrular, güncelleme en geç 5 dakika içinde yayılır.
+
+[[headers]]
+  for = "/bilgisayar_olimpiyatlarina_hazirlik.pdf"
+  [headers.values]
+    Cache-Control = "public, max-age=300, must-revalidate"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+
+# Eski *.netlify.app adresi özel alan adına yönlendirilir (bkz. KARARLAR.md → D50).
+# Netlify, netlify.app alt adresini primary domaine OTOMATİK yönlendirmez
+# (otomatik yönlendirme yalnızca apex ↔ www arasındadır); bu açık 301 kuralı
+# eski adresin tüm bağlantılarını korur. `https://bilgisayar-olimpiyatlari.netlify.app`/`https://bilgisayar-olimpiyatlari.com` yer
+# tutucuları build_site.py tarafından doldurulur.
+
+[[redirects]]
+  from = "https://bilgisayar-olimpiyatlari.netlify.app/*"
+  to = "https://bilgisayar-olimpiyatlari.com/:splat"
+  status = 301
+  force = true

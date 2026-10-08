@@ -1,0 +1,505 @@
+\chapter[Permütasyon · \textit{Temel}]{Permütasyon}
+\chaptermark{Permütasyon}
+
+Bölüm 3'te nesneleri ve durumları saymanın iki temel dayanağını kurmuştuk: bağımsız adımların seçenek sayılarını çarpmak ve birbirini dışlayan ayrık durumları toplamak. Bu iki temel ilkeyi arkamıza alarak kombinatoriğin en temel yapı taşlarından birine geçiyoruz: \textbf{Sıralama}.
+
+Gerek günlük yaşamda gerekse bilgisayar algoritmalarında nesnelerin diziliş sırası belirleyici bir fark yaratır:
+\begin{itemize}
+  \item Bir kelimede harflerin diziliş sırası anlamı bütünüyle değiştirir: ``KARA'' ile ``ARAK'' tamamen aynı harflerden oluşur, ancak iki farklı kelimedir.
+  \item Bir koşu yarışında ilk üç dereceye giren atletler belirlenirken 1. olmak ile 3. olmak aynı şey değildir; derece sırası esastır.
+  \item Bir işletim sisteminin işlemciye gönderdiği görevlerin (task) çalışma sırası, sistemin kilitlenip kilitlenmeyeceğini veya kaynakların ne kadar verimli kullanılacağını belirler.
+\end{itemize}
+
+Nesnelerin belirli bir sıraya göre dizilmesine matematikte \textbf{permütasyon} (sıralı dizilim) denir. Bu bölümde faktöriyel kavramını çarpma kuralından türetecek; $n$ nesneden $r$ tanesinin sıralı seçimini ($P(n, r)$), özdeş nesnelerin yer aldığı tekrarlı permütasyonları ve dönme simetrisine sahip dairesel dizilimleri ele alacağız.
+
+% ============================================================
+% 4.1 FAKTÖRİYEL
+% ============================================================
+\section{Faktöriyel}
+
+Küçük değerlerle hesaplayabileceğimiz somut bir soruyla başlayalım: Birbirinden farklı $n$ adet kitabı düz bir rafa yan yana kaç farklı sırada dizebiliriz?
+
+Örüntüyü görmek için $n$'nin küçük değerlerini inceleyelim:
+\begin{itemize}
+  \item $n = 1$ kitap ($A$): Yalnızca $1$ dizilim vardır: $A$.
+  \item $n = 2$ kitap ($A, B$): İki dizilim mümkündür: $AB, BA \to 2$ dizilim.
+  \item $n = 3$ kitap ($A, B, C$): Kitapları tek tek listeleyelim:
+  \[ ABC, \;\; ACB, \;\; BAC, \;\; BCA, \;\; CAB, \;\; CBA \implies 6 \text{ dizilim.} \]
+  \item $n = 4$ kitap ($A, B, C, D$): 1. sıraya bu $4$ kitaptan herhangi birini koyabiliriz. 1. sıraya hangi kitabı koyarsak koyalım, geriye kalan $3$ kitap kalan $3$ pozisyona yukarıda bulduğumuz gibi $6$ farklı şekilde dizilir. Çarpma kuralı gereğince:
+  \[ 4 \times 6 = 24 \text{ dizilim.} \]
+\end{itemize}
+
+Şimdi genel duruma bakalım: Birbirinden farklı $n$ nesneyi yan yana $n$ adet boş pozisyona yerleştirmek, $n$ adımlı bir karar sürecidir:
+\[ \overline{\quad 1. \quad} \;\; \overline{\quad 2. \quad} \;\; \overline{\quad 3. \quad} \;\; \dots \;\; \overline{\quad n. \quad} \]
+\begin{enumerate}
+  \item En baştaki 1. pozisyon için elimizde $n$ farklı nesne seçeneği vardır.
+  \item 2. pozisyon için, ilk pozisyona konulan nesne hariç geriye kalan $n-1$ nesneden biri seçilir.
+  \item 3. pozisyon için geriye kalan $n-2$ nesneden biri seçilir.
+  \item Bu şekilde devam edildiğinde, sonuncu $n$. pozisyon için geriye yalnızca $1$ nesne kalır.
+\end{enumerate}
+
+Bölüm 3'te ele aldığımız çarpma kuralı uyarınca, bu adımların seçenek sayılarını çarparız:
+\[ n \times (n-1) \times (n-2) \times \dots \times 2 \times 1 \]
+Matematikte bu ardışık çarpım o kadar sık karşımıza çıkar ki kendine ait özel bir gösterimi vardır.
+
+\begin{definition}[Faktöriyel]
+$n$ pozitif bir tam sayı olmak üzere, $1$'den $n$'ye kadar olan tüm pozitif tam sayıların çarpımına $n$ \textbf{faktöriyel} denir ve $n!$ simgesiyle gösterilir:
+\[ n! = n \times (n-1) \times (n-2) \times \dots \times 3 \times 2 \times 1 \]
+Özel bir kabul olarak:
+\[ 0! = 1 \]
+olarak tanımlanır.
+\end{definition}
+
+\textbf{Neden $0! = 1$'dir?} Bu eşitlik ilk bakışta sezgilerle çelişiyor gibi görünebilir; oysa arkasında iki tutarlı gerekçe yatar:
+\begin{enumerate}
+  \item \textbf{Kombinatorik Sezgi:} $n!$, $n$ elemanlı bir kümenin elemanlarını sıralama sayısını temsil eder. Boş kümede ($n=0$) sıralanacak hiçbir eleman yoktur; hiçbir elemanı sıralamamanın tam $1$ yolu vardır (boş dizilim).
+  \item \textbf{Cebirsel Tutarlılık:} Faktöriyel fonksiyonu şu temel yineleme bağıntısını sağlar:
+  \[ n! = n \times (n-1)! \implies (n-1)! = \frac{n!}{n} \]
+  Bu eşitlikte $n = 1$ yazarsak:
+  \[ 0! = \frac{1!}{1} = \frac{1}{1} = 1 \]
+  elde edilir. Şayet $0! = 0$ kabul edilseydi, kombinatorikteki temel formüllerin tutarlılığı bozulurdu.
+\end{enumerate}
+
+\begin{theorem}
+Birbirinden farklı $n$ nesnenin yan yana doğrusal dizilimlerinin toplam sayısı $n!$'dir.
+\end{theorem}
+\begin{proof}
+İspat, yukarıda kurduğumuz $n$ adımlı karar sürecine çarpma kuralının doğrudan uygulanmasıyla tamamlanmıştır.
+\end{proof}
+
+\subsection{Kombinatorik Patlama (Combinatorial Explosion)}
+
+Faktöriyel fonksiyonu son derece hızlı büyür. İlk birkaç değere göz atalım:
+\begin{align*}
+1! &= 1 \\
+3! &= 6 \\
+5! &= 120 \\
+7! &= 5\,040 \\
+10! &= 3\,628\,800 \\
+13! &= 6\,227\,020\,800 \quad (\text{32-bit işaretli tamsayı sınırını aşar}) \\
+20! &\approx 2.43 \times 10^{18} \quad (\text{64-bit standart tamsayı sınırına dayanır}) \\
+52! &\approx 8.0658 \times 10^{67}
+\end{align*}
+
+$52!$ değerine dikkat ediniz: $52$ kartlık standart bir iskambil destesini iyice karıştırdığınızda elde ettiğiniz kart dizilimi, neredeyse kesinlikle dünya tarihi boyunca daha önce hiç kimsenin eline geçmemiş benzersiz bir dizilimdir. Çünkü $52!$, evrendeki tahmin edilen toplam atom sayısına ($10^{80}$) yaklaşacak denli devasa bir büyüklüktür.
+
+Bilgisayar biliminde olası tüm sıralamaları deneyen (brute force / kaba kuvvet) algoritmaların karmaşıklığı $O(n!)$ olarak ifade edilir. Bu patlama nedeniyle $O(n!)$ karmaşıklığındaki programlar günümüz bilgisayarlarında bile yalnızca $n \le 11-12$ gibi çok küçük sayılar için makul sürede tamamlanabilir; $n = 20$ olduğunda ise işlem süreleri pratik sınırların çok ötesine geçer.
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Aşağıdaki cebirsel ifadelerin değerini hesaplayınız ve sadeleştiriniz:
+\begin{enumerate}
+  \item $\frac{10!}{8! \times 2!}$
+  \item $n \ge 1$ için $\frac{(n+2)!}{n!}$
+\end{enumerate}
+\end{example}
+\begin{proof}[Çözüm]
+Faktöriyelin temel özelliği büyük olanın küçük cinsinden yazılabilmesidir: $(n+1)! = (n+1) \cdot n!$.
+\begin{enumerate}
+  \item $10! = 10 \times 9 \times 8!$ olarak yazılabilir:
+  \[ \frac{10!}{8! \times 2!} = \frac{10 \times 9 \times 8!}{8! \times 2} = \frac{10 \times 9}{2} = \frac{90}{2} = 45 \]
+  
+  \item Benzer biçimde $(n+2)! = (n+2)(n+1) \cdot n!$ yazılır:
+  \[ \frac{(n+2)!}{n!} = \frac{(n+2)(n+1) \cdot n!}{n!} = (n+2)(n+1) = n^2 + 3n + 2 \]
+\end{enumerate}
+\end{proof}
+
+\begin{example}[Blok / Paketleme Yöntemi]
+Anne, baba ve $3$ çocuktan oluşan $5$ kişilik bir aile düz bir sırada yan yana fotoğraf çektirecektir.
+\begin{enumerate}
+  \item Anne ve baba daima yan yana olmak şartıyla kaç farklı şekilde sıralanabilirler?
+  \item Anne ve baba kesinlikle yan yana \textbf{olmamak} şartıyla kaç farklı şekilde sıralanabilirler?
+\end{enumerate}
+\end{example}
+\begin{proof}[Çözüm]
+Bu problem saymadaki iki temel yaklaşımı örnekler:
+\begin{enumerate}
+  \item \textbf{Blok (Paketleme) Yöntemi:} Anne ($A$) ve babayı ($B$) birbirinden hiç ayrılmayacak tek bir varlık, yani bir ``blok'' gibi düşünelim: $[AB]$.
+  
+  Artık elimizde sıralanacak şu nesneler vardır:
+  \[ [AB], \;\; \text{Çocuk}_1, \;\; \text{Çocuk}_2, \;\; \text{Çocuk}_3 \]
+  Toplam $1 + 3 = 4$ nesne vardır. Bu $4$ nesne kendi arasında $4!$ farklı şekilde sıralanabilir.
+  
+  Ayrıca blok içindeki anne ve baba da kendi arasında yer değiştirebilir: $(A, B)$ veya $(B, A)$ olmak üzere $2!$ seçenek vardır.
+  
+  Çarpma kuralı gereğince toplam sıralama sayısı:
+  \[ 4! \times 2! = 24 \times 2 = 48 \]
+  farklı şekilde gerçekleşebilir.
+
+  \item \textbf{Tümleyen Yoluyla Sayma:} Bölüm 3'te gördüğümüz gibi, ``yan yana olmama'' durumunu doğrudan saymak yerine tüm durumlardan istenmeyen durumu çıkarırız:
+  \begin{align*}
+  \text{İstenen} &= \text{Tüm Sıralamalar}\\
+  &\qquad - \text{Anne ve Babanın Yan Yana Olduğu Sıralamalar}
+  \end{align*}
+  \begin{itemize}
+    \item Hiçbir kısıtlama olmaksızın $5$ kişi $5! = 120$ farklı şekilde sıralanır.
+    \item Anne ve babanın yan yana olduğu durumların sayısını az önce $48$ olarak hesapladık.
+  \end{itemize}
+  O hâlde anne ve babanın yan yana olmadığı sıralamaların sayısı:
+  \[ 120 - 48 = 72 \]
+  olarak tek bir çıkarma işlemiyle bulunur.
+\end{enumerate}
+\end{proof}
+
+\begin{example}
+Bir kitaplık rafına $4$ farklı matematik kitabı ve $3$ farklı fizik kitabı dizilecektir. Aynı dersin kitapları daima bir arada bulunmak koşuluyla bu kitaplar kaç farklı sırada dizilebilir?
+\end{example}
+\begin{proof}[Çözüm]
+Yine blok yöntemini kullanalım:
+\begin{itemize}
+  \item Matematik kitaplarını bir paket yapalım: $[M_1 M_2 M_3 M_4]$ (1 blok).
+  \item Fizik kitaplarını bir paket yapalım: $[F_1 F_2 F_3]$ (1 blok).
+\end{itemize}
+Adım adım çarpma kuralını uygulayalım:
+\begin{enumerate}
+  \item \textbf{1. Adım (Blokların dizilişi):} Elimizde $[M]$ ve $[F]$ olmak üzere $2$ blok vardır. Bu iki blok rafta $2! = 2$ farklı sırada durabilir (önce matematikler sonra fizikler ya da tam tersi).
+  \item \textbf{2. Adım (Matematik kitaplarının kendi içi):} Blok içinde $4$ farklı matematik kitabı $4! = 24$ farklı sırada dizilebilir.
+  \item \textbf{3. Adım (Fizik kitaplarının kendi içi):} Blok içinde $3$ farklı fizik kitabı $3! = 6$ farklı sırada dizilebilir.
+\end{enumerate}
+Çarpma kuralı uyarınca toplam dizilim sayısı:
+\[ 2! \times 4! \times 3! = 2 \times 24 \times 6 = 288 \]
+farklı şekilde yapılabilir.
+\end{proof}
+
+
+% ============================================================
+% 4.2 SIRALI SEÇİM: P(n, r)
+% ============================================================
+\section{Sıralı Seçim: P(n, r)}
+
+Faktöriyel bahsinde elimizdeki $n$ nesnenin \textbf{tamamını} sıraladık. Uygulamada ise çoğu zaman $n$ nesnenin tamamını değil, yalnızca belirli bir $r$ tanesini ($r \le n$) seçip sıralamak gerekir.
+
+Örneğin $10$ atletin katıldığı bir 100 metre koşusunu düşünelim. Yarış sonunda podyuma çıkacak ilk üç derece (Altın, Gümüş, Bronz madalya) belirlenecektir. Kaç farklı podyum sıralaması oluşabilir?
+\begin{itemize}
+  \item 1.lik (Altın madalya) için $10$ aday vardır.
+  \item 1. olan atlet 2. olamayacağından, 2.lik (Gümüş madalya) için geriye kalan $9$ aday vardır.
+  \item 3.lük (Bronz madalya) için geriye kalan $8$ aday vardır.
+\end{itemize}
+Çarpma kuralı gereğince toplam podyum sıralaması:
+\[ 10 \times 9 \times 8 = 720 \]
+farklı şekilde gerçekleşebilir. Burada $10$ atletin tamamını sıralamadık; yalnızca $3$ tanesini sırayla seçtik.
+
+\begin{definition}[Permütasyon: $P(n, r)$]
+$n$ ve $r$ iki doğal sayı ve $0 \le r \le n$ olsun. $n$ elemanlı bir kümeden birbirinden farklı $r$ tanesinin belirli bir sıraya göre seçilip dizilmesine $n$'nin $r$'li \textbf{permütasyonu} denir ve bu sayı $P(n, r)$ ile gösterilir.
+\end{definition}
+
+\begin{theorem}
+Her $0 \le r \le n$ için:
+\[ P(n, r) = n \times (n-1) \times (n-2) \times \dots \times (n-r+1) \]
+Bu ifade faktöriyel cinsinden şu şekilde yazılabilir:
+\[ P(n, r) = \frac{n!}{(n-r)!} \]
+\end{theorem}
+\begin{proof}
+Sıralı $r$ adet pozisyon belirleyelim:
+\[ \overline{\quad 1. \quad} \;\; \overline{\quad 2. \quad} \;\; \overline{\quad 3. \quad} \;\; \dots \;\; \overline{\quad r. \quad} \]
+\begin{itemize}
+  \item 1. pozisyon için $n$ seçenek vardır.
+  \item 2. pozisyon için $n-1$ seçenek vardır.
+  \item 3. pozisyon için $n-2$ seçenek vardır.
+  \item \dots
+  \item $k$. pozisyon için $n - (k - 1) = n - k + 1$ seçenek kalır.
+  \item Dolayısıyla sonuncu $r$. pozisyon için $n - (r - 1) = n - r + 1$ seçenek kalır.
+\end{itemize}
+Çarpma kuralı uyarınca:
+\[ P(n, r) = n(n-1)(n-2)\dots(n-r+1) \]
+elde edilir. Bu çarpımın pay ve paydasını $(n-r)!$ ile çarparsak:
+\[ P(n, r) = \frac{[n(n-1)\dots(n-r+1)] \times [(n-r)\dots 2 \cdot 1]}{(n-r)!} = \frac{n!}{(n-r)!} \]
+formülüne ulaşırız.
+\end{proof}
+
+Uç durumları kontrol edelim:
+\begin{itemize}
+  \item $r = n$ ise: $P(n, n) = \frac{n!}{(n-n)!} = \frac{n!}{0!} = \frac{n!}{1} = n!$ (Tüm nesneleri sıralama sonucuyla örtüşür).
+  \item $r = 1$ ise: $P(n, 1) = \frac{n!}{(n-1)!} = n$.
+  \item $r = 0$ ise: $P(n, 0) = \frac{n!}{n!} = 1$ ($0$ nesne seçip sıralamanın $1$ yolu vardır: boş dizilim).
+\end{itemize}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Bir sınıfta $8$ öğrenci vardır. Bu öğrenciler arasından bir başkan, bir başkan yardımcısı ve bir nöbetçi öğrenci kaç farklı şekilde seçilebilir?
+\end{example}
+\begin{proof}[Çözüm]
+Burada roller birbirinden farklıdır; yani seçim sırası önemlidir (başkan seçilmek ile nöbetçi seçilmek aynı görev değildir). Dolayısıyla bu bir sıralı seçim problemidir:
+\[ P(8, 3) = \frac{8!}{(8-3)!} = \frac{8!}{5!} = 8 \times 7 \times 6 = 336 \]
+farklı şekilde seçim yapılabilir.
+\end{proof}
+
+\begin{example}
+$S = \{1, 2, 3, 4, 5, 6, 7\}$ kümesinin elemanları kullanılarak rakamları tekrarsız dört basamaklı:
+\begin{enumerate}
+  \item Kaç farklı sayı yazılabilir?
+  \item $5$ ile başlayan kaç farklı sayı yazılabilir?
+  \item $5$ rakamını kesinlikle \textbf{içermeyen} kaç farklı sayı yazılabilir?
+\end{enumerate}
+\end{example}
+\begin{proof}[Çözüm]
+\begin{enumerate}
+  \item $7$ farklı rakamdan $4$ tanesi seçilip sıralanacaktır:
+  \[ P(7, 4) = 7 \times 6 \times 5 \times 4 = 840 \]
+  
+  \item Sayı $5$ ile başlayacaktır ($\overline{5\;b\;c\;d}$):
+  Binler basamağı için $5$ sabittir ($1$ seçenek). Geriye kalan $3$ basamağa, kalan $6$ rakamdan ($\{1, 2, 3, 4, 6, 7\}$) seçim yapılacaktır:
+  \[ 1 \times P(6, 3) = 1 \times (6 \times 5 \times 4) = 120 \]
+
+  \item $5$ rakamı kullanılmayacaksa, seçim kümemizden $5$'i çıkarırız. Geriye $6$ rakam kalır: $\{1, 2, 3, 4, 6, 7\}$. Bu $6$ rakamla yazılabilecek $4$ basamaklı sayılar:
+  \[ P(6, 4) = 6 \times 5 \times 4 \times 3 = 360 \]
+  farklı şekilde yazılabilir.
+\end{enumerate}
+\end{proof}
+
+\begin{example}
+$6$ kişi arasından $4$ kişilik sıralı bir bayrak koşusu takımı kurulacaktır. Adaylardan biri olan Can'ın bu takımda \textbf{mutlaka yer alması} şartıyla kaç farklı takım sıralaması oluşturulabilir?
+\end{example}
+\begin{proof}[Çözüm]
+Bu problemi iki adımlı bir süreçle ele alalım:
+\begin{enumerate}
+  \item \textbf{1. Adım (Can'ın pozisyonunu belirleme):} Can bayrak koşusunda $1., 2., 3.$ veya $4.$ koşucu olabilir. Can için $4$ farklı pozisyon seçeneği vardır.
+  \item \textbf{2. Adım (Kalan pozisyonları doldurma):} Can yerleştirildikten sonra geriye $3$ boş pozisyon kalır. Can dışındaki geriye kalan $5$ aday arasından bu $3$ pozisyona koşucular seçilip dizilecektir:
+  \[ P(5, 3) = 5 \times 4 \times 3 = 60 \]
+\end{enumerate}
+Çarpma kuralı gereğince:
+\[ 4 \times P(5, 3) = 4 \times 60 = 240 \]
+farklı takım kurulabilir.
+
+\textit{Alternatif Yol (Tümleyenle Çözüm):}
+\[ \text{Can'ın Olduğu} = \text{Tüm Takımlar} - \text{Can'ın Olmadığı Takımlar} \]
+\[ = P(6, 4) - P(5, 4) = (6 \times 5 \times 4 \times 3) - (5 \times 4 \times 3 \times 2) = 360 - 120 = 240 \]
+Her iki yol da aynı sonuca ulaştırır.
+\end{proof}
+
+
+% ============================================================
+% 4.3 TEKRARLI PERMÜTASYON
+% ============================================================
+\section{Tekrarlı Permütasyon}
+
+Şu ana kadar incelediğimiz tüm durumlarda sıralanan nesneler birbirinden tamamen farklıydı. Peki sıralamak istediğimiz bazı nesneler birbirinin tıpatıp aynısı (özdeş) olursa durum nasıl değişir?
+
+Somut bir soruyla başlayalım: ``KARA'' kelimesinin harfleriyle $4$ harfli kaç farklı anlamlı ya da anlamsız kelime yazılabilir?
+
+Eğer bu iki $A$ harfi birbirinden farklı olsaydı (örneğin biri kırmızı $A_1$, diğeri mavi $A_2$ olsaydı), $4$ farklı harf $4! = 24$ farklı şekilde dizilirdi. 
+Bu $24$ dizilimden ikisini yazalım:
+\[ K \; A_1 \; R \; A_2 \quad \text{ve} \quad K \; A_2 \; R \; A_1 \]
+Harflerin üzerindeki indisleri kaldırdığımızda her iki dizilim de ``KARA'' kelimesine dönüşür; çünkü iki $A$ harfi kendi arasında yer değiştirdiğinde yeni bir kelime oluşmaz. 
+
+Her bir kelime, $A$'ların kendi arasındaki $2! = 2$ farklı yer değişiminden ötürü tam $2$ kez sayılmıştır. Dolayısıyla gerçek farklı kelime sayısını bulmak için toplam permütasyon sayısını $2!$'e bölmemiz gerekir:
+\[ \frac{4!}{2!} = \frac{24}{2} = 12 \]
+
+İşte bu mantık \textbf{tekrarlı permütasyon}un temelini oluşturur.
+
+\begin{theorem}[Tekrarlı Permütasyon Formülü]
+Toplam $n$ adet nesnenin;
+$n_1$ tanesi 1. türden özdeş,
+$n_2$ tanesi 2. türden özdeş,
+\dots,
+$n_k$ tanesi $k$. türden özdeş olsun ($n_1 + n_2 + \dots + n_k = n$).
+
+Bu $n$ nesnenin yan yana farklı doğrusal dizilimlerinin toplam sayısı:
+\[ \frac{n!}{n_1! \times n_2! \times \dots \times n_k!} \]
+formülüyle hesaplanır.
+\end{theorem}
+\begin{proof}
+Tüm nesneleri önce birbirinden farklıymış gibi düşünelim (her birine geçici bir numara verelim). Bu durumda $n!$ farklı dizilim elde edilir. 
+
+Şimdi bu numaraları kaldıralım. 1. türden $n_1$ adet özdeş nesne kendi arasında $n_1!$ farklı şekilde yer değiştirebilir; fakat bu yer değişimleri dizilimi değiştirmez. Benzer biçimde 2. türden nesneler $n_2!$ kez, \dots, $k$. türden nesneler $n_k!$ kez aynı dizilimi üretir.
+
+Çarpma kuralı gereğince her bir özgün dizilim, bu yapay numaralandırma yüzünden tam olarak
+\[ n_1! \times n_2! \times \dots \times n_k! \]
+defa fazladan sayılmıştır. Gerçek dizilim sayısını bulmak için toplam sayıyı bu katsayıya böleriz.
+\end{proof}
+
+\subsection{Izgara Üzerinde En Kısa Yollar (Kafes Yolları)}
+
+Tekrarlı permütasyonun sıkça karşımıza çıkan uygulamalarından biri koordinat düzlemindeki kafes (ızgara) yollarıdır.
+
+Düzlemde $(0, 0)$ noktasında bulunan bir robot, her adımda yalnızca $1$ birim \textbf{Sağa} ($S$) ya da $1$ birim \textbf{Yukarı} ($Y$) hareket edebilmektedir. Bu robot $(m, n)$ noktasına en kısa yoldan kaç farklı rota izleyerek ulaşabilir?
+
+\begin{center}
+\textit{Sezgi:} Robotun $(0, 0)$'dan $(m, n)$'ye varabilmesi için toplamda tam $m$ defa Sağa ($S$) ve tam $n$ defa Yukarı ($Y$) adım atması şarttır. 
+\end{center}
+
+Her rota, $m$ adet $S$ ve $n$ adet $Y$ harfinden oluşan $m+n$ uzunluğunda bir dizilimdir. Örneğin $(2, 3)$ noktasına gitmek için:
+\[ S \; S \; Y \; Y \; Y \quad \text{veya} \quad S \; Y \; S \; Y \; Y \quad \text{veya} \quad Y \; Y \; S \; S \; Y \]
+rotalarından biri izlenir. Tüm $S$'ler birbiriyle özdeş, tüm $Y$'ler birbiriyle özdeştir. Dolayısıyla rota sayısı doğrudan bir tekrarlı permütasyondur:
+\[ \frac{(m+n)!}{m! \cdot n!} \]
+(Bu önemli bağıntıyı Bölüm 5'te kombinasyon ve Bölüm 9'da kafes yolları ile yineleme bağıntıları bağlamında yeniden ele alacağız).
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+``MATEMATİK'' kelimesinin harfleri yer değiştirilerek $9$ harfli anlamlı ya da anlamsız kaç farklı kelime yazılabilir?
+\end{example}
+\begin{proof}[Çözüm]
+Önce kelimedeki harflerin frekanslarını (tekrar sayılarını) çıkaralım:
+\begin{itemize}
+  \item M harfi: $2$ tane
+  \item A harfi: $2$ tane
+  \item T harfi: $2$ tane
+  \item E harfi: $1$ tane
+  \item İ harfi: $1$ tane
+  \item K harfi: $1$ tane
+\end{itemize}
+Toplam harf sayısı: $2 + 2 + 2 + 1 + 1 + 1 = 9$'dur.
+Tekrarlı permütasyon formülünü uygulayalım:
+\[ \frac{9!}{2! \times 2! \times 2! \times 1! \times 1! \times 1!} = \frac{362\,880}{2 \times 2 \times 2} = \frac{362\,880}{8} = 45\,360 \]
+farklı kelime yazılabilir.
+\end{proof}
+
+\begin{example}
+$(0, 0)$ noktasından $(4, 3)$ noktasına yalnızca sağa ($S$) ve yukarı ($Y$) adımlarla gitmek isteyen bir hareketli, yol üzerindeki $(2, 1)$ noktasından \textbf{mutlaka geçmek} şartıyla kaç farklı en kısa rota izleyebilir?
+\end{example}
+\begin{proof}[Çözüm]
+Hareketi iki ardışık etaba ayıralım (çarpma kuralı):
+\begin{enumerate}
+  \item \textbf{1. Etap: $(0, 0) \to (2, 1)$ rotası:}
+  Toplam $2$ Sağa ve $1$ Yukarı adım atılmalıdır (toplam $3$ adım):
+  \[ \frac{(2+1)!}{2! \times 1!} = \frac{3!}{2! \times 1!} = 3 \text{ rota.} \]
+  (Bu rotalar: $SSY, SYS, YSS$'dir).
+
+  \item \textbf{2. Etap: $(2, 1) \to (4, 3)$ rotası:}
+  $x$ koordinatı $2$'den $4$'e ($2$ Sağa), $y$ koordinatı $1$'den $3$'e ($2$ Yukarı) gidecektir (toplam $4$ adım):
+  \[ \frac{(2+2)!}{2! \times 2!} = \frac{4!}{2! \times 2!} = \frac{24}{4} = 6 \text{ rota.} \]
+\end{enumerate}
+Çarpma kuralı uyarınca $(2, 1)$ üzerinden geçen toplam rota sayısı:
+\[ 3 \times 6 = 18 \]
+farklı şekilde seçilebilir.
+\end{proof}
+
+\begin{example}
+$2, 2, 0, 3, 3, 5$ rakamları kullanılarak altı basamaklı kaç farklı doğal sayı yazılabilir?
+\end{example}
+\begin{proof}[Çözüm]
+Burada sıfır ($0$) rakamının en başa gelememesi kısıtı vardır (en başa sıfır gelirse sayı $5$ basamaklı olur). İki yöntemle çözebiliriz:
+
+\textbf{1. Yöntem (Tümleyenle Çözüm):}
+\begin{itemize}
+  \item Hiçbir kısıtlama olmaksızın ($0$ başta da olabilseydi) $6$ rakamın tekrarlı permütasyonu:
+  Rakamlar: iki adet $2$, iki adet $3$, bir adet $0$, bir adet $5$.
+  \[ \text{Tüm Durumlar} = \frac{6!}{2! \times 2! \times 1! \times 1!} = \frac{720}{4} = 180 \]
+  \item Sıfırın en başta olduğu istenmeyen durumlar ($\overline{0 \dots}$):
+  İlk basamağa $0$ sabitlenir; kalan $5$ pozisyona $\{2, 2, 3, 3, 5\}$ rakamları dizilir:
+  \[ \text{İstenmeyen Durumlar} = \frac{5!}{2! \times 2! \times 1!} = \frac{120}{4} = 30 \]
+\end{itemize}
+Geçerli altı basamaklı sayıların sayısı:
+\[ 180 - 30 = 150 \]
+olur.
+
+\textbf{2. Yöntem (Oran / Simetri Sezgisi):}
+Toplam $6$ rakamdan $5$ tanesi sıfır dışındadır ($2, 2, 3, 3, 5$). Rakamların simetrisinden ötürü, tüm dizilimlerin tam $5/6$'sında ilk basamağa sıfırdan farklı bir rakam gelir:
+\[ 180 \times \frac{5}{6} = 150 \]
+Her iki yöntem de aynı sonucu verir.
+\end{proof}
+
+
+% ============================================================
+% 4.4 DAİRESEL PERMÜTASYON
+% ============================================================
+\section{Dairesel Permütasyon}
+
+Şu ana kadar tüm sıralamaları düz bir çizgi üzerinde yaptık. Doğrusal bir sırada belirgin bir başlangıç (en sol) ve bitiş (en sağ) noktası vardır. 
+
+Peki nesneleri \textbf{yuvarlak bir masa} etrafına dizersek ne değişir?
+
+Küçük bir örnek üzerinden inceleyelim: $3$ arkadaş ($A, B, C$) yuvarlak bir masaya oturacaktır.
+Düz bir sırada bu $3$ kişi $3! = 6$ farklı şekilde otururdu:
+\[ ABC, \;\; BCA, \;\; CAB, \;\; ACB, \;\; BAC, \;\; CBA \]
+Şimdi yuvarlak masaya bakalım. $ABC$ diziliminde:
+$A$'nın sağında $B$, $B$'nin sağında $C$, $C$'nin sağında $A$ oturur.
+Herkesi aynı anda bir koltuk sağa kaydırırsak oturma düzeni $CAB$ olur; bir koltuk daha kaydırırsak $BCA$ olur. 
+
+Fakat dikkat edilirse kimsenin sağındaki ya da solundaki komşusu değişmemiştir. Masayı kendi ekseni etrafında döndürmek yeni bir oturma düzeni yaratmaz. Dairesel düzende mutlak koltuk numaraları değil, \textbf{kişilerin birbirine göre bağıl konumları} önemlidir.
+
+Bu $3$ doğrusal dizilim ($ABC, BCA, CAB$) dairesel masa etrafında \textbf{aynı dizilime} karşılık gelir.
+Benzer biçimde diğer $3$ dizilim ($ACB, BAC, CBA$) de ikinci bir dairesel dizilim oluşturur.
+Dolayısıyla $3$ kişinin yuvarlak masa etrafındaki farklı oturma düzeni sayısı:
+\[ \frac{3!}{3} = 2 \]
+olur.
+
+\begin{theorem}[Dairesel Permütasyon Formülü]
+Birbirinden farklı $n$ adet nesnenin dairesel bir hat etrafındaki farklı dizilimlerinin toplam sayısı:
+\[ (n - 1)! \]
+formülüyle verilir.
+\end{theorem}
+\begin{proof}
+Bu teoremi iki farklı bakış açısıyla ispatlayabiliriz:
+
+\textbf{1. İspat (Fazladan Sayımı Bölme):}
+$n$ farklı nesneyi önce düz bir sırada dizelim ($n!$ seçenek). Yuvarlak masa etrafında bu dizilimi her bir pozisyon döndürdüğümüzde ($1$ adım, $2$ adım, \dots, $n-1$ adım döndürme) toplam $n$ adet doğrusal dizilim birbirinin tıpatıp aynısı olan tek bir dairesel düzen üretir. Her düzen $n$ kez sayıldığı için:
+\[ \frac{n!}{n} = \frac{n \times (n-1)!}{n} = (n-1)! \]
+bulunur.
+
+\textbf{2. İspat (Referans Sabitleme Yöntemi):}
+Masaya ilk gelen kişiyi düşünelim. Masa henüz boştur ve dairesel simetriye sahiptir; dolayısıyla bu ilk kişinin hangi sandalyeye oturduğu fark yaratmaz ($1$ seçenek). 
+
+İlk kişi bir sandalyeye oturduğu anda dairesel simetri kırılır. Artık masada ``o kişinin sağı'', ``o kişinin karşısı'', ``o kişinin iki koltuk solu'' gibi sabit referans pozisyonları oluşmuştur. Geriye kalan $n-1$ kişi, bu referans noktasına göre sanki düz bir sıradaymış gibi doğrusal olarak yerleşir. Bu da $(n-1)!$ farklı şekilde yapılabilir.
+\end{proof}
+
+\subsection{Dönen ve Ters Çevrilebilen Dizilimler (Bileklik ve Anahtarlık)}
+
+Yuvarlak bir masa iki boyutludur; masayı ters yüz edemezsiniz. Ancak bir \textbf{anahtarlık halkası} ya da boncuklardan oluşan bir \textbf{bileklik} üç boyutlu uzayda serbestçe ters çevrilebilir.
+
+Bir bilekliği masanın üzerine koyup yukarıdan baktığınızda saat yönündeki sıralama, bilekliği arkasına çevirdiğinizde saat yönünün tersi hâline gelir. Yansıma (ters yüz etme) simetrisi nedeniyle her dairesel düzen bir de tersten kendisiyle eşleşir.
+
+\begin{theorem}[Ters Çevrilebilen Dairesel Dizilimler]
+Birbirinden farklı $n$ nesnenin (örneğin anahtarların ya da boncukların), arkası çevrilebilen dairesel bir halka üzerindeki farklı dizilimlerinin sayısı:
+\[ \frac{(n-1)!}{2} \]
+formülüyle hesaplanır ($n \ge 3$).
+\end{theorem}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+$6$ diplomat yuvarlak bir masa etrafında toplantı yapacaktır.
+\begin{enumerate}
+  \item Hiçbir kısıtlama olmaksızın kaç farklı şekilde oturabilirler?
+  \item Belirli iki diplomatın (Ali ve Burak) \textbf{daima yan yana} oturması şartıyla kaç farklı şekilde oturabilirler?
+\end{enumerate}
+\end{example}
+\begin{proof}[Çözüm]
+\begin{enumerate}
+  \item $6$ kişi dairesel masa etrafında:
+  \[ (6 - 1)! = 5! = 120 \]
+  farklı şekilde oturabilir.
+
+  \item Blok yöntemini uygulayalım: Ali ve Burak'ı tek bir blok yapalım: $[AB]$.
+  Masada yer alacak varlıklar: $[AB]$ bloku ve geriye kalan $4$ diplomat olmak üzere toplam $1 + 4 = 5$ nesnedir.
+  \begin{itemize}
+    \item Bu $5$ nesne yuvarlak masa etrafına $(5 - 1)! = 4! = 24$ farklı şekilde dizilir.
+    \item Blok içindeki Ali ve Burak kendi arasında $2! = 2$ farklı sırada oturabilir ($AB$ veya $BA$).
+  \end{itemize}
+  Çarpma kuralı gereğince toplam oturma düzeni sayısı:
+  \[ 4! \times 2! = 24 \times 2 = 48 \]
+  olur.
+\end{enumerate}
+\end{proof}
+
+\begin{example}
+$4$ kadın ve $4$ erkek, yuvarlak bir masa etrafında \textbf{herhangi iki kadın yan yana gelmeyecek} (yani bir kadın, bir erkek şeklinde ardışık) biçimde kaç farklı şekilde oturabilir?
+\end{example}
+\begin{proof}[Çözüm]
+Bu tür ardışık dizilim problemlerinde iki aşamalı bir yerleştirme stratejisi izlenir:
+\begin{enumerate}
+  \item \textbf{1. Aşama (Erkeklerin yerleşimi):} Önce $4$ erkeği yuvarlak masaya oturtalım. Dairesel permütasyon kuralı gereğince $4$ erkek masaya:
+  \[ (4 - 1)! = 3! = 6 \]
+  farklı şekilde oturur.
+  
+  \item \textbf{2. Aşama (Kadınların yerleşimi):} Erkekler oturduktan sonra, aralarında tam $4$ adet boş sandalye oluşur:
+  \[ E_1 \;\; \overline{\quad} \;\; E_2 \;\; \overline{\quad} \;\; E_3 \;\; \overline{\quad} \;\; E_4 \;\; \overline{\quad} \]
+  \textbf{Buradaki kritik nokta:} Erkekler masaya oturduğu anda dairesel simetri kırılmıştır. Kadınlar için bu $4$ sandalye artık özdeş değildir; örneğin biri ``$E_1$ ile $E_2$'nin arası'', diğeri ``$E_2$ ile $E_3$'ün arası''dır. Dolayısıyla kadınlar bu $4$ sandalyeye dairesel değil, \textbf{doğrusal} olarak dizilirler:
+  \[ 4! = 24 \text{ seçenek.} \]
+\end{enumerate}
+Çarpma kuralı uyarınca toplam oturma düzeni sayısı:
+\[ (4 - 1)! \times 4! = 6 \times 24 = 144 \]
+farklı şekilde gerçekleşebilir.
+\end{proof}
+
+\begin{example}
+$7$ farklı anahtar, maskotsuz (halkası simetrik) bir anahtarlığa kaç farklı şekilde takılabilir?
+\end{example}
+\begin{proof}[Çözüm]
+Anahtarlık ters çevrilebildiğinden yansıma simetrisi devreye girer:
+\[ \frac{(7 - 1)!}{2} = \frac{6!}{2} = \frac{720}{2} = 360 \]
+farklı şekilde takılabilir.
+\end{proof}

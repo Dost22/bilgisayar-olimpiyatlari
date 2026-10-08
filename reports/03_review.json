@@ -1,0 +1,15 @@
+{
+  "file": "03_saymanin_temel_ilkeleri.tex",
+  "findings": [
+    {
+      "file": "03_saymanin_temel_ilkeleri.tex",
+      "line_hint": 272,
+      "type": "math_error",
+      "severity": "minor",
+      "excerpt": "2 Yazı'dan az içeren bitişler 7 tanedir ($TT$, $YTT$, $TYTT$, $YYTT$, $YTYTT$, $TYYTT$, $TYTYTT$)",
+      "issue": "Parantez içinde listelenen dizilimlerden 4 tanesi ($YYTT$, $YTYTT$, $TYYTT$, $TYTYTT$) tam olarak 2 Yazı içermektedir; dolayısıyla '2 Yazı'dan az' ifadesi bu elemanlarla çelişmektedir. Kastedilen '3 Yazı'dan az' (yani en fazla 2 Yazı içeren ve $TT$ ile biten) durumlardır.",
+      "suggested_fix": "'2 Yazı'dan az içeren bitişler 7 tanedir' yerine '3 Yazı'dan az (en fazla 2 Yazı) içeren bitişler 7 tanedir' veya '$TT$ ile biten (en fazla 2 Yazı içeren) durumlar 7 tanedir' yazılmalıdır.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "findings": [
+    {
+      "file": "B32->B36",
+      "line_hint": 0,
+      "type": "bad_reference",
+      "severity": "critical",
+      "excerpt": "Bölüm 32 Çözümleri: İleri Sayma ve Kombinatorik",
+      "issue": "Bölüm 36'nın alt başlıkları 'Bölüm 32 Çözümleri', 'Bölüm 33 Çözümleri' ve 'Bölüm 34 Çözümleri' olmasına karşın, içerikte çözülen örnekler Bölüm 32, 33 ve 34'teki alıştırma problemleriyle (ör. 4 matematikçi 5 bilgisayarcı, 12 kişilik yuvarlak masa, n^5 - 5n^3 + 4n, 1/x + 1/y = 1/2024 vb.) uyuşmamakta; tamamen alakasız yeni problemler çözülmektedir.",
+      "suggested_fix": "Bölüm 36'daki içerik, Bölüm 32, 33 ve 34'te öğrencilere yöneltilen alıştırma sorularının birebir çözümlerini ve ipuçlarını içerecek şekilde güncellenmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "B26->B27",
+      "line_hint": 0,
+      "type": "prerequisite_violation",
+      "severity": "major",
+      "excerpt": "MST (Minimum Spanning Tree) ve Kesit Özelliği",
+      "issue": "Graf tanımı, düğüm/kenar kavramları ve bilgisayarda graf temsilleri (komşuluk matrisi ve listesi) ilk kez Bölüm 27'de (Graflar ve Arama) tanıtılmaktadır. Ancak Bölüm 26'da (Greedy Yaklaşımı) henüz graf temelleri verilmeden MST ve Kesit Özelliği işlenmiş; ardından Bölüm 27'de bu konu Kruskal ve Prim sezgisiyle bir kez daha ele alınmıştır.",
+      "suggested_fix": "MST ve Kesit Özelliği konusu Bölüm 26'dan kaldırılıp Bölüm 27'deki Kruskal ve Prim algoritmaları başlığı altına taşınmalı; Bölüm 26'da greedy stratejisi aralık seçimi ve kesirli sırt çantası gibi graf önkoşulu gerektirmeyen problemlerle sınırlandırılmalıdır.",
+      "confidence": "high"
+    },
+    {
+      "file": "B12->B13",
+      "line_hint": 0,
+      "type": "duplicated_example",
+      "severity": "major",
+      "excerpt": "[IMO 1959] Her $n$ pozitif tamsayısı için \\[ \\frac{21n + 4}{14n + 3} \\] kesrinin sadeleştirilemez olduğunu gösteriniz.",
+      "issue": "IMO 1959 Soru 1 ((21n + 4)/(14n + 3) kesrinin sadeleştirilemezliği), hem Bölüm 12'de (Asal Sayılar) hem de hemen ardındaki Bölüm 13'te (EBOB ve EKOK) bağımsız birer çözümlü örnek olarak sıfırdan çözülmüştür.",
+      "suggested_fix": "Örnek Bölüm 13'te Öklid algoritmasının tipik bir uygulaması olarak korunmalı, Bölüm 12'den çıkarılmalı veya Bölüm 13'teki çözümde Bölüm 12'deki aralarında asallık yaklaşımına çapraz referans verilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "B16->B17",
+      "line_hint": 0,
+      "type": "duplicated_example",
+      "severity": "major",
+      "excerpt": "$8 \\times 8$ boyutundaki standart bir satranç tahtasının karşılıklı iki çapraz köşesi (örneğin sol alt $a1$ ve sağ üst $h8$) kesilip atılıy",
+      "issue": "Karşılıklı iki çapraz köşesi kesilmiş 8x8 satranç tahtasının 1x2 domino taşlarıyla kaplanamayacağını kanıtlama problemi, hem Bölüm 16'da (Renklendirme Argümanları) hem de Bölüm 17'de (İnvaryant) çözümlü örnek olarak mükerrer biçimde yer almaktadır.",
+      "suggested_fix": "Bölüm 17'deki örnek farklı bir invaryant problemiyle değiştirilmeli ya da Bölüm 16'daki renklendirme çözümüne atıfta bulunularak siyah-beyaz kare farkının değişmezlik ilkesiyle ilişkisi kısaca özetlenmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "B9->B25",
+      "line_hint": 0,
+      "type": "duplicated_example",
+      "severity": "minor",
+      "excerpt": "[Hanoi Kuleleri] Üç direk ($A, B, C$) ve başlangıçta $A$ direğinde büyük olanlar altta, küçük olanlar üstte olacak şekilde dizilmiş farklı b",
+      "issue": "Hanoi Kuleleri problemi hem Bölüm 9'da (Yineleme Bağıntıları) hem de Bölüm 25'te (Rekürsiyon ve DP) bağımsız birer örnek olarak sıfırdan modellenmektedir. Bölüm 25'te Bölüm 9'da kurulan yineleme bağıntısına (T(n) = 2T(n-1) + 1) atıf yapılmamaktadır.",
+      "suggested_fix": "Bölüm 25'teki Hanoi Kuleleri örneğinde Bölüm 9'a açık atıf yapılarak yineleme bağıntısının rekürsif fonksiyon koduna nasıl dönüştüğü vurgulanmalı, problem tanımı tekrarından kaçınılmalıdır.",
+      "confidence": "medium"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "file": "20_karmasiklik_ve_bigo.tex",
+  "findings": [
+    {
+      "file": "20_karmasiklik_ve_bigo.tex",
+      "line_hint": 223,
+      "type": "bad_reference",
+      "severity": "minor",
+      "excerpt": "Bu analiz, Bölüm 12'de göreceğimiz Eratosthenes kalburunun karmaşıklık hesabının da temelini oluşturur.",
+      "issue": "Bölüm 12 (Asal Sayılar) kitabın akışında Bölüm 20'den önce yer almaktadır; bu nedenle 'göreceğimiz' ifadesi zamanlama ve referans açısından hatalıdır.",
+      "suggested_fix": "'Bu analiz, Bölüm 12'de gördüğümüz Eratosthenes kalburunun karmaşıklık hesabının da temelini oluşturur.' şeklinde düzeltilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "20_karmasiklik_ve_bigo.tex",
+      "line_hint": 328,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "çağırdığınız rekürsif (rekürsif) fonksiyonlar da bellek tüketir.",
+      "issue": "Parantez içi açıklama yanlışlıkla terimin kendisini tekrarlamıştır ('rekürsif (rekürsif)'). Terminoloji sözleşmesine göre terim ya doğrudan 'rekürsif' olarak kullanılmalı ya da ilk geçişte İngilizce karşılığıyla 'rekürsif (recursive)' olarak verilmelidir.",
+      "suggested_fix": "'çağırdığınız rekürsif fonksiyonlar da bellek tüketir.' veya 'çağırdığınız rekürsif (recursive) fonksiyonlar da bellek tüketir.' olarak düzeltilmelidir.",
+      "confidence": "high"
+    }
+  ]
+}

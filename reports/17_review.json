@@ -1,0 +1,35 @@
+{
+  "file": "17_invaryant_ve_monovaryant.tex",
+  "findings": [
+    {
+      "file": "17_invaryant_ve_monovaryant.tex",
+      "line_hint": 105,
+      "type": "duplicated_example",
+      "severity": "major",
+      "excerpt": "$8 \\times 8$ boyutundaki standart bir satranç tahtasının karşılıklı iki çapraz köşesi (örneğin sol alt $a1$ ve sağ üst $h8$) kesilip atılıyor. Kalan 62 karelik alanı, her biri $1 \\times 2$ boyutunda olan 31 adet domino taşı ile eksiksiz örtmek mümkün müdür?",
+      "issue": "Bu problem ve çözümü, bir önceki bölüm olan Bölüm 16'da (16_parite_ve_simetri.tex) neredeyse birebir aynı metinle çözümlü örnek olarak zaten işlenmiştir.",
+      "suggested_fix": "Örnek yerine invaryant konusunu pekiştiren farklı bir klasik problem (örneğin ızgara köşegenlerindeki işaret değişimleri, 15-bulmacası permütasyon paritesi veya tahtada $a, b \\to a+b-1$ işlemi) eklenmeli ya da Bölüm 16'daki örneğe kısa bir atıfla geçilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "17_invaryant_ve_monovaryant.tex",
+      "line_hint": 222,
+      "type": "logic_gap",
+      "severity": "critical",
+      "excerpt": "Sistem için alttan sınırlı bir potansiyel fonksiyonu tanımlanabilir:\n\\[\n\\Phi = \\sum_{1 \\le i < j \\le n} |x_i - x_j| \\quad \\text{veya} \\quad \\sum_{i=1}^n \\left( \\sum_{j=1}^{n-1} j \\cdot x_{i+j} \\right)^2\n\\]\nNegatif bir sayının pozitife dönmesi durum uzayında ters sıralanmış çiftlerin (inversiyonların) azalmasını sağlar. Durum uzayı sonlu sayıda permütasyonla ilişkili olduğundan süreç sonlu adımda durmak zorundadır.",
+      "issue": "Reel sayılar üzerinde tanımlı bu süreçte (klasik IMO 1986 Soru 3 türevi) sunulan sözde ispat tamamen temelsizdir. Verilen birinci potansiyel fonksiyon (mutlak farklar toplamı) monovaryant değildir. Ayrıca reel sayılar her adımda değiştiğinden durum uzayı permütasyonlarla sonlu bir kümede kalmaz; karesel potansiyelin her adımda kesin azaldığı veya durum uzayının neden sonlu olduğu gösterilmemiştir.",
+      "suggested_fix": "Problemin karesel monovaryantı (örneğin $\\Phi(x) = \\sum_{i=1}^n (s_i)^2$ şeklinde uygun tanımlanmış kısmi toplamlar veya $E = \\sum (x_i - x_{i+1})^2$ formu) açıkça seçilip hamle altındaki farkı $\\Delta \\Phi < 0$ olarak tam ispatlanmalı veya daha temel/açıkça gösterilebilen bir monovaryant örneği ile değiştirilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "17_invaryant_ve_monovaryant.tex",
+      "line_hint": 235,
+      "type": "logic_gap",
+      "severity": "major",
+      "excerpt": "Bir satranç tahtasında bazı karelere taşlar konmuştur. Her saniye, en az 3 boş komşusu (ortak kenara sahip) olan bir taştan bir tanesi tahtadan kaldırılmaktadır. Başlangıçta tahtada kaç taş olursa olsun, bu sürecin sonlu adımda duracağını kanıtlayınız.",
+      "issue": "Örnek sorusunda sorulan problem taş eksiltmenin sonlanmasıdır (ki çözümde tek satırda taş sayısı azalır denerek geçilmiştir). Ancak çözümün geri kalan büyük kısmında soru metninde hiç sorulmayan 'virüs yayılımı / çevre monovaryantı' problemi çözülmektedir. Soru metni ile çözüm birbiriyle uyumsuzdur.",
+      "suggested_fix": "Örnek metni doğrudan virüs yayılımı problemine çevrilmelidir: 'Bir $8 \\times 8$ satranç tahtasında başlangıçta bazı kareler enfektedir. Her adımda en az iki enfekte komşusu olan sağlıklı bir kare de enfekte olmaktadır. Tüm tahtanın enfekte olabilmesi için başlangıçta en az kaç enfekte kare bulunmalıdır?'",
+      "confidence": "high"
+    }
+  ]
+}

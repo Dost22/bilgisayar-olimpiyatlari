@@ -1,0 +1,634 @@
+\chapter[Taban Aritmetiği · \textit{İleri}]{Taban Aritmetiği}
+\chaptermark{Taban Aritmetiği}
+
+Günlük hayatta sayıları neredeyse istisnasız onluk sistemde yazar ve düşünürüz: $354$ sayısı bizim için üç yüz elli dörttür. Ancak doğanın veya matematiğin kendisinde $10$ sayısına tanınmış nesnel bir ayrıcalık yoktur. İnsanlığın onluk sistemi benimsemesindeki temel etken, iki elimizde toplam on parmağımızın bulunmasıdır. Şayet sekiz parmağımız olsaydı, bugün muhtemelen sekizlik sistemi kullanıyor olacaktık. 
+
+Bilgisayar biliminde ise fiziksel gerçeklik farklıdır: Sayısal devreler transistörlerden oluşur ve bir transistör temel olarak iki kararlı duruma sahiptir: ``elektrik akımı var'' (yüksek voltaj, $1$) veya ``elektrik akımı yok'' (düşük voltaj, $0$). Bu nedenle modern bilgisayarların ana dili ikili (binary) tabandır. Dahası, uzun ikili dizileri daha okunabilir kılmak adına sekizli (octal) ve onaltılı (hexadecimal) tabanlar tercih edilir.
+
+Bu bölümde pozisyonel sayı sistemlerinin matematiksel temellerini, tabanlar arası dönüşüm yöntemlerini, farklı tabanlarda aritmetik işlemleri ve ikili sistemin algoritmik problem çözmedeki yerini inceleyeceğiz.
+
+\section{Taban ve Dönüşüm}
+
+\subsection{Pozisyonel Sayı Sistemi ve Sezgi}
+
+Bir sayıyı yazarken her bir rakamın değeri, bulunduğu basamağa (pozisyona) bağlıdır. Örneğin $10$ tabanında yazılmış $354$ sayısını basamak çözümlemesiyle ele alalım:
+\[
+354 = 3 \cdot 100 + 5 \cdot 10 + 4 \cdot 1 = 3 \cdot 10^2 + 5 \cdot 10^1 + 4 \cdot 10^0
+\]
+Buradaki temel ilke şudur: Her basamak, tabanın ($10$'un) artan bir kuvvetini temsil eder ve kullanılan rakamlar daima $\{0, 1, 2, \dots, 9\}$ kümesindendir; yani tabandan kesinlikle küçüktür.
+
+Tabanımız $10$ yerine $2$ olsaydı basamak değerleri $2$'nin kuvvetleri ($2^0=1, 2^1=2, 2^2=4, 2^3=8, \dots$) olur ve kullanabileceğimiz rakamlar yalnızca $\{0, 1\}$ kümesinden seçilirdi. Örneğin $(101)_2$ sayısını açarsak:
+\[
+(101)_2 = 1 \cdot 2^2 + 0 \cdot 2^1 + 1 \cdot 2^0 = 4 + 0 + 1 = 5
+\]
+elde ederiz. Benzer biçimde taban $7$ seçilseydi basamak ağırlıkları $7^0, 7^1, 7^2, \dots$ olacak ve izin verilen rakamlar $\{0, 1, 2, 3, 4, 5, 6\}$ kümesini oluşturacaktı.
+
+Bu sezgiyi matematiksel bir tanıma dönüştürelim.
+
+\begin{definition}[Sayı Tabanı ve Pozisyonel Gösterim]
+$b \ge 2$ bir tamsayı olsun. Bir $N$ doğal sayısının $b$ tabanındaki (radix-$b$) gösterimi, $a_k \ne 0$ ve her $0 \le i \le k$ için $a_i \in \{0, 1, \dots, b-1\}$ olmak üzere,
+\[
+(a_k a_{k-1} \dots a_1 a_0)_b
+\]
+biçiminde ifade edilen dizidir. Bu gösterimin sayısal değeri
+\[
+N = \sum_{i=0}^{k} a_i b^i = a_k b^k + a_{k-1} b^{k-1} + \dots + a_1 b + a_0
+\]
+olarak tanımlanır. Taban belirtilmemişse varsayılan taban $10$'dur.
+\end{definition}
+
+Taban $10$'dan büyük olduğunda ($b > 10$), $9$'dan büyük rakamları tek bir sembolle göstermek için harfler kullanılır: $A=10, B=11, C=12, D=13, E=14, F=15, \dots$ gibi. Örneğin onaltılı tabanda $(2F)_{16} = 2 \cdot 16^1 + 15 \cdot 16^0 = 32 + 15 = 47$ olur.
+
+Her pozitif tamsayının, verilen herhangi bir $b \ge 2$ tabanında tek bir şekilde yazılabileceğini aşağıdaki teorem garanti eder.
+
+\begin{theorem}[Taban Gösteriminin Varlığı ve Tekliği]
+$b \ge 2$ sabit bir tamsayı olsun. Her pozitif $N$ tamsayısı için,
+\[
+N = a_k b^k + a_{k-1} b^{k-1} + \dots + a_1 b + a_0
+\]
+eşitliğini sağlayan, $a_k \ne 0$ ve her $i \in \{0, 1, \dots, k\}$ için $0 \le a_i < b$ koşuluna uyan bir $k \ge 0$ tamsayısı ve katsayılar dizisi $(a_k, a_{k-1}, \dots, a_0)$ tek bir biçimde mevcuttur.
+\end{theorem}
+
+\begin{proof}
+İspatı iki aşamada kuralım: önce varlık (algoritmik inşa), ardından teklik.
+
+\textbf{1. Varlık:} Bölüm 11'de gördüğümüz Bölme Algoritmasını ($N = q \cdot b + r$, $0 \le r < b$) ardışık olarak uygulayalım:
+\begin{align*}
+N &= q_0 b + a_0, \quad 0 \le a_0 < b \\
+q_0 &= q_1 b + a_1, \quad 0 \le a_1 < b \\
+q_1 &= q_2 b + a_2, \quad 0 \le a_2 < b \\
+&\;\;\vdots \\
+q_{k-1} &= q_k b + a_k, \quad 0 \le a_k < b \quad (q_k = 0 \text{ olduğunda durulur})
+\end{align*}
+$b \ge 2$ olduğundan, $N > q_0 > q_1 > q_2 > \dots \ge 0$ kesin azalan bir negatif olmayan tamsayılar dizisidir. İyisıralama ilkesi gereği bu dizi sonsuza kadar devam edemez; sonlu bir adımda bir $q_k = 0$ değerine ulaşmak zorundadır ($q_{k-1} \ne 0$ olduğundan $a_k \ne 0$'dır).
+
+Elde edilen kalanları geriye doğru yerine yazarsak:
+\begin{multline*}
+N = q_0 b + a_0 = (q_1 b + a_1) b + a_0 = q_1 b^2 + a_1 b + a_0 \\
+= \dots = a_k b^k + a_{k-1} b^{k-1} + \dots + a_1 b + a_0
+\end{multline*}
+ifadesine ulaşırız. Bu, aranan gösterimin var olduğunu gösterir.
+
+\textbf{2. Teklik:} Gösterimin tek olmadığını varsayalım. Bu durumda $N$ sayısının $b$ tabanında iki farklı gösterimi bulunsun. Gerekirse katsayıların başına sıfır ekleyerek basamak sayılarını eşitleyebiliriz:
+\[
+N = \sum_{i=0}^{m} a_i b^i = \sum_{i=0}^{m} c_i b^i, \quad 0 \le a_i, c_i < b
+\]
+Buradan:
+\[
+\sum_{i=0}^{m} (a_i - c_i) b^i = 0
+\]
+yazılır. Gösterimler farklı olduğundan, $a_i \ne c_i$ şartını sağlayan en az bir indeks vardır. Bu indekslerin en küçüğüne $j$ diyelim ($0 \le j \le m$). O halde her $i < j$ için $a_i = c_i$'dir. Eşitlik şu biçimi alır:
+\[
+(a_j - c_j) b^j + \sum_{i=j+1}^{m} (a_i - c_i) b^i = 0 \implies (c_j - a_j) b^j = \sum_{i=j+1}^{m} (a_i - c_i) b^i
+\]
+Her iki tarafı $b^{j+1}$ modülünde incelersek, sağ taraf $b^{j+1}$'in tam katı olduğundan:
+\[
+(c_j - a_j) b^j \equiv 0 \pmod{b^{j+1}} \implies c_j - a_j \equiv 0 \pmod b
+\]
+elde edilir. Fakat $0 \le a_j, c_j < b$ olduğundan aralarındaki fark $-b < c_j - a_j < b$ aralığındadır. Bu aralıkta $b$'ye bölünebilen tek tamsayı $0$'dır. Demek ki $c_j - a_j = 0$, yani $a_j = c_j$ olmalıdır. Bu ise $j$'nin $a_j \ne c_j$ şartını sağlayan en küçük indeks olmasıyla çelişir. Dolayısıyla gösterim tek olmak zorundadır.
+\end{proof}
+
+\subsection{Tabanlar Arası Dönüşüm Yöntemleri}
+
+\subsubsection{Keyfi bir tabandan 10 tabanına geçiş}
+
+$(a_k a_{k-1} \dots a_1 a_0)_b$ sayısını $10$ tabanına dönüştürmek için tanım gereği polinom açılımı hesaplanır:
+\[
+N = a_k b^k + a_{k-1} b^{k-1} + \dots + a_1 b + a_0
+\]
+Bu toplamı doğrudan kuvvet alarak hesaplamak yerine, algoritmalarda sıkça başvurulan \textbf{Horner Yöntemi} ile paranteze alarak iç içe hesaplamak hem elle işlem yaparken hem de kod yazarken işlem sayısını ve hata payını azaltır:
+\[
+N = \Big( \dots \big((a_k \cdot b + a_{k-1}) \cdot b + a_{k-2}\big) \cdot b + \dots + a_1 \Big) \cdot b + a_0
+\]
+
+\begin{example}
+$(110101)_2$ sayısını $10$ tabanına çeviriniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+\textbf{1. Yol (Kuvvetler toplamı):}
+Basamak değerlerini sağdan sola doğru $2^0, 2^1, 2^2, 2^3, 2^4, 2^5$ olarak yazalım:
+\[
+(110101)_2 = 1 \cdot 2^5 + 1 \cdot 2^4 + 0 \cdot 2^3 + 1 \cdot 2^2 + 0 \cdot 2^1 + 1 \cdot 2^0
+\]
+\[
+= 32 + 16 + 0 + 4 + 0 + 1 = 53
+\]
+
+\textbf{2. Yol (Horner yöntemi):}
+En soldaki bitten başlayıp her adımda sonucu $2$ ile çarpıp bir sonraki biti ekleyelim:
+\begin{align*}
+\text{Başlangıç: } & 1 \\
+\text{1. adım: } & 1 \cdot 2 + 1 = 3 \\
+\text{2. adım: } & 3 \cdot 2 + 0 = 6 \\
+\text{3. adım: } & 6 \cdot 2 + 1 = 13 \\
+\text{4. adım: } & 13 \cdot 2 + 0 = 26 \\
+\text{5. adım: } & 26 \cdot 2 + 1 = 53
+\end{align*}
+Her iki yöntem de beklediğimiz gibi $53$ sonucunu verir.
+\end{proof}
+
+\subsubsection{10 tabanından keyfi bir tabana geçiş: Ardışık Bölme}
+
+Varlık ispatındaki kurgu, doğrudan pratik dönüşüm yöntemini verir:
+Sayıyı $b$'ye böleriz; kalan, gösterimin en sağdaki basamağını ($a_0$) oluşturur. Elde edilen bölümü tekrar $b$'ye böldüğümüzde yeni kalan $a_1$ olur. Bu işleme bölüm $0$ olana kadar devam edilir. Kalanlar sondan başa (aşağıdan yukarıya) doğru dizilerek sayı elde edilir.
+
+\begin{example}
+$158$ sayısını $2$ ve $7$ tabanlarında yazınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Önce $7$ tabanına dönüştürelim:
+\begin{align*}
+158 \div 7 &= 22 \quad (\text{kalan } a_0 = 4) \\
+22 \div 7 &= 3 \quad (\text{kalan } a_1 = 1) \\
+3 \div 7 &= 0 \quad (\text{kalan } a_2 = 3)
+\end{align*}
+Kalanları sondan başa doğru okursak: $158 = (314)_7$. Sağlamasını yapalım:
+$3 \cdot 7^2 + 1 \cdot 7^1 + 4 \cdot 7^0 = 3 \cdot 49 + 7 + 4 = 147 + 11 = 158$.
+
+Şimdi aynı sayıyı $2$ tabanına dönüştürelim:
+\begin{align*}
+158 \div 2 &= 79 \quad (\text{kalan } 0) \\
+79 \div 2 &= 39 \quad (\text{kalan } 1) \\
+39 \div 2 &= 19 \quad (\text{kalan } 1) \\
+19 \div 2 &= 9 \quad (\text{kalan } 1) \\
+9 \div 2 &= 4 \quad (\text{kalan } 1) \\
+4 \div 2 &= 2 \quad (\text{kalan } 0) \\
+2 \div 2 &= 1 \quad (\text{kalan } 0) \\
+1 \div 2 &= 0 \quad (\text{kalan } 1)
+\end{align*}
+Kalanları aşağıdan yukarıya doğru yazarsak: $158 = (10011110)_2$.
+\end{proof}
+
+\subsubsection{$2^k$ Tabanları Arasındaki Doğrudan Geçiş (Gruplama İlkesi)}
+
+Bilgisayarlar sayıları ikili tabanda (bitler hâlinde) saklayıp işlediğinden, bit düzeyindeki işlemler (\texttt{xor}, \texttt{and}, \texttt{or}, shift gibi) aritmetik işlemlere (mod, toplama, çarpma gibi) göre donanımda daha hızlı çalışır. Bu yakınlık, bilgisayar biliminde ikili ($2^1$), sekizli ($2^3$) ve onaltılı ($2^4$) sistemlerin yaygın olmasının da arkasındaki nedendir; üstelik bu tabanlar arasında $10$ tabanına uğramadan, basamakları bloklayarak doğrudan geçiş yapılabilir.
+
+$b = 2^k$ olsun. İkili tabandaki bir sayının her $k$ basamaklık bloğu, doğrudan $2^k$ tabanındaki tek bir basamağa karşılık gelir. Çünkü:
+\[
+\sum_{i=0}^{k-1} a_i 2^i < \sum_{i=0}^{k-1} 1 \cdot 2^i = 2^k - 1
+\]
+olup, bu değer tam olarak $2^k$ tabanındaki bir rakamın alabileceği değer aralığındadır ($0$ ile $2^k-1$ arası).
+
+\begin{itemize}
+    \item \textbf{İkili $\leftrightarrow$ Sekizli ($2^3$):} İkili sayı sağdan sola doğru üçerli gruplara ayrılır (en soldaki eksik basamaklar sıfırla tamamlanır). Her $3$ bitlik grup bir sekizli rakama çevrilir.
+    \item \textbf{İkili $\leftrightarrow$ Onaltılı ($2^4$):} İkili sayı sağdan sola doğru dörderli gruplara ayrılır. Her $4$ bitlik grup (nibble) onaltılı bir rakama ($0\text{--}9, A\text{--}F$) çevrilir.
+\end{itemize}
+
+\begin{example}
+$(11010111101)_2$ sayısını sekizli ve onaltılı tabana çeviriniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+\textbf{Sekizli dönüşüm (üçerli gruplama):}
+Sağdan sola üçer üçer ayıralım:
+\[
+(011 \mid 010 \mid 111 \mid 101)_2
+\]
+Her bir grubu sekizli rakama dönüştürelim:
+\begin{align*}
+(011)_2 &= 3 \\
+(010)_2 &= 2 \\
+(111)_2 &= 7 \\
+(101)_2 &= 5
+\end{align*}
+Buradan sayı $(3275)_8$ bulunur.
+
+\textbf{Onaltılı dönüşüm (dörderli gruplama):}
+Sağdan sola dörder dörder ayıralım:
+\[
+(0110 \mid 1011 \mid 1101)_2
+\]
+Her bir grubu onaltılı rakama dönüştürelim:
+\begin{align*}
+(0110)_2 &= 6 \\
+(1011)_2 &= 11 \implies B \\
+(1101)_2 &= 13 \implies D
+\end{align*}
+Böylece $(6BD)_{16}$ elde edilir.
+\end{proof}
+
+\subsection{Basamak Sayısı ve Tabanın Büyüklüğü}
+
+Bir $N$ pozitif tamsayısının $10$ tabanındaki basamak sayısını $\lfloor \log_{10} N \rfloor + 1$ formülüyle hesaplarız. Bu kural herhangi bir $b \ge 2$ tabanı için de geçerlidir.
+
+\begin{theorem}[Basamak Sayısı]
+$N$ pozitif bir tamsayı ve $b \ge 2$ olsun. $N$'nin $b$ tabanındaki basamak sayısı
+\[
+L_b(N) = \lfloor \log_b N \rfloor + 1
+\]
+ile verilir.
+\end{theorem}
+
+\begin{proof}
+$N$ sayısı $b$ tabanında $k+1$ basamaklı olsun. Bu durumda en yüksek basamağın katsayısı $a_k \ge 1$ olmak üzere:
+\[
+b^k \le a_k b^k \le N = \sum_{i=0}^k a_i b^i \le \sum_{i=0}^k (b-1) b^i = (b-1) \frac{b^{k+1}-1}{b-1} = b^{k+1} - 1 < b^{k+1}
+\]
+Demek ki,
+\[
+b^k \le N < b^{k+1}
+\]
+Eşitsizliğin $b$ tabanında logaritmasını alırsak ($f(x) = \log_b x$ kesin artan fonksiyondur):
+\[
+k \le \log_b N < k + 1
+\]
+Tam değer (taban) tanımı gereği:
+\[
+k = \lfloor \log_b N \rfloor
+\]
+Basamak sayısı $k+1$ olduğundan, toplam basamak sayısı $\lfloor \log_b N \rfloor + 1$ olarak bulunur.
+\end{proof}
+
+Bu bağıntı, bir sayının küçük tabanlarda (örneğin $b=2$) daha çok, büyük tabanlarda (örneğin $b=16$) daha az basamakla temsil edildiğini gösterir. $2^{10} = 1024 \approx 10^3$ yaklaşımından hareketle, bir sayının ikili tabandaki basamak sayısı onluk tabandaki basamak sayısının yaklaşık $\log_2 10 \approx 3.32$ katıdır.
+
+\subsection{Çözümlü Örnekler}
+
+Olimpiyat sınavlarında taban aritmetiği genellikle cebirsel denklemler, basamak çözümlemeleri veya bölünebilme kurallarıyla bir arada sorulur.
+
+\begin{example}
+$(ab)_8 = (ba)_9$ eşitliğini sağlayan sıfırdan farklı $a$ ve $b$ rakamlarını bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+İki farklı tabandaki bu ifadeyi ortak bir zemine çekmek için $10$ tabanındaki polinom açılımlarını kullanalım. Ayrıca taban tanımlarından gelen basamak sınırlarını ($a, b < 8$ ve $a, b < 9$) unutmamalıyız.
+
+$(ab)_8$ sayısının $8$ tabanında iki basamaklı bir sayı belirtmesi için $1 \le a \le 7$ ve $0 \le b \le 7$ olmalıdır. Benzer şekilde $(ba)_9$ için $1 \le b \le 8$ ve $0 \le a \le 8$ gereklidir. Bu iki koşulun kesişimi:
+\[
+1 \le a \le 7 \quad \text{ve} \quad 1 \le b \le 7
+\]
+Açılımları yazarsak:
+\[
+(ab)_8 = 8a + b
+\]
+\[
+(ba)_9 = 9b + a
+\]
+Eşitliği düzenleyelim:
+\[
+8a + b = 9b + a \implies 7a = 8b
+\]
+$\gcd(7, 8) = 1$ olduğundan (Bölüm 13), $7 \mid 8b \implies 7 \mid b$ olmalıdır.
+Fakat $1 \le b \le 7$ aralığında $7$'nin tek katı $b = 7$'dir.
+$b = 7$ yazılırsa $7a = 8 \cdot 7 \implies a = 8$ bulunur.
+
+Ancak $a=8$ değeri $1 \le a \le 7$ aralığına düşmez; $8$ tabanında $8$ rakamı bulunamaz.
+Dolayısıyla bu eşitliği sağlayan hiçbir $a, b$ rakam çifti \textbf{yoktur}.
+\end{proof}
+
+\begin{example}
+Hangi $b > 4$ tabanında $(1331)_b$ sayısı bir tamküptür?
+\end{example}
+
+\begin{proof}[Çözüm]
+$1331$ sayısındaki $1, 3, 3, 1$ katsayıları, Bölüm 6'dan hatırlayacağımız binom katsayıları $\binom{3}{k}$ ile örtüşmektedir.
+
+Sayının $b$ tabanındaki açılımını yazalım:
+\[
+(1331)_b = 1 \cdot b^3 + 3 \cdot b^2 + 3 \cdot b + 1
+\]
+Bu cebirsel ifadeyi çarpanlarına ayırırsak:
+\[
+b^3 + 3b^2 + 3b + 1 = (b + 1)^3
+\]
+Görüldüğü üzere, $b > 3$ koşulunu sağlayan \textbf{bütün} tabanlarda $(1331)_b$ sayısı $(b+1)$ tamsayısının küpüne eşittir.
+Dolayısıyla aranan tabanlar $b \ge 5$ (veya sorudaki kısıta göre $b > 4$) şartını sağlayan \textbf{tüm tamsayılardır}.
+\end{proof}
+
+\subsection{Uygulama: Taban Dönüşüm Kodu}
+
+Aşağıdaki C programı, pozitif bir onluk tamsayının $b$ ($2 \le b \le 16$) tabanındaki gösterimini ardışık bölme algoritmasıyla hesaplar:
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+void tabana_cevir(int n, int b) {
+    char rakamlar[] = "0123456789ABCDEF";
+    char sonuc[64];
+    int indis = 0;
+
+    if (n == 0) {
+        printf("0\n");
+        return;
+    }
+
+    while (n > 0) {
+        sonuc[indis++] = rakamlar[n % b];
+        n = n / b;
+    }
+
+    // Kalanlar tersten yazdirilmali
+    printf("(%d) tabanindaki degeri: ", b);
+    for (int i = indis - 1; i >= 0; i--) {
+        putchar(sonuc[i]);
+    }
+    printf("\n");
+}
+\end{lstlisting}
+
+\begin{example}[En Sık Yapılan Hatalar]
+Taban dönüşümlerinde sıklıkla karşılaşılan hatalar şunlardır:
+\begin{enumerate}
+    \item \textbf{Kalanları düz sırada yazmak:} Ardışık bölmede ilk elde edilen kalan, sayının en küçük basamağıdır ($b^0$). Dolayısıyla dizi ters çevrilerek okunmalıdır.
+    \item \textbf{Geçersiz rakam kullanımı:} Taban $b$ iken basamaklarda $b$ veya daha büyük bir rakam bulunamaz (örneğin $5$ tabanında $(152)_5$ tanımsızdır).
+    \item \textbf{Sıfırları atlamak:} Bölüm adımlarında kalan $0$ çıktığında bunu diziye eklemeyi unutmak basamak kaymasına yol açar (örneğin $4 = (100)_2$ iken sıfırları yazmayıp $1$ demek gibi).
+\end{enumerate}
+\end{example}
+
+\section{Tabanlarda Aritmetik ve İkili Sistemin Rolü}
+
+\subsection{Farklı Tabanlarda Dört İşlem}
+
+Pozisyonel sayı sistemlerinde aritmetik algoritmalar tabandan bağımsızdır: Onluk sistemdeki alt alta toplama, çıkarma ve çarpma kuralları, basamak ağırlığı $10$ yerine $b$ alınarak doğrudan uygulanır.
+
+Toplama ve Elde (Carry) Mekanizması:
+Aynı basamaktaki iki rakam toplandığında elde edilen değer $S = a_i + c_i + \text{elde}$ olsun:
+\begin{itemize}
+    \item Eğer $S < b$ ise basamağa $S$ yazılır, yeni elde $0$ olur.
+    \item Eğer $S \ge b$ ise basamağa $S \pmod b$ yazılır ve bir sonraki basamağa $\lfloor S / b \rfloor$ eldesi aktarılır.
+\end{itemize}
+
+\begin{example}
+$(564)_7$ ile $(345)_7$ sayılarını $7$ tabanında toplayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+İşlemi sağdan sola basamak basamak yürütelim:
+\begin{itemize}
+    \item \textbf{$7^0$ basamağı:} $4 + 5 = 9$. Taban $7$ olduğundan: $9 = 1 \cdot 7 + 2$. Basamağa $2$ yazarız, elde $= 1$.
+    \item \textbf{$7^1$ basamağı:} $6 + 4 + 1 \text{ (elde)} = 11$. $11 = 1 \cdot 7 + 4$. Basamağa $4$ yazarız, elde $= 1$.
+    \item \textbf{$7^2$ basamağı:} $5 + 3 + 1 \text{ (elde)} = 9$. $9 = 1 \cdot 7 + 2$. Basamağa $2$ yazarız, elde $= 1$.
+    \item \textbf{$7^3$ basamağı:} Yalnızca elde kalmıştır: $1$.
+\end{itemize}
+Sonuç: $(1242)_7$.
+\end{proof}
+
+Çıkarma ve Borç (Borrow) Mekanizması:
+Bir basamaktaki eksilen rakam çıkan rakamdan küçükse, sol basamaktan ``$1$ borç'' alınır. Onluk tabanda borç alındığında basamağa $10$ eklenirken, $b$ tabanında o basamağa \textbf{$b$} eklenir.
+
+\begin{example}
+$(1001)_2 - (0111)_2$ çıkarma işlemini ikili tabanda yapınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Sağdan sola inceleyelim:
+\begin{itemize}
+    \item \textbf{$2^0$ basamağı:} $1 - 1 = 0$.
+    \item \textbf{$2^1$ basamağı:} $0 - 1$ yapılamaz, soldan borç aranır. $2^2$ basamağında $0$ olduğundan borç $2^3$ basamağındaki $1$'den alınır ve sağa aktarılır. $2^1$ basamağına $2$ eklenir: $2 - 1 = 1$.
+    \item \textbf{$2^2$ basamağı:} Borç aktarımı sonrasında burada $1$ kalmıştır: $1 - 1 = 0$.
+    \item \textbf{$2^3$ basamağı:} $1$ borç verildiğinden geriye $0$ kalmıştır: $0 - 0 = 0$.
+\end{itemize}
+Sonuç: $(0010)_2 = (10)_2$.
+Onluk sistemde sağlama: $9 - 7 = 2$.
+\end{proof}
+
+\subsection{Genel Tabanlarda Bölünebilme Kuralları}
+
+Onluk sistemden bildiğimiz $9$'a bölünebilme kuralı (rakamlar toplamının $9$'a bölünmesi), $10 \equiv 1 \pmod 9$ bağıntısının bir sonucudur. Bölüm 14'te ele aldığımız modüler aritmetik araçlarını taban aritmetiğiyle birleştirdiğimizde genel bölünebilme kuralları kendiliğinden ortaya çıkar.
+
+\begin{theorem}[$b-1$ ve $b+1$ ile Bölünebilme]
+$N = (a_k a_{k-1} \dots a_1 a_0)_b$ sayısı verilsin.
+\begin{enumerate}
+    \item $N \equiv \sum_{i=0}^k a_i \pmod{b-1}$. Yani $N$, basamakları toplamı ile $(b-1)$ modülünde denktir.
+    \item $N \equiv \sum_{i=0}^k (-1)^i a_i \pmod{b+1}$. Yani $N$, birler basamağından başlayarak bir artı bir eksi alınarak kurulan almaşık basamak toplamı ile $(b+1)$ modülünde denktir.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+$b \equiv 1 \pmod{b-1}$ olduğundan her $i \ge 0$ için $b^i \equiv 1^i \equiv 1 \pmod{b-1}$ olur. Polinom açılımında her $b^i$ yerine $1$ yazarsak:
+\[
+N = \sum_{i=0}^k a_i b^i \equiv \sum_{i=0}^k a_i (1)^i = \sum_{i=0}^k a_i \pmod{b-1}
+\]
+İkinci kısım için, $b \equiv -1 \pmod{b+1}$ olduğundan $b^i \equiv (-1)^i \pmod{b+1}$ elde edilir:
+\[
+N = \sum_{i=0}^k a_i b^i \equiv \sum_{i=0}^k a_i (-1)^i = a_0 - a_1 + a_2 - a_3 + \dots \pmod{b+1}
+\]
+İspat tamamlanır.
+\end{proof}
+
+Bu teorem pratik sonuçlar üretir:
+\begin{itemize}
+    \item $10$ tabanında: $10-1 = 9$ için basamaklar toplamı, $10+1 = 11$ için almaşık toplam kuralı çıkar.
+    \item $2$ tabanında: $b-1 = 1$ aşikardır; ancak $b+1 = 3$ için kullanışlı bir kural verir: İkili tabandaki bir sayının çift sıradaki bitleri toplamı ile tek sıradaki bitleri toplamının farkı $3$'e bölünüyorsa, sayı $3$'e tam bölünür.
+\end{itemize}
+
+\begin{example}
+İkili tabanda yazılmış $N = (101011)_2$ sayısı $3$'e tam bölünür mü?
+\end{example}
+
+\begin{proof}[Çözüm]
+Bitleri sağdan sola ($0$. bitten başlayarak) numaralandıralım:
+\begin{itemize}
+    \item $a_0 = 1$ (çift)
+    \item $a_1 = 1$ (tek)
+    \item $a_2 = 0$ (çift)
+    \item $a_3 = 1$ (tek)
+    \item $a_4 = 0$ (çift)
+    \item $a_5 = 1$ (tek)
+\end{itemize}
+
+Almaşık toplam:
+\[
+(a_0 + a_2 + a_4) - (a_1 + a_3 + a_5) = (1 + 0 + 0) - (1 + 1 + 1) = 1 - 3 = -2
+\]
+$-2 \not\equiv 0 \pmod 3$ olduğundan sayı $3$'e tam bölünmez; kalan $-2 \equiv 1 \pmod 3$'tür.
+Onluk sistemde kontrol edelim: $(101011)_2 = 32 + 8 + 2 + 1 = 43$. Gerçekten $43 = 3 \cdot 14 + 1$ olup kalan $1$'dir.
+\end{proof}
+
+\subsection{İkili Sistemin Bilgisayar Bilimindeki Rolü}
+
+Bilgisayar biliminde algoritmik verimliliğin temelinde ikili sistem yer alır. Donanım düzeyinde çarpma ve bölme işlemleri görece maliyetliyken, bit kaydırma ve mantıksal işlemler tek bir saat çevriminde ($O(1)$) çalışır.
+
+Bit Kaydırma (Bit Shifting):
+\begin{itemize}
+    \item \textbf{Sola kaydırma (\texttt{x << k}):} Sayının ikili gösteriminin sağına $k$ tane sıfır ekler. Bu işlem sayıyı $2^k$ ile çarpmaya denktir:
+    \[
+    x \ll k = x \cdot 2^k
+    \]
+    \item \textbf{Sağa kaydırma (\texttt{x >> k}):} Sayının son $k$ bitini atar. Bu işlem pozitif tamsayılarda $\lfloor x / 2^k \rfloor$ bölmesine denktir:
+    \[
+    x \gg k = \lfloor x / 2^k \rfloor
+    \]
+\end{itemize}
+
+Bit Düzeyinde İşlemler (Bitwise Operators):
+İki sayının ikili gösterimlerindeki karşılıklı bitler mantıksal kapılardan geçirilir:
+\begin{enumerate}
+    \item \textbf{AND (\texttt{\&}):} Yalnızca her iki bit de $1$ ise $1$ üretir.
+    \item \textbf{OR (\texttt{|}):} Bitlerden en az biri $1$ ise $1$ üretir.
+    \item \textbf{XOR (\texttt{\textasciicircum}):} Bitler birbirinden farklı ise $1$, aynı ise $0$ üretir (eldesiz ikili toplama).
+    \item \textbf{NOT (\texttt{\textasciitilde}):} Bitleri tersine çevirir ($0 \to 1, 1 \to 0$).
+\end{enumerate}
+
+Kümelerin Bitmask ile Gösterimi:
+$n$ elemanlı bir evrensel kümenin $S = \{e_0, e_1, \dots, e_{n-1}\}$ herhangi bir alt kümesi, $n$ bitlik bir ikili sayı ile birebir eşlenebilir:
+$i$. eleman kümede varsa $i$. bit $1$, yoksa $0$ yapılır.
+Örneğin $n=4$ için $\{e_0, e_2\}$ alt kümesi $(0101)_2 = 5$ tamsayısı ile temsil edilir.
+Böylece küme işlemleri doğrudan bit operatörlerine dönüşür:
+\begin{itemize}
+    \item Kesişim işlemi: \texttt{A \& B}
+    \item Birleşim işlemi: \texttt{A | B}
+    \item Simetrik fark: \texttt{A \textasciicircum{} B}
+    \item Boş küme: \texttt{0}
+    \item Evrensel küme: \texttt{(1 << n) - 1}
+\end{itemize}
+
+Bu sayede $O(n)$ sürecek küme işlemleri tek bir makine komutuyla $O(1)$ sürede tamamlanır.
+
+\subsection{Hızlı Üs Alma (Binary Exponentiation)}
+
+İkili tabanın algoritmik problem çözmedeki en etkili uygulamalarından biri \textbf{Hızlı Üs Alma} algoritmasıdır. $a^n$ değerini ardışık çarpma ile hesaplamak $n-1$ çarpma, yani $O(n)$ zaman gerektirir. $n = 10^{18}$ gibi büyük girdiler için bu yaklaşım çalışmaz.
+
+$n$ sayısını ikili tabanda açarsak:
+\[
+n = \sum_{i=0}^k c_i 2^i \implies a^n = a^{\sum c_i 2^i} = \prod_{c_i = 1} a^{2^i}
+\]
+Her bir $a^{2^i}$ terimi, bir önceki terimin karesi alınarak ($a^{2^{i}} = (a^{2^{i-1}})^2$) tek bir çarpmayla elde edilebilir. Böylece üs alma işlemi $O(\log n)$ adıma iner.
+
+\begin{example}
+$3^{13}$ sayısını hızlı üs alma yöntemiyle hesaplayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Üssü ikili tabanda yazalım: $13 = 8 + 4 + 1 = (1101)_2$. Buradan:
+\[
+3^{13} = 3^8 \cdot 3^4 \cdot 3^1
+\]
+Ardışık kareleri hesaplayalım:
+\begin{align*}
+3^1 &= 3 \\
+3^2 &= 3^2 = 9 \\
+3^4 &= 9^2 = 81 \\
+3^8 &= 81^2 = 6561
+\end{align*}
+İkili gösterimde $1$ olan basamaklara karşılık gelen değerleri çarparsak:
+\[
+3^{13} = 3^8 \cdot 3^4 \cdot 3^1 = 6561 \cdot 81 \cdot 3 = 6561 \cdot 243 = 1\,594\,323
+\]
+Normalde $12$ çarpma gerekecekken, $3$ kare alma ve $2$ çarpma ile toplam $5$ işlemde sonuca ulaşılır.
+\end{proof}
+
+Aşağıdaki sözde kod, hızlı üs almanın ikili bit kaydırmayla nasıl gerçeklendiğini özetler:
+
+\begin{lstlisting}
+FUNCTION modularExponentiation(base, exponent, modulus)
+    result = 1
+    base = base MOD modulus
+
+    WHILE exponent > 0 DO
+        IF (exponent AND 1) == 1 THEN
+            result = (result * base) MOD modulus
+        END IF
+        base = (base * base) MOD modulus
+        exponent = exponent >> 1
+    END WHILE
+
+    RETURN result
+END FUNCTION\end{lstlisting}
+
+\subsection{Kombinatorik ve Sayı Teorisinde İkili Taban: Kummer ve Lucas Sezgisi}
+
+İkili taban, binom katsayılarının tekliği-çiftliği (paritesi) konusunda pratik sonuçlar sunar.
+
+\begin{theorem}[Sierpiński / Lucas Parite Teoremi]
+$\binom{n}{k}$ binom katsayısının tek sayı olması için gerek ve yeter koşul, $k$'nin ikili gösterimindeki her bir $1$ bitinin, $n$'nin ikili gösteriminde de aynı pozisyonda $1$ olmasıdır (yani $k \text{ AND } n = k$; başka bir deyişle $k$, bitwise $n$'nin alt kümesi olmalıdır).
+\end{theorem}
+
+\begin{proof}[Fikir / Sezgi]
+Bölüm 12'de gördüğümüz Legendre formülüne göre bir $m!$ içindeki $p$ asalının kuvveti $v_p(m!) = \sum_{j=1}^\infty \lfloor \frac{m}{p^j} \rfloor$ ile verilir.
+Özel olarak $p=2$ için bu toplam:
+\[
+v_2(m!) = m - S_2(m)
+\]
+biçimine dönüşür; burada $S_2(m)$, $m$ sayısının ikili tabandaki rakamları toplamıdır ($1$ bitlerinin sayısı, diğer adıyla popcount).
+
+Binom katsayısı $\binom{n}{k} = \frac{n!}{k!(n-k)!}$ olduğundan, $2$ ile bölünebilme derecesi:
+\[
+v_2\left(\binom{n}{k}\right) = v_2(n!) - v_2(k!) - v_2((n-k)!)
+\]
+\[
+= \big(n - S_2(n)\big) - \big(k - S_2(k)\big) - \big(n-k - S_2(n-k)\big)
+\]
+\[
+= S_2(k) + S_2(n-k) - S_2(n)
+\]
+olur. İkili tabanda $k$ ile $n-k$'yi toplarken her elde oluştuğunda, iki tane $1$ biti birleşip üst basamağa tek bir $1$ olarak geçer; yani toplam bit sayısı $1$ azalır.
+Dolayısıyla $S_2(k) + S_2(n-k) - S_2(n)$, $k$ ile $n-k$ toplanırken oluşan \textbf{toplam elde sayısıdır} (Kummer Teoremi).
+
+$\binom{n}{k}$'nın tek olması için $v_2 = 0$ olmalıdır; bu da toplama sırasında \textbf{hiç elde oluşmaması} anlamına gelir. İkili toplamda hiç elde çıkmaması ise ancak ve ancak $k$'nin $1$ olduğu hiçbir basamakta $n-k$'nin $1$ olmamasıyla mümkündür. Bu da $n$'in o basamakta zorunlu olarak $1$ olmasını gerektirir.
+\end{proof}
+
+\begin{example}
+$\binom{11}{k}$ sayısının tek sayı olduğu kaç farklı $k \in \{0, 1, \dots, 11\}$ değeri vardır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Teorem gereği $k$'nin ikili gösterimi, $11$'in ikili gösteriminin bir alt kümesi olmalıdır.
+$11$'i ikili tabana çevirelim:
+\[
+11 = 8 + 2 + 1 = (1011)_2
+\]
+$11$'in ikili yazımında $3$ tane $1$ biti vardır ($2^3, 2^1, 2^0$ basamakları).
+$k$'nin ikili yazımındaki $1$ bitleri yalnızca bu üç pozisyondan seçilebilir; diğer basamaklar ($2^2$ ve daha büyükler) $0$ kalmalıdır.
+
+Bu üç pozisyonun her biri için iki seçenek vardır: $1$ bitini alabiliriz veya almayız.
+Dolayısıyla yazılabilecek geçerli $k$ sayısı:
+\[
+2^3 = 8
+\]
+farklı değerdir. Bu değerler sırasıyla:
+\begin{align*}
+(0000)_2 &= 0 \\
+(0001)_2 &= 1 \\
+(0010)_2 &= 2 \\
+(0011)_2 &= 3 \\
+(1000)_2 &= 8 \\
+(1001)_2 &= 9 \\
+(1010)_2 &= 10 \\
+(1011)_2 &= 11
+\end{align*}
+Böylece Pascal üçgeninin $11$. satırında tam olarak $8$ adet tek sayı, $4$ adet çift sayı bulunduğu doğrulanır.
+\end{proof}
+
+\subsection{Negatif Tabanlar ve Alternatif Sistemler}
+
+Yarışmalarda zaman zaman tabanın pozitif tamsayı olmadığı durumlar da karşımıza çıkabilir. Öne çıkan örneklerden biri \textbf{negatif tabanlar} ($b = -2$, negabinary) sistemidir. Negatif tabanların dikkat çekici özelliği, \textbf{eksi işaretine gerek kalmadan} hem pozitif hem de negatif tüm tamsayıları tek bir biçimde temsil edebilmesidir.
+
+$b = -2$ olduğunda basamak değerleri:
+\[
+(-2)^0 = 1, \quad (-2)^1 = -2, \quad (-2)^2 = 4, \quad (-2)^3 = -8, \quad (-2)^4 = 16, \dots
+\]
+olur. Kalanlar negatif olmayan $\{0, 1\}$ kümesinden seçilmelidir:
+\[
+N = q \cdot (-2) + r, \quad r \in \{0, 1\}
+\]
+Standart tamsayı bölmesinde kalan negatif çıkarsa (örneğin $-5 \div (-2) = 2$, kalan $-1$), bölüm $1$ artırılır ve kalan pozitif yapılır:
+\[
+-5 = 3 \cdot (-2) + 1 \implies q = 3, r = 1
+\]
+
+\begin{example}
+$-6$ sayısını $-2$ tabanında (negabinary) yazınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Kalanların daima $0$ veya $1$ olmasına dikkat ederek ardışık bölme uygulayalım:
+\begin{align*}
+-6 &= 3 \cdot (-2) + 0 \quad (\text{kalan } 0) \\
+3 &= (-1) \cdot (-2) + 1 \quad (\text{kalan } 1) \\
+-1 &= 1 \cdot (-2) + 1 \quad (\text{kalan } 1) \\
+1 &= 0 \cdot (-2) + 1 \quad (\text{kalan } 1)
+\end{align*}
+Kalanları aşağıdan yukarıya doğru okursak:
+\[
+-6 = (1110)_{-2}
+\]
+Sağlamasını yapalım:
+\[
+1 \cdot (-2)^3 + 1 \cdot (-2)^2 + 1 \cdot (-2)^1 + 0 \cdot (-2)^0 = -8 + 4 - 2 + 0 = -6
+\]
+Sonuç doğrulanır.
+\end{proof}
+
+Taban aritmetiği yalnızca sayıların yazım biçimini belirlemekle kalmaz; ardışık bölme algoritmasından modüler aritmetiğe, bitwise işlemlerden dinamik programlamanın bitmask optimizasyonlarına kadar algoritmik düşüncenin temel yapı taşlarından birini oluşturur.

@@ -1,0 +1,576 @@
+\chapter[EBOB ve EKOK · \textit{Temel}]{EBOB ve EKOK}
+\chaptermark{EBOB ve EKOK}
+
+Tamsayılar teorisinde ve algoritma tasarımında en temel yapı taşlarından biri, iki veya daha fazla sayının ortak çarpanlarını ve ortak katlarını incelemektir. İster bir kesri en sade haline getirmek, ister periyodik çalışan iki sistemin aynı anda ne zaman tetikleneceğini belirlemek, isterse kriptografik anahtarlar üretmek olsun; karşımıza daima iki temel kavram çıkar: \textbf{En Büyük Ortak Bölen} (EBOB) ve \textbf{En Küçük Ortak Kat} (EKOK).
+
+Bölüm 11'de ele aldığımız bölünebilme bağıntısı ve Bölüm 12'de gördüğümüz Aritmetiğin Temel Teoremi (asal çarpanlara ayrılışın tekliği), sayıların iç yapısını inceleme imkânı vermişti. Bu konuda, sayıların bu iç yapılarını birbiriyle kıyaslayacak, aralarındaki ortak bölenleri ve katları belirleyen kuralları kuracağız. Ardından, antik çağlardan bu yana kullanılan en etkili ve hızlı yöntemlerden biri olan \textbf{Öklid algoritması} ile tanışıp hesaplama karmaşıklığını inceleyeceğiz.
+
+\section{Tanımlar ve Özellikler}
+
+Soyut cebirsel tanımlara geçmeden önce, somut bir problemle başlayalım.
+
+Elinizde $24\text{ cm} \times 36\text{ cm}$ boyutlarında dikdörtgen şeklinde bir karton olduğunu düşünün. Bu kartonu, hiç parça artmayacak şekilde birbiriyle özdeş kare parçalara ayırmak istiyorsunuz. Seçeceğiniz karenin kenar uzunluğu tamsayı cinsinden kaç santimetre olabilir?
+
+Bir karenin kenar uzunluğu $d$ olsun. Kartonun tamamen kaplanabilmesi için $d$ uzunluğunun hem $24$'ü hem de $36$'yı tam bölmesi gerekir:
+\[ d \mid 24 \quad \text{ve} \quad d \mid 36 \]
+$24$'ün pozitif bölenleri kümesi:
+\[ \mathcal{B}_{24} = \{1, 2, 3, 4, 6, 8, 12, 24\} \]
+$36$'nın pozitif bölenleri kümesi:
+\[ \mathcal{B}_{36} = \{1, 2, 3, 4, 6, 9, 12, 18, 36\} \]
+Her iki sayıyı da aynı anda bölen sayılar, bu iki kümenin arakesitidir:
+\[ \mathcal{B}_{24} \cap \mathcal{B}_{36} = \{1, 2, 3, 4, 6, 12\} \]
+Demek ki karemizin kenarı $1, 2, 3, 4, 6$ veya $12\text{ cm}$ olabilir. Eğer amacımız en az sayıda kare elde etmekse, karenin kenarını mümkün olan en büyük değer seçmeliyiz; bu değer de kümenin en büyük elemanı olan $12$'dir.
+
+Şimdi soruyu tersine çevirelim: Biri $4$ dakikada bir, diğeri $6$ dakikada bir çalan iki çalar saat aynı anda çaldıktan sonra, tekrar ilk kez kaçıncı dakikada birlikte çalarlar?
+
+Birinci saat $4$, $8$, $12$, $16$, $20$, $24$, $\dots$ dakikalarda çalar.
+İkinci saat $6$, $12$, $18$, $24$, $30$, $\dots$ dakikalarda çalar.
+Birlikte çaldıkları dakikalar, $4$ ve $6$'nın pozitif ortak katlarıdır:
+$\{12, 24, 36, 48, \dots\}$
+Bu ortak katların en küçüğü ise $12$'dir.
+
+Bu iki somut gözlem bizi EBOB ve EKOK kavramlarının matematiksel tanımlarına götürür.
+
+\begin{definition}[En Büyük Ortak Bölen]
+$a$ ve $b$, en az biri sıfırdan farklı iki tamsayı olsun. Hem $a$'yı hem de $b$'yi bölen en büyük pozitif tamsayıya, $a$ ve $b$'nin \textbf{en büyük ortak böleni} denir ve $\gcd(a, b)$ ile gösterilir:
+\[ \gcd(a, b) = \max \{ d \in \mathbb{Z}^+ : d \mid a \text{ ve } d \mid b \} \]
+\end{definition}
+
+Özel olarak:
+\begin{itemize}
+    \item Her $a \neq 0$ tamsayısı için $\gcd(a, 0) = |a|$ kabul edilir; çünkü her $d$ tamsayısı $0$'ı böler ($0 = d \cdot 0$), dolayısıyla ortak bölenler yalnızca $a$'nın bölenleridir.
+    \item $\gcd(0, 0)$ tanımsızdır (veya bazı cebirsel bağlamlarda $0$ kabul edilir), zira her tamsayı $0$'ı böldüğünden sonlu bir maksimum bulunamaz.
+    \item $\gcd(a, b) = \gcd(|a|, |b|)$ olduğundan, aksi belirtilmedikçe $a, b > 0$ pozitif tamsayılarını incelemek yeterlidir.
+\end{itemize}
+
+\begin{definition}[Aralarında Asallık]
+Eğer $\gcd(a, b) = 1$ ise, $a$ ve $b$ sayılarına \textbf{aralarında asal} (coprime / relatively prime) sayılar denir. Bu durum, $a$ ve $b$'nin $1$'den başka pozitif ortak böleni olmadığı anlamına gelir.
+\end{definition}
+
+\begin{definition}[En Küçük Ortak Kat]
+$a$ ve $b$ sıfırdan farklı iki tamsayı olsun. Hem $a$'nın hem de $b$'nin katı olan en küçük pozitif tamsayıya, $a$ ve $b$'nin \textbf{en küçük ortak katı} denir ve $\operatorname{lcm}(a, b)$ ile gösterilir:
+\[ \operatorname{lcm}(a, b) = \min \{ m \in \mathbb{Z}^+ : a \mid m \text{ ve } b \mid m \} \]
+\end{definition}
+
+\subsection*{Asal Çarpanlar Perspektifi}
+
+Bölüm 12'de gördüğümüz Aritmetiğin Temel Teoremi uyarınca, $1$'den büyük her tamsayı asal çarpanlarının çarpımı olarak tek bir biçimde yazılabilir. $a$ ve $b$ sayılarını ortak asal tabanlar kullanarak ifade edelim:
+\[ a = p_1^{\alpha_1} p_2^{\alpha_2} \cdots p_k^{\alpha_k}, \qquad b = p_1^{\beta_1} p_2^{\beta_2} \cdots p_k^{\beta_k} \]
+Burada $\alpha_i, \beta_i \ge 0$ tamsayılardır (bir asal sayı yalnızca birinde bulunuyorsa, diğerinde üssü $0$ alınır).
+
+Bir $d$ sayısının hem $a$'yı hem de $b$'yi bölebilmesi için, $d$'nin içerdiği her $p_i$ asalının üssü hem $\alpha_i$'den hem de $\beta_i$'den büyük olamaz. Dolayısıyla $d$'nin alabileceği en büyük asal üssü $\min(\alpha_i, \beta_i)$ olur.
+
+Benzer şekilde, bir $m$ sayısının hem $a$'nın hem de $b$'nin katı olabilmesi için, $m$'nin içerdiği her $p_i$ asalının üssü hem $\alpha_i$'den hem de $\beta_i$'den küçük olamaz. Bu nedenle $m$'nin alabileceği en küçük asal üssü $\max(\alpha_i, \beta_i)$ olur.
+
+\begin{theorem}[Asal Çarpanlar ile EBOB ve EKOK]
+\label{thm:prime-gcd-lcm}
+$a = \prod_{i=1}^k p_i^{\alpha_i}$ ve $b = \prod_{i=1}^k p_i^{\beta_i}$ olmak üzere:
+\[ \gcd(a, b) = \prod_{i=1}^k p_i^{\min(\alpha_i, \beta_i)} \]
+\[ \operatorname{lcm}(a, b) = \prod_{i=1}^k p_i^{\max(\alpha_i, \beta_i)} \]
+\end{theorem}
+
+Bu teoremin doğrudan bir sonucu olarak, EBOB ve EKOK'un temel bir özelliğini elde ederiz: \textit{En büyük ortak bölen, yalnızca büyüklük bakımından en büyük olan bölen değildir; diğer tüm ortak bölenlerin de bir katıdır.}
+
+\begin{theorem}[Ortak Bölenlerin Bölünebilme Özelliği]
+\label{thm:div-gcd}
+$a$ ve $b$ tamsayıları için bir $d$ tamsayısı hem $a$'yı hem $b$'yi bölüyorsa, $d$ mutlaka $\gcd(a, b)$'yi de böler:
+\[ d \mid a \text{ ve } d \mid b \implies d \mid \gcd(a, b) \]
+Benzer biçimde, $a$ ve $b$'nin her ortak katı $m$ için:
+\[ a \mid m \text{ ve } b \mid m \implies \operatorname{lcm}(a, b) \mid m \]
+\end{theorem}
+
+\begin{proof}
+$a$ ve $b$'nin asal çarpan ayrışımlarını Teorem~\ref{thm:prime-gcd-lcm}'deki gibi yazalım. $d \mid a$ ve $d \mid b$ ise, $d$'nin asal çarpanlarındaki herhangi bir $p_i$ asalının üssü $\gamma_i$ olsun. $d \mid a \implies \gamma_i \le \alpha_i$ ve $d \mid b \implies \gamma_i \le \beta_i$ olduğundan $\gamma_i \le \min(\alpha_i, \beta_i)$ elde edilir. Bu da doğrudan $d \mid \gcd(a, b)$ demektir. Ortak katlar için ispat benzer şekilde $\max$ fonksiyonu kullanılarak yapılır.
+\end{proof}
+
+\begin{theorem}[EBOB'un Temel Cebirsel Özellikleri]
+Her $a, b, c, m \in \mathbb{Z}^+$ için:
+\begin{enumerate}
+    \item Değişme özelliği: $\gcd(a, b) = \gcd(b, a)$
+    \item Birleşme özelliği: $\gcd(a, \gcd(b, c)) = \gcd(\gcd(a, b), c) = \gcd(a, b, c)$
+    \item Dağılma (ölçekleme) özelliği: $\gcd(m \cdot a, m \cdot b) = m \cdot \gcd(a, b)$
+    \item Sadeleştirme: Eğer $d = \gcd(a, b)$ ise, $\gcd\left(\frac{a}{d}, \frac{b}{d}\right) = 1$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(3) özelliğini gösterelim: $a$ ve $b$'nin asal çarpanlarındaki üsler $\alpha_i, \beta_i$ ve $m$'nin asal çarpan üssü $k_i$ olsun.
+$m \cdot a$'daki asal üs $k_i + \alpha_i$, $m \cdot b$'deki asal üs $k_i + \beta_i$'dir.
+Herhangi iki reel sayı için $\min(k + x, k + y) = k + \min(x, y)$ özdeşliği geçerli olduğundan:
+\[ \min(k_i + \alpha_i, k_i + \beta_i) = k_i + \min(\alpha_i, \beta_i) \]
+Her asal çarpan için bu eşitlik sağlandığından $\gcd(m \cdot a, m \cdot b) = m \cdot \gcd(a, b)$ bulunur.
+
+(4) özelliği ise (3)'te $m = d$ ve $a' = a/d, b' = b/d$ konularak hemen görülür: $d = \gcd(d \cdot a', d \cdot b') = d \cdot \gcd(a', b') \implies \gcd(a', b') = 1$.
+\end{proof}
+
+\subsection*{Çözümlü Örnekler}
+
+\begin{example}
+$a = 720$ ve $b = 168$ sayılarının asal çarpanlarını kullanarak $\gcd(a, b)$ ve $\operatorname{lcm}(a, b)$ değerlerini hesaplayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+İlk olarak iki sayıyı da asal çarpanlarına ayıralım:
+\[ 720 = 72 \cdot 10 = 2^3 \cdot 3^2 \cdot 2 \cdot 5 = 2^4 \cdot 3^2 \cdot 5^1 \cdot 7^0 \]
+\[ 168 = 8 \cdot 21 = 2^3 \cdot 3^1 \cdot 5^0 \cdot 7^1 \]
+Ortak asalların üslerinin minimumunu alarak EBOB'u bulalım:
+\begin{multline*}
+\gcd(720, 168) = 2^{\min(4, 3)} \cdot 3^{\min(2, 1)} \cdot 5^{\min(1, 0)} \cdot 7^{\min(0, 1)} \\
+= 2^3 \cdot 3^1 \cdot 5^0 \cdot 7^0 = 8 \cdot 3 = 24
+\end{multline*}
+Ortak asalların üslerinin maksimumunu alarak EKOK'u bulalım:
+\begin{multline*}
+\operatorname{lcm}(720, 168) = 2^{\max(4, 3)} \cdot 3^{\max(2, 1)} \cdot 5^{\max(1, 0)} \cdot 7^{\max(0, 1)} \\
+= 2^4 \cdot 3^2 \cdot 5^1 \cdot 7^1 = 16 \cdot 9 \cdot 5 \cdot 7 = 5040
+\end{multline*}
+\end{proof}
+
+\begin{example}
+$n$ bir pozitif tamsayı olmak üzere, $\gcd(n, n+2)$ ifadesinin alabileceği değerleri bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+İki sayıyı bölen bir $d$ tamsayısı, bu sayıların tamsayı katsayılı her lineer kombinasyonunu (farkını, toplamını) da bölmek zorundadır. $n$'li terimi yok ederek geriye sabit bir değer bırakalım.
+
+$d = \gcd(n, n+2)$ olsun. Tanım gereği:
+\[ d \mid n \quad \text{ve} \quad d \mid (n+2) \]
+Bölünebilmenin lineerlik kuralından, $d$ bu iki sayının farkını da bölmelidir:
+\[ d \mid (n+2) - n \implies d \mid 2 \]
+$2$'nin pozitif bölenleri yalnızca $1$ ve $2$'dir. O halde $d \in \{1, 2\}$ olabilir.
+\begin{itemize}
+    \item Eğer $n$ tek sayı ise, $n$ ve $n+2$ de tek sayıdır. İki tek sayının ortak böleni çift olamaz, dolayısıyla $\gcd(n, n+2) = 1$.
+    \item Eğer $n$ çift sayı ise, $2 \mid n$ ve $2 \mid (n+2)$ olduğundan $2$ bir ortak bölendir. $d \mid 2$ olduğundan $\gcd(n, n+2) = 2$.
+\end{itemize}
+Sonuç olarak ifade, $n$'in tek veya çift olmasına göre $1$ veya $2$ değerini alır.
+\end{proof}
+
+\begin{example}
+$\gcd(a, b) = 1$ ise, $\gcd(a+b, a-b)$ ifadesinin yalnızca $1$ veya $2$ olabileceğini kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+$a+b$ ve $a-b$ ifadelerini taraf tarafa toplayıp çıkararak $a$ ve $b$'yi yalnız bırakmaya çalışalım.
+
+$g = \gcd(a+b, a-b)$ olsun. O halde:
+\[ g \mid (a+b) \quad \text{ve} \quad g \mid (a-b) \]
+Taraf tarafa toplarsak:
+\[ g \mid (a+b) + (a-b) \implies g \mid 2a \]
+Taraf tarafa çıkarırsak:
+\[ g \mid (a+b) - (a-b) \implies g \mid 2b \]
+$g$ sayısı hem $2a$'yı hem de $2b$'yi böldüğüne göre, Teorem~\ref{thm:div-gcd} gereğince bu iki sayının en büyük ortak bölenini de bölmek zorundadır:
+\[ g \mid \gcd(2a, 2b) \]
+Ölçekleme özelliğini kullanırsak:
+\[ \gcd(2a, 2b) = 2 \cdot \gcd(a, b) = 2 \cdot 1 = 2 \]
+Böylece $g \mid 2$ elde edilir. Pozitif bölenler $1$ ve $2$ olduğundan, $g$ yalnızca $1$ veya $2$ olabilir.
+\end{proof}
+
+\begin{example}
+$\gcd(x, y) = 12$ ve $x + y = 180$ şartlarını sağlayan kaç farklı $(x, y)$ pozitif tamsayı ikilisi vardır?
+\end{example}
+
+\begin{proof}[Çözüm]
+$\gcd(x, y) = 12$ koşulu, $x$ ve $y$'nin $12$'nin birer katı olduğunu belirtir. Bu çarpanı dışarı alırsak kalan bileşenler aralarında asal olmalıdır.
+
+$x = 12a$ ve $y = 12b$ diyelim. Burada EBOB'un tanımı gereği $\gcd(a, b) = 1$ olmalıdır.
+Verilen toplam denkleminde yerine yazalım:
+\[ 12a + 12b = 180 \implies 12(a + b) = 180 \implies a + b = 15 \]
+Şimdi toplamları $15$ olan ve aralarında asal pozitif $(a, b)$ tamsayı çiftlerini listeleyelim:
+\begin{align*}
+    (a, b) = (1, 14) &\implies \gcd(1, 14) = 1 \quad \text{(uygun)} \\
+    (a, b) = (2, 13) &\implies \gcd(2, 13) = 1 \quad \text{(uygun)} \\
+    (a, b) = (3, 12) &\implies \gcd(3, 12) = 3 \neq 1 \quad \text{(uygun değil)} \\
+    (a, b) = (4, 11) &\implies \gcd(4, 11) = 1 \quad \text{(uygun)} \\
+    (a, b) = (5, 10) &\implies \gcd(5, 10) = 5 \neq 1 \quad \text{(uygun değil)} \\
+    (a, b) = (6, 9)  &\implies \gcd(6, 9) = 3 \neq 1 \quad \text{(uygun değil)} \\
+    (a, b) = (7, 8)  &\implies \gcd(7, 8) = 1 \quad \text{(uygun)}
+\end{align*}
+$(a, b)$ sırasını göz önüne alırsak, simetrik çiftler de geçerlidir: $(8, 7)$, $(11, 4)$, $(13, 2)$ ve $(14, 1)$.
+Toplamda $4 \times 2 = 8$ farklı $(a, b)$ çifti, dolayısıyla $8$ farklı $(x, y)$ ikilisi vardır.
+\end{proof}
+
+\noindent\fbox{%
+\parbox{0.96\textwidth}{%
+\textbf{En Sık Yapılan Hata:}
+Genellikle $x = 12a$ ve $y = 12b$ dönüşümü yapıldıktan sonra $a+b = 15$ denklemini sağlayan tüm pozitif $(a, b)$ çiftleri sayılır ($14$ adet). Ancak eğer $\gcd(a, b) > 1$ olursa, $\gcd(x, y) = 12 \cdot \gcd(a, b) > 12$ çıkacağından başlangıçtaki koşul bozulur. $\gcd(a, b) = 1$ kısıtlaması mutlaka denetlenmelidir.
+}}
+
+\section{Öklid Algoritması}
+
+Asal çarpanlara ayırma yöntemi teorik açıdan açık olsa da büyük sayılarda pratik bir engele çarpar: \textbf{Büyük sayıları asal çarpanlarına ayırmak son derece zordur.}
+
+Örneğin yüz basamaklı iki sayının asal çarpanlarını bulmak günümüz süper bilgisayarlarıyla dahi pratik zaman sınırları içinde mümkün değildir (modern RSA şifreleme sistemleri de bu zorluğa dayanır). Peki asal çarpanlarını bilmediğimiz büyük sayıların EBOB'unu hızlıca bulabilir miyiz?
+
+Bu sorunun yanıtı, M.Ö. 300 civarında İskenderiyeli Öklid tarafından verilmiştir.
+
+\subsection*{Çıkarma Yoluyla EBOB ve Bölme Adımı}
+
+EBOB'un temel bir özelliği şudur: Eğer bir $d$ sayısı $a$'yı ve $b$'yi ($a > b$) bölüyorsa, farkları olan $a - b$'yi de bölmek zorundadır. Dahası, $b$ ile $a - b$'nin ortak bölenleri kümesi ile $a$ ile $b$'nin ortak bölenleri kümesi tamamen aynıdır.
+
+\begin{theorem}
+Her $a, b \in \mathbb{Z}$ için:
+\[ \gcd(a, b) = \gcd(b, a - b) \]
+\end{theorem}
+
+\begin{proof}
+$d \mid a$ ve $d \mid b$ olsun. O halde $d \mid (a - b)$ olur. Dolayısıyla $a$ ve $b$'nin her ortak böleni, $b$ ve $a - b$'nin de bir ortak bölenidir.
+Tersine, $c \mid b$ ve $c \mid (a - b)$ olsun. O halde $c \mid b + (a - b) = a$ olur. Dolayısıyla $b$ ve $a - b$'nin her ortak böleni, $a$ ve $b$'nin de bir ortak bölenidir.
+Her iki çiftin ortak bölenler kümesi özdeş olduğundan, bu kümelerin en büyük elemanları da aynı olmak zorundadır: $\gcd(a, b) = \gcd(b, a - b)$.
+\end{proof}
+
+Bu adımı tekrarlayarak $a$'dan $b$'yi art arda çıkarabiliriz:
+\[ \gcd(a, b) = \gcd(b, a - b) = \gcd(b, a - 2b) = \dots = \gcd(b, a - qb) \]
+Bölme algoritmasından bildiğimiz üzere $a$'nın $b$'ye bölümünden kalan $r = a - qb$ ($0 \le r < b$) olduğuna göre, bu işlemi tek bir bölme adımıyla gerçekleştirebiliriz:
+
+\begin{theorem}[Öklid Algoritmasının Temel Adımı]
+\label{thm:euclid-step}
+$a, b \in \mathbb{Z}^+$ ve $a = q \cdot b + r$ ($0 \le r < b$) olsun. O halde:
+\[ \gcd(a, b) = \gcd(b, r) \]
+\end{theorem}
+
+\begin{proof}
+$g_1 = \gcd(a, b)$ ve $g_2 = \gcd(b, r)$ olsun.
+\begin{enumerate}
+    \item $g_1 \mid a$ ve $g_1 \mid b$ olduğundan, $r = a - qb$ ifadesi $a$ ve $b$'nin lineer kombinasyonudur; dolayısıyla $g_1 \mid r$. Hem $b$'yi hem $r$'yi böldüğü için, Teorem~\ref{thm:div-gcd} uyarınca $g_1 \mid \gcd(b, r)$, yani $g_1 \mid g_2$. Pozitif olduklarından $g_1 \le g_2$.
+    \item $g_2 \mid b$ ve $g_2 \mid r$ olduğundan, $a = qb + r$ ifadesinden ötürü $g_2 \mid a$. Hem $a$'yı hem $b$'yi böldüğü için $g_2 \mid \gcd(a, b)$, yani $g_2 \mid g_1$. Buradan $g_2 \le g_1$.
+\end{enumerate}
+$g_1 \le g_2$ ve $g_2 \le g_1$ eşitsizlikleri ancak $g_1 = g_2$ durumunda sağlanır.
+\end{proof}
+
+Algoritma şu şekilde işler: Kalan $r = 0$ olana kadar $(a, b) \leftarrow (b, a \bmod b)$ dönüşümü yinelenir. Kalan $0$ olduğunda, son sıfırdan farklı kalan aradığımız $\gcd(a, b)$ değeridir; çünkü $\gcd(g, 0) = g$'dir.
+
+\subsection*{Somut Bir Hesaplama: $\gcd(1071, 462)$}
+
+Öklid algoritmasını adım adım uygulayalım:
+\begin{align*}
+    1071 &= 2 \cdot 462 + 147 &\implies \gcd(1071, 462) &= \gcd(462, 147) \\
+    462 &= 3 \cdot 147 + 21   &\implies \gcd(462, 147)  &= \gcd(147, 21) \\
+    147 &= 7 \cdot 21 + 0     &\implies \gcd(147, 21)   &= \gcd(21, 0) = 21
+\end{align*}
+Yalnızca üç bölme işleminde $\gcd(1071, 462) = 21$ sonucuna ulaştık; hiçbir asal çarpan hesabı yapmamız gerekmedi.
+
+\subsection*{Algoritmanın Karmaşıklığı ve Çalışma Zamanı}
+
+Bir algoritmanın kaç adımda sonlandığını bilmek, özellikle olimpiyat ve yarışma programlamasında belirleyicidir.
+
+\begin{theorem}[Kalanın Küçülme Hızı]
+Eğer $a \ge b > 0$ ve $r = a \bmod b$ ise, $r < \frac{a}{2}$ olur.
+\end{theorem}
+
+\begin{proof}
+İki durumu inceleyelim:
+\begin{itemize}
+    \item Durum 1: $b \le \frac{a}{2}$. Bölme algoritması gereği $r < b$ olduğundan, doğrudan $r < \frac{a}{2}$ elde edilir.
+    \item Durum 2: $b > \frac{a}{2}$. Bu durumda $b$, $a$'nın içinde en fazla $1$ defa bulunabilir ($q = 1$). O halde kalan $r = a - b < a - \frac{a}{2} = \frac{a}{2}$ olur.
+\end{itemize}
+Her iki durumda da $r < \frac{a}{2}$ eşitsizliği kesinlikle sağlanır.
+\end{proof}
+
+Bu teorem, her iki adımda bir sayıların en az yarı yarıya küçüldüğünü gösterir. Dolayısıyla $N = \max(a, b)$ olmak üzere algoritma en fazla $2 \log_2(N)$ adımda biter. Yani Öklid algoritmasının zaman karmaşıklığı:
+\[ O(\log(\min(a, b))) \]
+mertebesindedir. 64-bitlik büyük bir tamsayı ($a \approx 10^{18}$) için bile Öklid algoritması en fazla 90--100 bölme işleminde tamamlanır.
+
+\noindent\textbf{En Kötü Durum (Lamé Teoremi):} Öklid algoritmasında bölümlerin sürekli $q = 1$ çıktığı en yavaş durum, Bölüm 9'da incelediğimiz ardışık Fibonacci sayıları ile ($F_{n+1}$ ve $F_n$) karşılaşınca oluşur. Fransız matematikçi Gabriel Lamé, basamak sayısı $k$ olan iki sayının EBOB'unun en fazla $5k$ adımda bulunabileceğini ispatlamıştır.
+
+\subsection*{Kod Gerçekleştirmeleri}
+
+Öklid algoritması hem rekürsif (rekürsif) hem de döngüsel (iteratif) olarak sade bir biçimde kodlanabilir.
+
+\begin{lstlisting}
+FUNCTION gcd(a, b)
+    WHILE b != 0 DO
+        remainder ← a MOD b
+        a ← b
+        b ← remainder
+    END WHILE
+    RETURN ABSOLUTE_VALUE(a)
+END FUNCTION\end{lstlisting}
+
+Aynı algoritmanın C dilindeki rekürsif ve döngüsel karşılıkları:
+
+\begin{lstlisting}[language=CTemel]
+/* Rekursif yontem */
+long long gcd_rec(long long a, long long b) {
+    return (b == 0) ? a : gcd_rec(b, a % b);
+}
+
+/* Döngüsel (iteratif) yöntem */
+long long gcd_iter(long long a, long long b) {
+    while (b != 0) {
+        long long r = a % b;
+        a = b;
+        b = r;
+    }
+    return a;
+}
+\end{lstlisting}
+
+\subsection*{Çözümlü Örnekler}
+
+\begin{example}
+Her $n$ pozitif tamsayısı için $\gcd(5n + 3, 3n + 2)$ ifadesinin değerini bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Öklid algoritmasının $\gcd(A, B) = \gcd(B, A - B)$ kuralını kullanarak $n$'li terimlerin katsayılarını sıfırlayana kadar çıkarma adımlarını yürütelim:
+\begin{align*}
+    \gcd(5n + 3, 3n + 2) &= \gcd(3n + 2, (5n + 3) - (3n + 2)) \\
+                         &= \gcd(3n + 2, 2n + 1)
+\end{align*}
+Bir adım daha çıkarma uygulayalım:
+\begin{align*}
+    \gcd(3n + 2, 2n + 1) &= \gcd(2n + 1, (3n + 2) - (2n + 1)) \\
+                         &= \gcd(2n + 1, n + 1)
+\end{align*}
+Bir kez daha uygulayalım:
+\begin{align*}
+    \gcd(2n + 1, n + 1) &= \gcd(n + 1, (2n + 1) - (n + 1)) \\
+                        &= \gcd(n + 1, n)
+\end{align*}
+Son olarak:
+\[ \gcd(n + 1, n) = \gcd(n, (n + 1) - n) = \gcd(n, 1) = 1 \]
+Demek ki $n$ hangi pozitif tamsayı olursa olsun $5n+3$ ve $3n+2$ daima aralarında asaldır; EBOB her zaman $1$'dir.
+\end{proof}
+
+\begin{example}[Uluslararası Matematik Olimpiyatı 1959, Problem 1]
+Her $n$ pozitif tamsayısı için $\frac{21n + 4}{14n + 3}$ kesrinin sadeleştirilemez (indirgenemez) olduğunu kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bir kesrin sadeleştirilemez olması, pay ve paydasının aralarında asal olması, yani en büyük ortak bölenlerinin $1$ olması anlamına gelir. $\gcd(21n + 4, 14n + 3) = 1$ olduğunu Öklid algoritması ile gösterelim:
+\[ 21n + 4 = 1 \cdot (14n + 3) + (7n + 1) \]
+Buradan:
+\[ \gcd(21n + 4, 14n + 3) = \gcd(14n + 3, 7n + 1) \]
+Şimdi $14n + 3$ ifadesini $7n + 1$'e bölelim:
+\[ 14n + 3 = 2 \cdot (7n + 1) + 1 \]
+Kalan $1$'dir. Teorem~\ref{thm:euclid-step} uyarınca:
+\[ \gcd(14n + 3, 7n + 1) = \gcd(7n + 1, 1) = 1 \]
+Pay ve paydanın EBOB'u $1$ olduğundan kesir hiçbir $n$ değeri için sadeleştirilemez.
+\end{proof}
+
+\begin{example}
+$a$ ve $b$ pozitif tamsayılar olmak üzere,
+\[ \gcd(2^a - 1, 2^b - 1) = 2^{\gcd(a, b)} - 1 \]
+olduğunu kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Genelliği bozmadan $a \ge b$ kabul edelim. Bölme algoritması gereği $a = qb + r$ yazabiliriz ($0 \le r < b$).
+Şu cebirsel açılımı inceleyelim:
+\[ 2^a - 1 = 2^{qb + r} - 1 = 2^r (2^{qb} - 1) + (2^r - 1) \]
+Her pozitif $k$ için $(x - 1) \mid (x^k - 1)$ olduğundan, $x = 2^b$ seçilirse:
+\[ (2^b - 1) \mid ((2^b)^q - 1) \implies (2^b - 1) \mid (2^{qb} - 1) \]
+Dolayısıyla bir $M$ tamsayısı için $2^{qb} - 1 = M \cdot (2^b - 1)$ olur. Yerine yazarsak:
+\[ 2^a - 1 = 2^r \cdot M \cdot (2^b - 1) + (2^r - 1) \]
+Bu eşitlik, $2^a - 1$ sayısının $2^b - 1$'e bölümünden kalanın $2^r - 1$ olduğunu gösterir. Ortak bölenler bakımından:
+\[ \gcd(2^a - 1, 2^b - 1) = \gcd(2^b - 1, 2^r - 1) \]
+Bu bağıntı, üslerde yürütülen Öklid adımının $(a, b) \to (b, r = a \bmod b)$ birebir tabana yansımasıdır.
+Öklid algoritması üslerde ilerleyip sıfırdan farklı son kalan olan $\gcd(a, b)$'ye ulaştığında, tabandaki ifade de $2^{\gcd(a, b)} - 1$ değerine ulaşır.
+\end{proof}
+
+\section{\texorpdfstring{$\gcd \cdot \operatorname{lcm} = ab$}{gcd . lcm = ab}}
+
+EBOB hesaplamasını $O(\log n)$ karmaşıklığında yapmayı gördük. Peki iki büyük sayının EKOK'unu bulmak için tekrar asal çarpanlara dönmek gerekir mi?
+
+İki sayının EBOB'u ile EKOK'u arasında doğrudan bir bağıntı bulunmaktadır; bu sayede EKOK hesabı da tek bir EBOB hesabına indirgenir.
+
+\subsection*{Temel Özdeşlik ve İspatı}
+
+\begin{theorem}
+Her $a, b \in \mathbb{Z}^+$ için:
+\[ \gcd(a, b) \cdot \operatorname{lcm}(a, b) = a \cdot b \]
+\end{theorem}
+
+\begin{proof}
+Herhangi iki gerçel $x$ ve $y$ sayısı için şu eşitlik daima geçerlidir:
+\[ \min(x, y) + \max(x, y) = x + y \]
+(Sayıların hangisinin küçük ya da büyük olduğuna bakılmaksızın biri $\min$'e, diğeri $\max$'a karşılık gelir ve toplamları $x+y$ olur.)
+
+Şimdi $a$ ve $b$'yi asal çarpanlarına ayıralım:
+\[ a = \prod_{i=1}^k p_i^{\alpha_i}, \qquad b = \prod_{i=1}^k p_i^{\beta_i} \]
+Teorem~\ref{thm:prime-gcd-lcm} uyarınca:
+\[ \gcd(a, b) = \prod_{i=1}^k p_i^{\min(\alpha_i, \beta_i)}, \qquad \operatorname{lcm}(a, b) = \prod_{i=1}^k p_i^{\max(\alpha_i, \beta_i)} \]
+Bu iki ifadeyi çarpalım:
+\begin{align*}
+    \gcd(a, b) \cdot \operatorname{lcm}(a, b) &= \left( \prod_{i=1}^k p_i^{\min(\alpha_i, \beta_i)} \right) \cdot \left( \prod_{i=1}^k p_i^{\max(\alpha_i, \beta_i)} \right) \\
+    &= \prod_{i=1}^k p_i^{\min(\alpha_i, \beta_i) + \max(\alpha_i, \beta_i)} \\
+    &= \prod_{i=1}^k p_i^{\alpha_i + \beta_i} \\
+    &= \left( \prod_{i=1}^k p_i^{\alpha_i} \right) \cdot \left( \prod_{i=1}^k p_i^{\beta_i} \right) = a \cdot b
+\end{align*}
+Böylece ispat tamamlanır.
+\end{proof}
+
+Bu eşitlik sayesinde EKOK bulmak için ayrı bir algoritma yazmaya gerek kalmaz; Öklid algoritması ile $\gcd(a, b)$ hesaplandıktan sonra formül işletilir:
+\[ \operatorname{lcm}(a, b) = \frac{a \cdot b}{\gcd(a, b)} \]
+
+\subsection*{Programlamada Taşma (Overflow) Tuzağı}
+
+Formülü doğrudan \texttt{(a * b) / gcd(a, b)} biçiminde kodlamak yaygın bir hatadır.
+
+$a$ ve $b$ sayıları $10^9$ mertebesinde olduğunda her ikisi de standart 32-bit işaretli tamsayı türüne (\texttt{int}) sığar. Ancak bu iki sayı önce çarpıldığında:
+\[ a \cdot b \approx 10^{18} \]
+değeri 32-bit sınırını ($2^{31}-1 \approx 2 \times 10^9$) aşar ve aritmetik taşma (integer overflow) meydana gelir. Sonuç anlamsız veya negatif çıkabilir.
+
+Hatta 64-bitlik \texttt{long long} türü kullanılsa dahi, $a, b \approx 10^{14}$ olduğunda çarpım $10^{28}$ değerine ulaşarak 64-bit sınırını ($\approx 9 \times 10^{18}$) da aşar.
+
+\textbf{Çözüm:}
+$\gcd(a, b)$ sayısı tanım gereği $a$'yı kalansız böler. Bu nedenle çarpma işleminden önce bölme işlemini gerçekleştirmek taşmayı engeller:
+\[ \operatorname{lcm}(a, b) = \left( \frac{a}{\gcd(a, b)} \right) \cdot b \]
+$\frac{a}{\gcd(a, b)}$ ifadesi daima bir tamsayıdır ve sayıyı küçülterek ara taşmaların önüne geçer.
+
+\begin{lstlisting}[language=CTemel]
+long long lcm(long long a, long long b) {
+    if (a == 0 || b == 0) return 0;
+    /* Once bol, sonra carp: tasmayi onler! */
+    return (a / gcd_iter(a, b)) * b;
+}
+\end{lstlisting}
+
+\subsection*{Üç veya Daha Fazla Sayıda Durum}
+
+\noindent\fbox{%
+\parbox{0.96\textwidth}{%
+\textbf{En Sık Yapılan Hata:}
+$\gcd(a, b) \cdot \operatorname{lcm}(a, b) = a \cdot b$ bağıntısına dayanarak benzer eşitliğin üç sayı için de geçerli olacağı yanılgısına sıkça düşülür:
+\[ \gcd(a, b, c) \cdot \operatorname{lcm}(a, b, c) \stackrel{?}{=} a \cdot b \cdot c \quad \textbf{(YANLIŞ!)} \]
+Bu eşitlik genel olarak \textbf{geçersizdir.}
+\textbf{Karşı Örnek:} $a = 2, b = 2, c = 2$ olsun.
+$\gcd(2, 2, 2) = 2$ ve $\operatorname{lcm}(2, 2, 2) = 2$'dir.
+$\gcd \cdot \operatorname{lcm} = 2 \cdot 2 = 4$ iken $a \cdot b \cdot c = 2 \cdot 2 \cdot 2 = 8$'dir ($4 \neq 8$).
+
+Benzer şekilde $a = 2, b = 3, c = 6$ için $\gcd(2, 3, 6) = 1$ ve $\operatorname{lcm}(2, 3, 6) = 6$'dır.
+$\gcd \cdot \operatorname{lcm} = 6$ iken $a \cdot b \cdot c = 36$'dır.
+}}
+
+Bunun nedeni, üç gerçel sayı için genel olarak
+\[ \min(x, y, z) + \max(x, y, z) \neq x + y + z \]
+olmasıdır; ortadaki değer (medyan) bu toplamda yer almaz.
+
+Üç sayı için geçerli bağıntı şöyledir:
+
+\begin{theorem}[Üç Sayı için EKOK Formülü]
+Her $a, b, c \in \mathbb{Z}^+$ için:
+\[ \operatorname{lcm}(a, b, c) = \frac{a \cdot b \cdot c \cdot \gcd(a, b, c)}{\gcd(a, b) \cdot \gcd(b, c) \cdot \gcd(c, a)} \]
+\end{theorem}
+
+\begin{proof}
+Herhangi bir asal $p$ için $a, b, c$'deki üsler sırasıyla $x, y, z$ olsun. Genelliği bozmadan $x \le y \le z$ varsayabiliriz.
+Payın üssü:
+\[ x + y + z + \min(x, y, z) = x + y + z + x = 2x + y + z \]
+Paydanın üssü:
+\[ \min(x, y) + \min(y, z) + \min(x, z) = x + y + x = 2x + y \]
+Payın üssünden paydanın üssünü çıkarırsak:
+\[ (2x + y + z) - (2x + y) = z = \max(x, y, z) \]
+Bu değer tam olarak $\operatorname{lcm}(a, b, c)$ içindeki $p$ asalının üssüdür. Her asal için bu eşitlik sağlandığından teorem ispatlanmış olur.
+\end{proof}
+
+\subsection*{Çözümlü Örnekler}
+
+\begin{example}
+$a + b = 56$ ve $\operatorname{lcm}(a, b) = 105$ eşitliklerini sağlayan tüm $(a, b)$ pozitif tamsayı ikililerini bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+$d = \gcd(a, b)$ tanımlarsak, $d$ sayısı hem $a$'yı hem $b$'yi böldüğü için toplamları olan $a+b = 56$'yı da bölmelidir. Aynı zamanda $d$, $\operatorname{lcm}(a, b) = 105$'in de bölenidir.
+
+Böylece:
+\begin{align*}
+    d \mid (a + b) &\implies d \mid 56 \\
+    d \mid \operatorname{lcm}(a, b) &\implies d \mid 105
+\end{align*}
+O halde $d$, $56$ ve $105$'in bir ortak bölenidir:
+\[ d \mid \gcd(56, 105) \]
+Öklid algoritması ile $\gcd(56, 105)$'i bulalım:
+\[ 105 = 1 \cdot 56 + 49 \implies \gcd(105, 56) = \gcd(56, 49) = \gcd(49, 7) = 7 \]
+Dolayısıyla $d \mid 7$'dir. Pozitif bölenler olarak $d = 1$ veya $d = 7$ olabilir.
+
+\textit{Durum 1:} $d = 1$ ise.
+$\gcd(a, b) = 1 \implies a \cdot b = \operatorname{lcm}(a, b) = 105$.
+Toplamları $56$, çarpımları $105$ olan iki sayı arayalım:
+$t^2 - 56t + 105 = 0$ denkleminin diskriminantı $\Delta = 56^2 - 4 \cdot 105 = 3136 - 420 = 2716$ tamkare olmadığından tamsayı çözümü yoktur.
+
+\textit{Durum 2:} $d = 7$ ise.
+$a = 7x$ ve $b = 7y$ diyelim; burada $\gcd(x, y) = 1$ olmalıdır.
+$a + b = 56 \implies 7(x + y) = 56 \implies x + y = 8$.
+$\operatorname{lcm}(a, b) = 7xy = 105 \implies xy = 15$.
+
+Toplamları $8$, çarpımları $15$ olan sayılar $3$ ve $5$'tir:
+$\{x, y\} = \{3, 5\}$.
+Aralarında asal olduklarını kontrol edelim: $\gcd(3, 5) = 1$ koşulu sağlanır.
+Buradan $a$ ve $b$ değerleri:
+\[ \{a, b\} = \{7 \cdot 3, 7 \cdot 5\} = \{21, 35\} \]
+Sıralı ikililer olarak çözümler $(21, 35)$ ve $(35, 21)$'dir.
+\end{proof}
+
+\begin{example}
+$\operatorname{lcm}(a, b) - \gcd(a, b) = 103$ eşitliğini sağlayan tüm $(a, b)$ pozitif tamsayı ikililerini bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+$g = \gcd(a, b)$ diyelim. $a = gx$ ve $b = gy$ olsun ($\gcd(x, y) = 1$).
+Bu durumda $\operatorname{lcm}(a, b) = gxy$ olur. İfadeyi $g$ parantezine alalım:
+\[ gxy - g = 103 \implies g(xy - 1) = 103 \]
+$103$ asal bir sayıdır; bu nedenle pozitif çarpanları yalnızca $1$ ve $103$'tür. Buradan iki olasılık çıkar:
+
+\textit{Olasılık 1:} $g = 103$ ve $xy - 1 = 1$.
+$xy - 1 = 1 \implies xy = 2$.
+$x$ ve $y$ pozitif tamsayılar olduğundan $\{x, y\} = \{1, 2\}$ olmalıdır.
+Buradan:
+\[ \{a, b\} = \{103 \cdot 1, 103 \cdot 2\} = \{103, 206\} \]
+Kontrol edelim: $\gcd(103, 206) = 103$, $\operatorname{lcm}(103, 206) = 206$.
+$206 - 103 = 103$ eşitliği sağlanır.
+
+\textit{Olasılık 2:} $g = 1$ ve $xy - 1 = 103$.
+$xy - 1 = 103 \implies xy = 104$.
+Ayrıca $g = 1$ olduğundan $\gcd(x, y) = 1$ olmalıdır.
+$104 = 2^3 \cdot 13 = 8 \cdot 13$.
+Çarpımları $104$ olan ve aralarında asal $\{x, y\}$ çiftleri:
+\begin{itemize}
+    \item $\{x, y\} = \{1, 104\} \implies \{a, b\} = \{1, 104\}$
+    \item $\{x, y\} = \{8, 13\} \implies \{a, b\} = \{8, 13\}$
+\end{itemize}
+($\{2, 52\}$ ve $\{4, 26\}$ çiftlerinde $\gcd > 1$ olduğundan elenir.)
+
+Sonuç olarak tüm $(a, b)$ ikilileri: $(103, 206)$, $(206, 103)$, $(1, 104)$, $(104, 1)$, $(8, 13)$ ve $(13, 8)$'dir.
+\end{proof}
+
+\begin{example}
+$\gcd(x, y) = 24$ ve $\operatorname{lcm}(x, y) = 2496$ koşulunu sağlayan kaç farklı $(x, y)$ pozitif tamsayı çifti vardır?
+\end{example}
+
+\begin{proof}[Çözüm]
+$x = 24a$ ve $y = 24b$ dönüşümü yapalım ($\gcd(a, b) = 1$).
+\[ \operatorname{lcm}(x, y) = 24ab = 2496 \implies ab = \frac{2496}{24} = 104 \]
+Problem, çarpımları $104$ olan ve $\gcd(a, b) = 1$ koşulunu sağlayan $(a, b)$ ikililerini saymaya indirgenir.
+
+$104$'ü asal çarpanlarına ayıralım:
+\[ 104 = 2^3 \cdot 13^1 \]
+$\gcd(a, b) = 1$ olması için, $104$'ün asal çarpan blokları ($2^3$ ve $13^1$) ya bütünüyle $a$'ya ya da bütünüyle $b$'ye ait olmalıdır; bölünemezler.
+Burada $2$ farklı asal blok vardır: $2^3$ ve $13^1$.
+Her blok için $2$ seçenek mevcuttur (ya $a$'da ya da $b$'de yer alır).
+Dolayısıyla aralarında asal $(a, b)$ ikililerinin sayısı:
+\[ 2^2 = 4 \]
+Bu çiftler $(a, b) \in \{(1, 104), (8, 13), (13, 8), (104, 1)\}$ olup her biri geçerli bir $(x, y)$ ikilisi üretir. Yanıt $4$'tür.
+\end{proof}
+
+\begin{example}
+$a, b, c$ pozitif tamsayılar olmak üzere, $\operatorname{lcm}(a, b) = \operatorname{lcm}(a+c, b-c)$ ise $c$'nin alabileceği değerler hakkında ne söylenebilir?
+\end{example}
+
+\begin{proof}[Çözüm]
+$L = \operatorname{lcm}(a, b) = \operatorname{lcm}(a+c, b-c)$ diyelim.
+EKOK tanımı gereği, her iki ikilideki sayılar $L$'yi böler:
+\[ a \mid L, \quad b \mid L, \quad (a+c) \mid L, \quad (b-c) \mid L \]
+Uç durumları inceleyelim: Eğer $c = b$ olursa $b-c = 0$ olur ki bu pozitif tamsayılar kümesinde tanımsızdır.
+$a = b$ durumunda $L = a$ olur; o halde $(a+c) \mid a$ olmalıdır. Fakat pozitif $c$ için $a+c > a$ olduğundan bu imkânsızdır; dolayısıyla $a \neq b$ olmalıdır.
+
+Böyle bir eşitliğin sağlanabileceğini somut bir değerle görelim:
+$a = 2, b = 3$ seçelim. $\operatorname{lcm}(2, 3) = 6$.
+$c = 1$ alırsak:
+$a+c = 2+1 = 3$, $b-c = 3-1 = 2$.
+$\operatorname{lcm}(3, 2) = 6$.
+Görüldüğü gibi $a = 2, b = 3, c = 1$ bir çözümdür.
+
+Genel olarak, $a+c = b$ ve $b-c = a$ denklemleri aslında aynı denklemdir; ikincisi birincinin yalnızca yeniden düzenlenmiş halidir ve her ikisi de $c = b - a$ sonucunu verir. Bu seçimle $(a+c, b-c) = (b, a)$ olur; yani ikili yalnızca yer değiştirir ve $\operatorname{lcm}(a, b) = \operatorname{lcm}(b, a)$ olduğundan EKOK eşitliği apaçık sağlanır. Somut bir örnekle doğrularsak: $a=2, b=3$ için $c = b-a = 1$'dir ve gerçekten $(a+c, b-c) = (3, 2)$ olup ikili yer değiştirmiştir. Bu inceleme bize, buradaki çözümün ikilinin yalnızca yer değiştirmesi durumuna dayandığını gösterir.
+\end{proof}
+
+Bu bölümde kurduğumuz EBOB, EKOK ve Öklid algoritması temelleri, Bölüm 14'te ele alacağımız modüler aritmetik konusunun çekirdeğini oluşturacaktır.

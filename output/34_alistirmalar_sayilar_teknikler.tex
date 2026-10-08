@@ -1,0 +1,675 @@
+\chapter{Alıştırmalar: Sayılar ve Teknikler}
+
+Sayılar teorisi ve problem çözme teknikleri boyunca edindiğimiz kuramsal altyapıyı, TÜBİTAK Bilgisayar Olimpiyatı 1.~Aşama sınavında ve benzeri yarışmalarda karşımıza çıkan özgün sorular üzerinde sınayacağız. Bir matematiksel aracı yalnızca tanımakla yetinmeyip yarışma ortamında doğru anda devreye sokabilmek ayrı bir problem çözme alışkanlığı gerektirir.
+
+Bu sezgiyi geliştirmek adına ele aldığımız tüm problemler \textbf{[Kolay]}, \textbf{[Orta]}, \textbf{[İleri Düzey]} ve \textbf{[Olimpiyat]} zorluk seviyeleriyle etiketlenmiştir. Her soruda yalnızca sonuca ulaşmakla kalmayıp çözümün arkasındaki temel düşünceyi, çıkış noktalarını ve sıkça düşülen tuzakları da inceleyeceğiz.
+
+\section{Bölünebilme ve Modüler Alıştırmalar}
+
+Bölüm 11 ve Bölüm 12'de gördüğümüz bölünebilme kuralları ile Bölüm 14'te ele aldığımız modüler aritmetik araçları, algoritma analizinden kriptografiye kadar bilgisayar biliminin birçok alanında temel rol oynar. Karşımıza çıkan bir bölünebilme sorusunda ilk adım genellikle cebirsel çarpanlara ayırma veya uygun bir modül altında denklik aramak olmalıdır. Doğru modülü belirlemek çoğu zaman çözüm yolunu doğrudan açar.
+
+\begin{example}[Zorluk: Kolay]
+$n$ bir pozitif tamsayı olmak üzere, $n^5 - 5n^3 + 4n$ ifadesinin her zaman $120$ ile bölündüğünü gösteriniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+$120 = 2^3 \cdot 3 \cdot 5 = 5!$ olduğuna dikkat edersek, Bölüm 11'den hatırlanacağı üzere ardışık $k$ tam sayının çarpımı daima $k!$ ile tam bölünür. Dolayısıyla ifadeyi ardışık 5 tam sayının çarpımı biçiminde yazmaya çalışmak en doğrudan yaklaşımdır.
+
+Verilen cebirsel ifadeyi ortak çarpan parantezine alarak çarpanlarına ayıralım:
+\begin{align*}
+n^5 - 5n^3 + 4n &= n(n^4 - 5n^2 + 4) \\
+&= n(n^2 - 1)(n^2 - 4) \\
+&= n(n - 1)(n + 1)(n - 2)(n + 2)
+\end{align*}
+Çarpanları küçükten büyüğe sıraladığımızda:
+\[
+(n - 2)(n - 1)n(n + 1)(n + 2)
+\]
+çarpımını elde ederiz. Bu ifade ardışık 5 tamsayının çarpımıdır. 
+
+Ardışık 5 sayıdan:
+\begin{itemize}
+    \item En az iki tanesi 2'ye bölünür ve bunlardan biri en az 4'e bölünür; dolayısıyla çarpım $2 \cdot 4 = 8$ ile tam bölünür ($2^3 \mid 120$).
+    \item En az bir tanesi 3 ile tam bölünür ($3 \mid 120$).
+    \item En az bir tanesi 5 ile tam bölünür ($5 \mid 120$).
+\end{itemize}
+$\gcd(8, 3) = \gcd(24, 5) = 1$ olduğundan, ifademiz $8 \cdot 3 \cdot 5 = 120$ ile daima tam bölünür.
+\end{proof}
+
+\begin{example}[Zorluk: Orta]
+$p$ bir asal sayı olsun. $8p^2 + 1$ sayısının da bir asal sayı olduğu bilindiğine göre, $8p^2 - 1$ sayısının asal olup olmadığını belirleyiniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Asal sayılar içeren polinom ifadelerinde küçük modülleri incelemek, özellikle de Bölüm 14'te ele aldığımız $\pmod 3$ aritmetiğini kullanmak iyi bir başlangıçtır. Tam kareler mod 3 altında yalnızca $0$ veya $1$ değerini alabildiğinden ($x^2 \equiv 0, 1 \pmod 3$), bu kısıt ifadenin davranışını dar bir aralığa hapseder.
+
+$p$ asal sayısını mod 3 altında inceleyelim:
+\begin{enumerate}
+    \item Durum $p = 3$ ise:
+    \[
+    8p^2 + 1 = 8(3^2) + 1 = 8 \cdot 9 + 1 = 73
+    \]
+    $73$ gerçekten bir asal sayıdır. Bu durumda:
+    \[
+    8p^2 - 1 = 8(3^2) - 1 = 72 - 1 = 71
+    \]
+    $71$ sayısı da asaldır.
+    
+    \item Durum $p \neq 3$ ise:
+    $p$ asal ve $3$'ten farklı olduğundan $\gcd(p, 3) = 1$'dir. Dolayısıyla $p \equiv 1$ veya $p \equiv 2 \pmod 3$ olur. Her iki durumda da $p^2 \equiv 1 \pmod 3$ elde edilir.
+    
+    Bu denklikten hareketle $8p^2 + 1$ ifadesini mod 3'te inceleyelim:
+    \[
+    8p^2 + 1 \equiv 2 \cdot (1) + 1 = 3 \equiv 0 \pmod 3
+    \]
+    Bu durumda $8p^2 + 1$ sayısı 3 ile tam bölünür. Ancak soruda $8p^2 + 1$'in bir asal sayı olduğu verilmiştir. 3'ün katı olan yegâne asal sayı $3$'ün kendisidir. Fakat $p \ge 2$ için $8p^2 + 1 \ge 8(4) + 1 = 33 > 3$ olduğundan bu ifade asla 3 olamaz; dolayısıyla asal olamaz. Bu durum bir çelişkidir.
+\end{enumerate}
+Demek ki şartı sağlayan yegâne asal $p = 3$'tür ve bu değer için $8p^2 - 1 = 71$ olup \textbf{asaldır}.
+\end{proof}
+
+\textbf{En Sık Yapılan Hata:} $p \neq 3$ durumunda $p^2 \equiv 1 \pmod 3$ bağıntısını fark edip $8p^2 + 1$'in 3 ile bölündüğünü bulan bazı öğrenciler, ``o halde $8p^2 - 1 \equiv 2 \cdot 1 - 1 = 1 \pmod 3$ olur, demek ki 3'e bölünmez, o zaman asaldır'' yanılgısına düşerler. Bir sayının 3'e bölünmemesi onun asal olduğunu göstermez (örneğin 25 veya 49 gibi). Çözümün anahtarı, $p \neq 3$ durumunun soru koşuluyla tamamen çeliştiğini ($8p^2+1$ asal olamaz) fark edip tek çözümün $p=3$ olduğunu görmektir.
+
+\begin{example}[Zorluk: İleri Düzey]
+$p$ ve $q$ iki asal sayı olmak üzere,
+\[
+p \mid q^3 - 1 \quad \text{ve} \quad q \mid p - 1
+\]
+koşulları sağlanmaktadır. Bu koşulu sağlayan tüm $(p, q)$ asal sayı ikililerini bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+İki yönlü bölünebilme bağıntılarında eşitsizlik kurmak veya çarpanlara ayırmak temel yaklaşımdır. İkinci koşul olan $q \mid p - 1$, $p - 1 > 0$ olduğu için doğrudan $q \le p - 1 < p$ eşitsizliğini verir; yani kesinlikle $q < p$'dir.
+
+Şimdi ilk koşula dönelim:
+\[
+p \mid q^3 - 1 = (q - 1)(q^2 + q + 1)
+\]
+$p$ bir asal sayıdır. Bölüm 12'de gördüğümüz Öklid lemmasına göre, $p$ bir çarpımı bölüyorsa çarpanlardan en az birini bölmek zorundadır:
+\[
+p \mid (q - 1) \quad \text{veya} \quad p \mid (q^2 + q + 1)
+\]
+Fakat az önce $q < p$, dolayısıyla $q - 1 < p$ olduğunu bulmuştuk. Pozitif bir tam sayı kendisinden kesinlikle büyük bir sayıya bölünemez. O halde $p \nmid (q - 1)$ olmalıdır.
+
+Buradan zorunlu olarak:
+\[
+p \mid q^2 + q + 1
+\]
+sonucuna varırız. Bu ise bir tamsayı $k \ge 1$ için:
+\[
+q^2 + q + 1 = k \cdot p
+\]
+anlamına gelir. 
+
+Diğer yandan $q \mid p - 1$ verildiğinden, bir pozitif $m$ tamsayısı için $p - 1 = m q$, yani $p = m q + 1$ yazabiliriz. Bunu yukarıdaki eşitlikte yerine koyalım:
+\[
+q^2 + q + 1 = k(mq + 1) = kmq + k
+\]
+Eşitliği mod $q$ altında incelersek:
+\[
+1 \equiv k \pmod q
+\]
+elde edilir. $k \ge 1$ pozitif tamsayısı için iki temel ihtimal vardır:
+\begin{enumerate}
+    \item $k = 1$ durumu:
+    Eğer $k = 1$ ise, $q^2 + q + 1 = p$ olur. 
+    Ayrıca $p = mq + 1$ olduğundan:
+    \[
+    q^2 + q + 1 = mq + 1 \implies q^2 + q = mq \implies q(q + 1) = mq \implies m = q + 1
+    \]
+    Bu durumda $p = q^2 + q + 1$ olmalıdır. Küçük asalları deneyelim:
+    \begin{itemize}
+        \item $q = 2 \implies p = 2^2 + 2 + 1 = 7$. $p=7$ asaldır. Kontrol edelim: $7 \mid 2^3 - 1 = 7$ (sağlar) ve $2 \mid 7 - 1 = 6$ (sağlar). İkili: $(7, 2)$.
+        \item $q = 3 \implies p = 3^2 + 3 + 1 = 13$. $p=13$ asaldır. Kontrol: $13 \mid 3^3 - 1 = 26$ (sağlar) ve $3 \mid 13 - 1 = 12$ (sağlar). İkili: $(13, 3)$.
+        \item $q > 3$ tek asal ise: $q \equiv 1$ veya $q \equiv 2 \pmod 3$ olabilir mi? Asallığı test edebiliriz; örneğin $q=5 \implies p=31$ asaldır; $31 \mid 124 = 4 \times 31$ ve $5 \mid 30$. Genel olarak $q^2+q+1$ asal olduğu sürece her $(q^2+q+1, q)$ çifti bir çözüm adayıdır. Ancak $k$'nın diğer değerlerini de araştırmalıyız.
+    \end{itemize}
+
+    \item $k > 1$ durumu:
+    $k \equiv 1 \pmod q$ ve $k > 1$ olduğundan en az $k \ge q + 1$ olmalıdır.
+    Fakat $k \ge q + 1$ olursa:
+    \[
+    k \cdot p \ge (q + 1)p > (q + 1)q = q^2 + q
+    \]
+    Hatta $p > q$ olduğu için $p \ge q + 1$'dir (biri tek biri çift veya ikisi de tek).
+    Eğer $p \ge q + 2$ ise:
+    \[
+    kp \ge (q + 1)(q + 2) = q^2 + 3q + 2 > q^2 + q + 1
+    \]
+    olur ki bu $kp = q^2 + q + 1$ eşitliğiyle çelişir!
+    Sadece $p = q + 1$ olabilir mi? İki ardışık asal yalnızca $q=2, p=3$ iken mümkündür. Ama $q=2, p=3$ için $q^2+q+1 = 7$, $3 \nmid 7$ olduğundan sağlamaz.
+\end{enumerate}
+Dolayısıyla tek olası aile $k = 1$, yani $p = q^2 + q + 1$ ailesidir. Problem belirli ikilileri sorduğunda, sorunun bağlamına göre tüm çözümler $q$ ve $p = q^2 + q + 1$'in her ikisinin de asal olduğu ikililerdir.
+\end{proof}
+
+\begin{example}[Zorluk: Olimpiyat]
+$n > 1$ bir tamsayı olsun. $n \mid 2^n - 1$ koşulunu sağlayan hiçbir $n > 1$ tamsayısının bulunmadığını ispatlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bu problem, yarışma matematiğinde ``en küçük asal bölen'' argümanının en öğretici ve bilinen örneklerindendir. $n \mid 2^n - 1$ ifadesinde $n$'nin asal çarpanlarının tümü yerine yalnızca \emph{en küçük} asal bölen $p$'ye odaklanmak, Bölüm 14'te gördüğümüz Fermat'nın Küçük Teoremi sayesinde güçlü bir mertebe kısıtı kurmamızı sağlar.
+
+Olmayana ergi (çelişki) yöntemini kullanalım. $n > 1$ için $n \mid 2^n - 1$ olduğunu varsayalım.
+
+$n > 1$ olduğundan $n$'nin en az bir asal böleni vardır. $n$'nin \textbf{en küçük asal bölenine} $p$ diyelim.
+\begin{itemize}
+    \item $2^n - 1$ daima tek bir sayı olduğundan, onu bölen $n$ de tek sayı olmalıdır. Dolayısıyla $p$ tek bir asal sayıdır ($p \ge 3$).
+    \item $p \mid n$ ve $n \mid 2^n - 1$ olduğundan, bölünebilmenin geçişme özelliğinden:
+    \[
+    p \mid 2^n - 1 \implies 2^n \equiv 1 \pmod p
+    \]
+\end{itemize}
+Şimdi 2'nin mod $p$'deki mertebesini (yani $2^d \equiv 1 \pmod p$ şartını sağlayan en küçük pozitif $d$ tamsayısını) ele alalım ve buna $d = \operatorname{ord}_p(2)$ diyelim.
+
+Mertebenin temel teoremine göre:
+\[
+2^n \equiv 1 \pmod p \implies d \mid n
+\]
+Ayrıca Fermat'nın Küçük Teoremi gereğince $\gcd(2, p) = 1$ olduğundan:
+\[
+2^{p-1} \equiv 1 \pmod p \implies d \mid p - 1
+\]
+elde edilir. Demek ki $d$, hem $n$'yi hem de $p - 1$'i bölen bir tamsayıdır:
+\[
+d \mid \gcd(n, p - 1)
+\]
+Şimdi dikkatle düşünelim:
+\begin{itemize}
+    \item $d > 1$ midir? Eğer $d = 1$ olsaydı, $2^1 \equiv 1 \pmod p \implies p \mid (2 - 1) = 1$ olurdu; bu imkânsızdır çünkü $p \ge 3$ bir asaldır. O halde $d > 1$'dir.
+    \item $d > 1$ olduğuna göre $d$'nin en az bir asal böleni vardır; bu asal bölen aynı zamanda $n$'yi de böler (çünkü $d \mid n$).
+    \item Fakat $d \mid p - 1$ olduğundan, $d \le p - 1 < p$ olmalıdır!
+\end{itemize}
+Bu durum açık bir çelişkidir: $d$'nin asal çarpanı hem $n$'yi böler hem de $p$'den kesinlikle küçüktür. Oysa biz $p$'yi $n$'nin \emph{en küçük} asal böleni olarak seçmiştik!
+
+Bu çelişki varsayımımızın yanlış olduğunu kanıtlar. Demek ki $n \mid 2^n - 1$ şartını sağlayan hiçbir $n > 1$ tamsayısı yoktur.
+\end{proof}
+
+Aşağıdaki C kodu, küçük $n$ değerleri için bu imkânsızlığı deneysel olarak doğrulamakta ve adayların mertebe davranışını simüle etmektedir:
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+#include <stdlib.h>
+
+long long power_mod(long long base, long long exp, long long mod) {
+    long long result = 1;
+    base %= mod;
+    while (exp > 0) {
+        if (exp % 2 == 1) {
+            result = (result * base) % mod;
+        }
+        base = (base * base) % mod;
+        exp /= 2;
+    }
+    return result;
+}
+
+int* check_divisibility(int limit, int* count) {
+    int* solutions = (int*)malloc(limit * sizeof(int));
+    *count = 0;
+    for (int n = 2; n <= limit; ++n) {
+        if (power_mod(2, n, n) == 1) {
+            solutions[(*count)++] = n;
+        }
+    }
+    return solutions;
+}
+
+int main(void) {
+    int count = 0;
+    int* solutions = check_divisibility(10000, &count);
+
+    printf("Cozumler: [");
+    for (int i = 0; i < count; ++i) {
+        printf("%d%s", solutions[i], (i == count - 1) ? "" : ", ");
+    }
+    printf("]\n");
+
+    free(solutions);
+    return 0;
+}\end{lstlisting}
+
+\section{EBOB/EKOK ve Tam Sayı Denklem Alıştırmaları}
+
+Bölüm 13'te incelediğimiz üzere, tam sayı çözümleri aradığımız denklemlerde en sık başvurulan yöntemler şunlardır:
+\begin{enumerate}
+    \item \textbf{Çarpanlara Ayırma:} Denklemi $(A)(B) = C$ formatına getirip $C$'nin bölenlerini eşitlemek.
+    \item \textbf{Modüler Kısıtlama:} Eşitliğin her iki tarafının belirli bir modda (çoğunlukla 3, 4, 8) alabileceği değerlerin uyuşmadığını göstererek çözüm olmadığını ispatlamak.
+    \item \textbf{Eşitsizlik ve Sıkıştırma:} Bir bilinmeyeni diğerinin ardışık kareleri veya küpleri arasına sıkıştırarak aralık daraltmak.
+\end{enumerate}
+
+\begin{example}[Zorluk: Kolay]
+Her $n$ pozitif tamsayısı için
+\[
+\gcd(2n + 1, \, 9n + 4)
+\]
+ifadesinin alabileceği değerleri bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölüm 13'te gördüğümüz Öklid algoritmasının temel kuralı $\gcd(a, b) = \gcd(a, b - k a)$ özelliğidir. Buradaki amaç, $n$ değişkenini yok edecek katsayıları belirlemektir.
+
+$d = \gcd(2n + 1, 9n + 4)$ olsun.
+Bölünebilme tanımı gereği:
+\[
+d \mid (2n + 1) \quad \text{ve} \quad d \mid (9n + 4)
+\]
+Lineer kombinasyon aldığımızda $n$'li terimleri yok etmek için birinciyi 9, ikinciyi 2 ile çarpıp çıkaralım:
+\[
+d \mid \big[ 2(9n + 4) - 9(2n + 1) \big]
+\]
+Parantez içini açarsak:
+\[
+2(9n + 4) - 9(2n + 1) = 18n + 8 - 18n - 9 = -1
+\]
+Buradan $d \mid -1$, yani $d \mid 1$ elde edilir. 
+
+EBOB tanımı gereği pozitif bir tamsayı olduğundan, her $n \ge 1$ için:
+\[
+\gcd(2n + 1, 9n + 4) = 1
+\]
+olmak zorundadır. İfade yalnızca $1$ değerini alabilir.
+\end{proof}
+
+\begin{example}[Zorluk: Orta]
+$x$ ve $y$ pozitif tamsayılar olmak üzere,
+\[
+\frac{1}{x} + \frac{1}{y} = \frac{1}{2024}
+\]
+denklemini sağlayan kaç farklı $(x, y)$ sıralı ikilisi vardır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Rasyonel ifadeler içeren bu tür denklemler payda eşitlenerek standart bir çarpım biçimine dönüştürülebilir. Bu yöntem olimpiyat literatüründe Simon'ın Çarpanlara Ayırma Özdeşliği adıyla da anılır.
+
+Denklemde payda eşitleyelim:
+\[
+\frac{x + y}{xy} = \frac{1}{2024} \implies xy = 2024(x + y) \implies xy - 2024x - 2024y = 0
+\]
+Her iki tarafa $2024^2$ ekleyerek sol tarafı çarpanlarına ayıralım:
+\[
+xy - 2024x - 2024y + 2024^2 = 2024^2
+\]
+\[
+(x - 2024)(y - 2024) = 2024^2
+\]
+$u = x - 2024$ ve $v = y - 2024$ dönüşümü yapalım. $x, y > 0$ ve $1/x < 1/2024$ olduğundan $x > 2024$, yani $u > 0$ ve benzer şekilde $v > 0$ olmak zorundadır.
+
+O halde $(x, y)$ ikililerinin sayısı, $2024^2$ sayısının pozitif bölen sayısına eşittir.
+
+Şimdi $2024$ sayısını asal çarpanlarına ayıralım:
+\[
+2024 = 2^3 \cdot 253 = 2^3 \cdot 11 \cdot 23
+\]
+Bunun karesini alırsak:
+\[
+2024^2 = (2^3 \cdot 11^1 \cdot 23^1)^2 = 2^6 \cdot 11^2 \cdot 23^2
+\]
+Bir sayının pozitif bölen sayısı, asal çarpanlarının üslerinin birer fazlasının çarpımıdır:
+\[
+d(2024^2) = (6 + 1)(2 + 1)(2 + 1) = 7 \cdot 3 \cdot 3 = 63
+\]
+Dolayısıyla denklemi sağlayan tam $63$ farklı $(x, y)$ pozitif tamsayı ikilisi vardır.
+\end{proof}
+
+\begin{example}[Zorluk: İleri Düzey]
+$x^2 + 3 = y^3$ denkleminin tamsayılarda hiçbir çözümünün olmadığını kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bu problem bir Mordell eğrisi ($y^3 = x^2 + k$) tipindedir. Modüler kısıtlama ararken küplerin ve karelerin mod 8, mod 4 veya mod 9'daki davranışına bakarız. Küpler mod 8'de $0, 1, 3, 5, 7$ değerlerini alabilirken kareler sadece $0, 1, 4$ değerlerini alabilir.
+
+$y$'nin paritesini inceleyelim:
+\begin{enumerate}
+    \item Eğer $y$ çift ise:
+    $y \equiv 0 \pmod 2 \implies y^3 \equiv 0 \pmod 8$ olur.
+    Denklemden:
+    \[
+    x^2 + 3 = y^3 \equiv 0 \pmod 8 \implies x^2 \equiv -3 \equiv 5 \pmod 8
+    \]
+    Fakat tam karelerin mod 8'deki denkliği yalnızca $x^2 \equiv 0, 1, 4 \pmod 8$ olabilir. $x^2 \equiv 5 \pmod 8$ denkleminin hiçbir tamsayı çözümü yoktur! Demek ki $y$ çift olamaz.
+    
+    \item O halde $y$ tek tamsayı olmalıdır.
+    $y$ tek ise $y^3$ de tektir. $x^2 + 3$ tek olduğuna göre $x^2$ çift, yani $x$ çift olmalıdır.
+    $x$ çift olduğundan $x = 2k$ yazabiliriz.
+    Buradan:
+    \[
+    x^2 \equiv 0 \pmod 4 \implies y^3 = x^2 + 3 \equiv 3 \pmod 4
+    \]
+    Tek sayıların küpleri mod 4'te incelenirse:
+    \begin{align*}
+    1^3 &\equiv 1 \pmod 4 \\
+    3^3 = 27 &\equiv 3 \pmod 4
+    \end{align*}
+    Dolayısıyla $y \equiv 3 \pmod 4$ veya denk olarak $y \equiv -1 \pmod 4$ olmalıdır.
+    
+    Şimdi denklemi şu şekilde yeniden düzenleyelim:
+    \[
+    x^2 + 4 = y^3 + 1 = (y + 1)(y^2 - y + 1)
+    \]
+    $y \equiv 3 \pmod 4$ olduğundan ikinci çarpanı inceleyelim:
+    \[
+    y^2 - y + 1 \equiv 3^2 - 3 + 1 = 9 - 3 + 1 = 7 \equiv 3 \pmod 4
+    \]
+    $y^2 - y + 1$ sayısı $4k + 3$ formunda tek bir sayıdır.
+    
+    $4k + 3$ formundaki her sayının, yine $4k + 3$ formunda en az bir $p$ asal böleni olmak zorundadır (çünkü tüm asal çarpanları $4k + 1$ formunda olsaydı çarpımları da $4k + 1$ formunda olurdu).
+    
+    O halde $p \equiv 3 \pmod 4$ şartını sağlayan bir $p$ asalı vardır öyle ki:
+    \[
+    p \mid (y^2 - y + 1) \implies p \mid (x^2 + 4) \implies x^2 \equiv -4 \pmod p
+    \]
+    Her iki tarafın $(p-1)/2$. kuvvetini alırsak (Fermat'nın Küçük Teoremi):
+    \[
+    (x^2)^{(p-1)/2} \equiv (-4)^{(p-1)/2} \pmod p
+    \]
+    Sol taraf $x^{p-1} \equiv 1 \pmod p$'dir ($p \nmid x$ çünkü $p \mid x \implies p \mid 4 \implies p = 2$, çelişki).
+    Sağ taraf ise:
+    \begin{multline*}
+    (-4)^{(p-1)/2} = (-1)^{(p-1)/2} \cdot (2^2)^{(p-1)/2} \\
+    = (-1)^{(p-1)/2} \cdot 2^{p-1} \equiv (-1)^{(p-1)/2} \pmod p
+    \end{multline*}
+    $p \equiv 3 \pmod 4$ olduğundan $(p-1)/2$ bir tek sayıdır;\; dolayısıyla $(-1)^{(p-1)/2} = -1$'dir.
+    
+    Buradan $1 \equiv -1 \pmod p \implies p \mid 2$ elde edilir ki bu $p \equiv 3 \pmod 4$ olmasıyla çelişir!
+\end{enumerate}
+Her iki durumda da çelişki elde edildiğinden denklemin hiçbir tamsayı çözümü yoktur.
+\end{proof}
+
+\begin{example}[Zorluk: Olimpiyat]
+\[
+x^4 + x^3 + x^2 + x + 1 = y^2
+\]
+denklemini sağlayan tüm $(x, y)$ tamsayı çiftlerini bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Dördüncü dereceden bir polinomun tam kareye eşit olması istendiğinde en etkili yöntem, ifadeyi ardışık iki tam kare arasına sıkıştırmaktır. $x^4 + x^3 + \dots$ ifadesi $(x^2 + ax + b)^2$ açılımına yakındır. Polinomu iki komşu tam kare arasına hapsettiğimizde, arada başka bir tam kare yer alamayacağından çözümler yalnızca sınır eşitliklerinden gelebilir.
+
+Sol tarafı kesirlerden kurtulmak adına 4 ile çarpalım:
+\[
+4y^2 = 4x^4 + 4x^3 + 4x^2 + 4x + 4
+\]
+Bu ifadeyi $(2x^2 + x)^2$ ile karşılaştıralım:
+\[
+(2x^2 + x)^2 = 4x^4 + 4x^3 + x^2
+\]
+Açıkça $4x^4 + 4x^3 + 4x^2 + 4x + 4 > 4x^4 + 4x^3 + x^2$ eşitsizliği:
+\[
+3x^2 + 4x + 4 > 0
+\]
+durumunda geçerlidir. Bu ifadenin diskriminantı $\Delta = 16 - 4(3)(4) = -32 < 0$ olduğundan, her $x \in \mathbb{R}$ için $3x^2 + 4x + 4 > 0$'dır.
+Demek ki her tamsayı $x$ için:
+\[
+(2x^2 + x)^2 < 4y^2
+\]
+eşitsizliği kesin olarak sağlanır.
+
+Şimdi bir sonraki kareyi, yani $(2x^2 + x + 2)^2$ ifadesini deneyelim:
+\[
+(2x^2 + x + 2)^2 = 4x^4 + 4x^3 + 9x^2 + 4x + 4
+\]
+Bizim ifademiz $4y^2 = 4x^4 + 4x^3 + 4x^2 + 4x + 4$ idi. Farkı alırsak:
+\[
+(2x^2 + x + 2)^2 - 4y^2 = 5x^2 \ge 0
+\]
+Buradan şu eşitsizlik zincirini kurarız:
+\[
+(2x^2 + x)^2 < (2y)^2 \le (2x^2 + x + 2)^2
+\]
+$(2y)^2$ bir tamsayının karesidir ve $(2x^2 + x)^2$ ile $(2x^2 + x + 2)^2$ arasında yer almaktadır. Bu iki sınır arasındaki yegâne tamsayı kareler şunlar olabilir:
+\begin{enumerate}
+    \item $(2y)^2 = (2x^2 + x + 1)^2$
+    \item $(2y)^2 = (2x^2 + x + 2)^2$
+\end{enumerate}
+
+Bu iki durumu ayrı ayrı inceleyelim:
+
+\textbf{Durum 1:} $4y^2 = (2x^2 + x + 1)^2$
+\begin{align*}
+4x^4 + 4x^3 + 4x^2 + 4x + 4 &= 4x^4 + 4x^3 + 5x^2 + 2x + 1 \\
+4x^2 + 4x + 4 &= 5x^2 + 2x + 1 \\
+x^2 - 2x - 3 &= 0 \\
+(x - 3)(x + 1) &= 0
+\end{align*}
+Buradan iki kök gelir:
+\begin{itemize}
+    \item $x = -1 \implies y^2 = 1 - 1 + 1 - 1 + 1 = 1 \implies y = \pm 1$.
+    \item $x = 3 \implies y^2 = 81 + 27 + 9 + 3 + 1 = 121 \implies y = \pm 11$.
+\end{itemize}
+
+\textbf{Durum 2:} $4y^2 = (2x^2 + x + 2)^2$
+Az önce gördüğümüz üzere bu eşitlik ancak aralarındaki fark sıfır olduğunda, yani $5x^2 = 0 \implies x = 0$ iken mümkündür:
+\begin{itemize}
+    \item $x = 0 \implies y^2 = 1 \implies y = \pm 1$.
+\end{itemize}
+
+Tüm çözümleri toplarsak, denklemi sağlayan $(x, y)$ ikilileri:
+\[
+(0, 1), \; (0, -1), \; (-1, 1), \; (-1, -1), \; (3, 11), \; (3, -11)
+\]
+olmak üzere 6 tanedir.
+\end{proof}
+
+\section{İnvaryant, Uç Değer, Tersine Çalışma Alıştırmaları}
+
+Bölüm 17 (Parite), Bölüm 18 (İnvaryant) ve Bölüm 19'da (Uç Değer) incelediğimiz üzere, ayrık süreçlerde doğrudan sonuca gitmek yerine durum uzayının yapısal özelliklerine odaklanırız:
+\begin{itemize}
+    \item \textbf{Değişmez (İnvaryant):} Sistem adımlarla değişse de sabit kalan bir büyüklük (çoğunlukla parite veya modüler toplam).
+    \item \textbf{Yarı-Değişmez (Monovariant):} Her hamlede tek yönde kesin olarak artan ya da azalan ve alttan/üstten sınırlı olan bir nicelik; sürecin duracağını (terminasyon) kanıtlar.
+    \item \textbf{Uç Değer İlkesi (Extremal Principle):} Kümenin en küçük/en büyük elemanına odaklanarak çelişki üretme veya yapıyı çözme yöntemi.
+    \item \textbf{Tersine Çalışma (Working Backwards):} Özellikle oyun teorisinde hedef veya kayıp durumundan geriye doğru kazanan/kaybeden konumları etiketleme.
+\end{itemize}
+
+\begin{example}[Zorluk: Kolay - Değişmez]
+Bir tahtada $1, 2, 3, \dots, 2025$ sayıları yazılıdır. Bir öğrenci tahtadan rastgele iki $a$ ve $b$ sayısını silip yerlerine $|a - b|$ farkını yazıyor. Bu işlem tahtada tek bir sayı kalana kadar tekrarlanıyor. Tahtada kalan son sayının $0$ olamayacağını gösteriniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+İki sayı silinip yerine mutlak farkları yazıldığında toplamın paritesinin (Bölüm 17) nasıl değiştiğine bakalım.
+$a$ ve $b$ yerine $|a - b|$ yazıldığında, tahtadaki sayıların toplamı $S$ olsun. Değişim miktarı:
+\[
+\Delta S = |a - b| - (a + b)
+\]
+Mutlak değer tanımından bağımsız olarak, her $a, b$ tamsayısı için $|a - b| \equiv a - b \pmod 2$'dir.
+Dolayısıyla:
+\[
+\Delta S \equiv (a - b) - (a + b) = -2b \equiv 0 \pmod 2
+\]
+Yani her hamlede tahtadaki sayıların toplamının paritesi \textbf{değişmez} (invariant).
+
+Her hamlede $\Delta S \equiv 0 \pmod 2$ olduğundan tahtadaki sayıların toplamının paritesi korunur. Benzer biçimde, tahtadaki tek sayıların adedi her hamlede ya 2 azalır ya da değişmez; çünkü iki tek sayının farkı çift, iki çift sayının farkı çift, bir tek ile bir çiftin farkı tektir. Dolayısıyla tek sayı adedinin paritesi (ve aynı şekilde toplamın paritesi) değişmez.
+
+$1$'den $2025$'e kadar olan tek sayıların adedi $(2025+1)/2 = 1013$ tanedir ve bu tek bir sayıdır. Başlangıç toplamı
+\[
+S_0 = 1 + 2 + 3 + \dots + 2025 = \frac{2025 \cdot 2026}{2} = 2025 \cdot 1013
+\]
+olup tek sayıdır ($S_0 \equiv 1 \pmod 2$).
+
+Parite bir değişmez olduğundan ve sonuçta tahtada tek bir sayı kalacağından bu sayı tek olmak zorundadır; $0$ çift olduğu için son sayı asla $0$ olamaz.
+\end{proof}
+
+\begin{example}[Zorluk: Orta - Tersine Çalışma / Kombinasyonel Oyun]
+İki oyuncu bir masa üzerindeki 50 adet madeni para ile bir oyun oynamaktadır. Sırası gelen oyuncu masadan 1, 2 veya 4 adet para alabilir (3 para almak yasaktır). Son parayı alan oyuncu oyunu kazanır. Her iki oyuncu da kusursuz oynarsa, ilk başlayan oyuncunun mu yoksa ikinci oyuncunun mu kazanma stratejisi vardır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Tersine çalışma yöntemiyle küçük $n$ değerleri için durumları \textbf{K} (Kazanma konumu - sırası gelen kazanır) ve \textbf{Y} (Yitirme/Kaybetme konumu - sırası gelen kaybeder) olarak adım adım etiketleyelim.
+\begin{itemize}
+    \item $0$ para: Hamle yapacak para kalmadığından, sırası gelen kaybetmiştir $\implies \mathbf{Y}$.
+    \item $1$ para: 1 para alıp 0 bırakır $\implies \mathbf{K}$.
+    \item $2$ para: 2 para alıp 0 bırakır $\implies \mathbf{K}$.
+    \item $3$ para: Yapılabilecek hamleler 1 veya 2 almaktır. 1 alırsa 2 bırakır (K), 2 alırsa 1 bırakır (K). Her iki durumda da rakibe K konumu kalır. Rakibine sadece K bırakabilen konum Y'dir $\implies \mathbf{Y}$.
+    \item $4$ para: 4 para alıp 0 bırakır $\implies \mathbf{K}$.
+    \item $5$ para: 2 para alıp 3 bırakabilir (3 bir Y konumudur!). Rakibe Y bırakan konum K'dir $\implies \mathbf{K}$.
+    \item $6$ para: 
+    \begin{itemize}
+        \item 1 alırsa 5 kalır (K)
+        \item 2 alırsa 4 kalır (K)
+        \item 4 alırsa 2 kalır (K)
+    \end{itemize}
+    Tüm hamleler rakibe K bıraktığı için $6 \implies \mathbf{Y}$ konumudur!
+\end{itemize}
+
+Oluşan deseni özetleyelim:
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+\hline
+$n$ & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\
+\hline
+Durum & Y & K & K & Y & K & K & Y & K \\
+\hline
+\end{tabular}
+\end{center}
+Desen açıkça görülmektedir: Konum ancak ve ancak $n \equiv 0 \pmod 3$ olduğunda bir Kaybetme ($\mathbf{Y}$) konumudur; aksi halde Kazanma ($\mathbf{K}$) konumudur.
+
+Bunu tümevarımla kanıtlayalım:
+\begin{itemize}
+    \item Eğer $n \equiv 0 \pmod 3$ ise: Yapılabilecek hamleler 1, 2 veya 4 almaktır.
+    $n - 1 \equiv 2 \pmod 3$, $n - 2 \equiv 1 \pmod 3$, $n - 4 \equiv 2 \pmod 3$. 
+    Görüldüğü gibi kalan paraların hiçbiri 3'ün katı olamaz. Yani Y konumundan yapılan her hamle rakibe zorunlu olarak bir K konumu verir.
+    \item Eğer $n \not\equiv 0 \pmod 3$ ise: 
+    \begin{itemize}
+        \item $n \equiv 1 \pmod 3$ ise oyuncu 1 veya 4 para alarak kalanı 3'ün katı yapabilir ($n - 1 \equiv 0$ veya $n - 4 \equiv 0$).
+        \item $n \equiv 2 \pmod 3$ ise oyuncu 2 para alarak kalanı 3'ün katı yapabilir ($n - 2 \equiv 0$).
+    \end{itemize}
+    Her iki durumda da oyuncu rakibine bir Y konumu bırakabilir.
+\end{itemize}
+
+Başlangıçtaki para sayısı $n = 50$'dir.
+\[
+50 = 3 \cdot 16 + 2 \implies 50 \equiv 2 \pmod 3
+\]
+$50 \not\equiv 0 \pmod 3$ olduğundan 50 bir \textbf{Kazanma (K)} konumudur. 
+
+Dolayısıyla \textbf{birinci oyuncunun} kesin kazanma stratejisi vardır. İlk oyuncu ilk hamlede 2 para alarak masada 48 ($3$'ün katı) para bırakmalı ve sonrasında ikinci oyuncu ne yaparsa yapsın onun aldığı para sayısını 3'e tamamlayan hamleler yapmalıdır.
+\end{proof}
+
+\begin{example}[Zorluk: İleri Düzey - Uç Değer İlkesi]
+Bir ülkede sonlu sayıda şehir vardır ve bazı şehir çiftleri arasında tek yönlü yollar bulunmaktadır. Herhangi iki şehir arasında en fazla bir tek yönlü yol vardır ve hiçbir iki şehir arasında karşılıklı yol yoktur. Herhangi bir şehirden çıkan yol sayısı ile o şehre giren yol sayısı birbirine eşittir. Bu ülkede bir şehirden başlayıp yolların yönünü takip ederek tekrar aynı şehre dönen bir kapalı rotanın (yönlü döngünün) var olduğunu kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Şehirler ve yollar yönlü bir graf ($G = (V, E)$) oluşturur. Bölüm 19'da ele aldığımız uç değer ilkesini (extremal principle) kullanmanın doğal bir yolu, graftaki en uzun basit yönlü yolu seçmektir.
+
+Şehirler kümesi sonlu olduğundan, grafta kendisini tekrar etmeyen (aynı şehirden iki kez geçmeyen) en uzun yönlü yolu ele alabiliriz.
+Bu en uzun yol:
+\[
+P = (v_1 \to v_2 \to v_3 \to \dots \to v_k)
+\]
+olsun. 
+
+Şimdi bu yolun sonlandığı $v_k$ şehrine odaklanalım:
+\begin{itemize}
+    \item Soruda verilen koşula göre her şehrin çıkış derecesi giriş derecesine eşittir. $v_k$ şehrine yol boyunca $v_{k-1}$'den en az bir giriş yapılmıştır ($d_{in}(v_k) \ge 1$).
+    \item Dolayısıyla $d_{out}(v_k) = d_{in}(v_k) \ge 1$ olmalıdır; yani $v_k$ şehrinden çıkan en az bir yol bulunmalıdır.
+    \item $v_k$'den çıkan bir yolun hedefi olan şehre $u$ diyelim ($v_k \to u$).
+\end{itemize}
+
+$u$ şehri nerede olabilir?
+\begin{enumerate}
+    \item Eğer $u$, $P$ yolunun üzerinde \emph{olmayan} bir şehir olsaydı:
+    $P$ yolunu $v_k \to u$ kenarı ile uzatarak $v_1 \to \dots \to v_k \to u$ yolunu elde ederdik. Bu yolun uzunluğu $k$ kenar olurdu. Fakat biz $P$'yi \textbf{en uzun yol} olarak seçmiştik! Bu bir çelişkidir.
+    \item O halde $u$ şehri kesinlikle $P$ yolunun üzerinde daha önce ziyaret edilmiş bir şehir olmalıdır:
+    \[
+    u \in \{v_1, v_2, \dots, v_{k-1}\}
+    \]
+\end{enumerate}
+Demek ki bir $1 \le i \le k-1$ için $u = v_i$'dir.
+Bu durumda:
+\[
+v_i \to v_{i+1} \to \dots \to v_k \to v_i
+\]
+rotası, yönleri takip ederek başladığı $v_i$ şehrine geri dönen bir yönlü döngü oluşturur. İspat tamamlanır.
+\end{proof}
+
+\begin{example}[Zorluk: Olimpiyat - Yarı-Değişmez (Monovariant)]
+Düzlemde sonlu sayıda $n$ adet nokta işaretlenmiştir. Bazı nokta çiftleri doğru parçalarıyla birleştirilmiştir. Her adımda kesişen iki doğru parçası $AB$ ve $CD$ seçilmekte; bu iki parça silinip yerlerine $AC$ ve $BD$ parçaları çizilmektedir. Bu sürecin sonlu sayıda adım sonra zorunlu olarak duracağını ispatlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bir sürecin duracağını (terminasyonunu) kanıtlamak için adımlar boyunca tek yönde kesin olarak değişen (artan ya da azalan) ve alttan veya üstten sınırlı olan bir büyüklük aramalıyız. Bu büyüklüğe Bölüm 18'de ele aldığımız üzere \textbf{yarı-değişmez (monovariant)} denir.
+
+Burada doğru parçalarının uzunlukları toplamını takip etmek doğal bir yaklaşımdır.
+Mevcut doğru parçalarının uzunlukları toplamını $L$ ile gösterelim:
+\[
+L = \sum_{e \in E} |e|
+\]
+Bir adımda kesişen $AB$ ve $CD$ parçaları seçilsin. Bu parçaların kesişim noktasına $X$ diyelim.
+
+Üçgen eşitsizliğini kullanalım:
+$X$ noktası hem $AB$ hem de $CD$ üzerinde yer aldığından:
+\[
+|AB| = |AX| + |XB| \quad \text{ve} \quad |CD| = |CX| + |XD|
+\]
+Silinen iki parçanın uzunlukları toplamı:
+\[
+|AB| + |CD| = |AX| + |XB| + |CX| + |XD| = (|AX| + |CX|) + (|XB| + |XD|)
+\]
+Şimdi yeni çizilen parçalara bakalım: $AC$ ve $BD$.
+$AXC$ ve $BXD$ üçgenlerinde (noktalar doğrusal değilse) kesin üçgen eşitsizliği geçerlidir:
+\[
+|AX| + |XC| > |AC| \quad \text{ve} \quad |BX| + |XD| > |BD|
+\]
+(Noktalar doğrusal olsa bile kesişen farklı iki doğru parçası durumunda toplam uzunluk kesinlikle azalır).
+
+Bu iki eşitsizliği taraf tarafa toplarsak:
+\[
+|AC| + |BD| < (|AX| + |CX|) + (|XB| + |XD|) = |AB| + |CD|
+\]
+Görüldüğü gibi, her hamlede silinen iki parçanın yerine gelen iki yeni parçanın uzunlukları toplamı \textbf{kesin olarak daha küçüktür}!
+
+Dolayısıyla tüm doğru parçalarının uzunlukları toplamı olan $L$, her adımda kesin olarak azalır:
+\[
+L_{yeni} < L_{eski}
+\]
+Peki bu azalma sonsuza kadar sürebilir mi?
+$n$ nokta arasından seçilebilecek olası tüm doğru parçalarının kümesi sonludur ($\binom{n}{2}$ adet parça vardır). Dolayısıyla bu parçalardan oluşturulabilecek olası parça konfigürasyonlarının sayısı da sonludur (en fazla $2^{\binom{n}{2}}$ adet).
+
+Sonlu sayıda durum olduğundan, $L$ toplamının alabileceği farklı değerlerin sayısı da sonludur. Bir büyüklük sonlu bir küme içinde her adımda kesin olarak azalıyorsa sonsuza kadar devam edemez; eninde sonunda minimum değerine ulaşmak ve durmak zorundadır.
+
+O halde bu kesişim giderme süreci kesinlikle sonlu adımda sonlanır.
+\end{proof}
+
+Aşağıdaki C programı, monovariant fikrini pekiştirmek için 1D çubuk üzerindeki parçacıkların çarpışma ve yön değiştirme sürecindeki yarı-değişmezi simüle eder:
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+/* Parcaciklarin carpismasinda enerjinin (veya monovariantin)
+   azalmasini takip eden ornek fonksiyon */
+int simulate_step(int arr[], int n) {
+    int modified = 0;
+    for (int i = 0; i < n - 1; i++) {
+        /* Eger ters yonde hareket eden iki komsu varsa yer degistir */
+        if (arr[i] == 1 && arr[i+1] == -1) {
+            arr[i] = -1;
+            arr[i+1] = 1;
+            modified = 1;
+            i++; /* Bu cifti atla */
+        }
+    }
+    return modified; /* Degisiklik yapildiysa surec surer */
+}
+
+int main() {
+    int particles[] = {1, 1, -1, 1, -1, -1};
+    int n = 6;
+    int steps = 0;
+    
+    /* Inversiyon sayisi her adimda azalir (monovariant) */
+    while (simulate_step(particles, n)) {
+        steps++;
+    }
+    
+    printf("Surec %d adimda sonlandi.\n", steps);
+    return 0;
+}
+\end{lstlisting}
+
+\section*{Bölüm Özeti ve Problem Çözme Rehberi}
+
+Bu bölümde ele aldığımız soru tiplerinde başarıya ulaşmak için şu kontrol listesini aklınızda tutunuz:
+\begin{enumerate}
+    \item \textbf{Modül Seçimi:} Kareler için mod 4 ve mod 8; küpler için mod 7 ve mod 9; genel asallık kısıtları için $\pmod 3$ ilk duraklarınız olmalıdır.
+    \item \textbf{En Küçük Asal Bölen:} $n \mid a^n \pm 1$ gibi üstel bölünebilmelerde $n$'nin en küçük asal bölenine $p$ deyip $\operatorname{ord}_p(a)$ incelemek en güçlü araçtır.
+    \item \textbf{Sıkıştırma (Sandviç) Yöntemi:} Polinom biçimindeki tam sayı denklemlerinde cebirsel ifadeyi ardışık iki tam kare arasına sıkıştırarak bilinmeyenleri küçük bir aralıkta yakalayabilirsiniz.
+    \item \textbf{Değişmez ve Yarı-Değişmez:} Adımlı oyunlarda veya simülasyonlarda ``Ne sabit kalıyor?'' (parite, kalan) ve ``Ne tek yönde değişiyor?'' (toplam uzunluk, inversiyon sayısı) sorularını ilk saniyeden itibaren sorun.
+\end{enumerate}

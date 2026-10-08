@@ -1,0 +1,15 @@
+{
+  "file": "32_alistirmalar_sayma.tex",
+  "findings": [
+    {
+      "file": "32_alistirmalar_sayma.tex",
+      "line_hint": 310,
+      "type": "duplicated_example",
+      "severity": "major",
+      "excerpt": "\\begin{example}[Zor: André Yansıma İlkesi ve Köşegeni Aşmama]\nBir parçacık $(0,0)$ noktasından $(n,n)$ noktasına sağa ve yukarı birim adımlarla ilerlemektedir. Parçacığın $y = x$ doğrusunun \\textbf{kesinlikle üzerine çıkmadığı} (yani her adımda $y \\le x$ kaldığı) kaç farklı yol vardır?\n\\end{example}",
+      "issue": "Bu problem ve çözümü, kitabın Bölüm 10'unda '[André'nin Yansıma İlkesi / Catalan Sayıları Sezgisi]' başlığı altında ve Bölüm 9'unda '[Köşegeçen Sınırı — Yansıma Fikrine Giriş]' adıyla zaten aynı model ve yöntemle işlenmiştir. Alıştırma bölümünde aynı soruyu üçüncü kez çözmek yerine yansıma ilkesinin farklı bir varyantı (örneğin Bertrand Sandık Problemi / Ballot Problem ya da $y = x + 1$ yerine farklı bir sınır çizgisine çarpmayan yollar) sorulmalıdır.",
+      "suggested_fix": "Örnek, yansıma ilkesinin farklı bir uygulamasıyla değiştirilebilir: Örneğin, $A$ adayının $a$, $B$ adayının $b$ oy aldığı ($a > b$) ve sayım boyunca $A$'nın daima önde gittiği sayım sıralamalarının sayısı (Bertrand Sandık Problemi) veya $(0,0)$'dan $(n,n)$'ye $y \\le x + 1$ doğrusunun üzerine çıkmayan yollar gibi özgün bir problem kurgulanabilir.",
+      "confidence": "high"
+    }
+  ]
+}

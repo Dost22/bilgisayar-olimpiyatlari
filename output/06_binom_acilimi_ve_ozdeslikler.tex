@@ -1,0 +1,448 @@
+\chapter[Binom Açılımı ve Özdeşlikler · \textit{Orta}]{Binom Açılımı ve Özdeşlikler}
+\chaptermark{Binom Açılımı ve Özdeşlikler}
+
+Bir parantezin karesini açmak çoğumuza tanıdık gelir:
+\[
+(a+b)^2=a^2+2ab+b^2.
+\]
+Fakat bu satırdaki $2$ sayısının nereden geldiği üzerinde durmak, yalnızca formülü ezberlemekten çok daha öğreticidir. $ab$ terimi iki ayrı seçimden doğar: ilk parantezden $a$, ikinciden $b$ seçilebilir; ya da ilkinden $b$, ikincisinden $a$ seçilebilir. Aynı çarpıma ulaştıran seçimleri saydığımız anda, cebir ile kombinatorik arasında doğrudan bir köprü kurmuş oluruz.
+
+Buradaki temel fikir şudur: $(a+b)^n$ ifadesini açarken her parantezden ya $a$'yı ya da $b$'yi seçeriz. Benzer terimleri kaç farklı seçimin ürettiğini belirlemek ise doğrudan Bölüm 5'te ele aldığımız kombinasyon hesabıdır. Bu bölümde önce terimlerin küçük kuvvetlerde nasıl ortaya çıktığını adım adım inceleyecek, ardından binom teoremini kuracağız. Devamında binom katsayılarının oluşturduğu Pascal üçgenine, bu üçgenden doğan temel özdeşliklere ve Bölüm 10'da daha kapsamlı ele alacağımız çifte sayım fikrinin ilk örnekleri olan kombinatorik ispatlara yer vereceğiz.
+
+% ============================================================
+% 6.1 ELLE AÇMADAN TEOREME
+% ============================================================
+\section{Elle Açmadan Teoreme}
+
+Yüksek kuvvetli bir parantezi açarken yapılan en yaygın hata, işlemi yalnızca uzun bir çarpma alıştırması olarak görmektir. Oysa parantez sayısı arttıkça asıl gereken şey daha hızlı çarpmak değil, ortaya çıkan terimlerin hangi seçimlerden türediğini kavramaktır.
+
+İlk olarak $(a+b)^3$ ifadesini adım adım ele alalım:
+\[
+(a+b)^3=(a+b)(a+b)(a+b).
+\]
+Çarpımın açılımında bir terim oluşturmak için üç parantezin her birinden tam bir terim seçilir. Örneğin $a^2b$ terimini elde etmek istiyorsak iki parantezden $a$, bir parantezden $b$ seçmeliyiz. $b$'nin hangi parantezden geldiğine göre üç farklı seçim mümkündür:
+\[
+a\cdot a\cdot b,\qquad a\cdot b\cdot a,\qquad b\cdot a\cdot a.
+\]
+Çarpma işlemi değişmeli olduğundan bu üç seçim de aynı $a^2b$ çarpımını verir. Buna karşılık $a^3$ yalnızca bütün parantezlerden $a$ seçilerek, $b^3$ de yalnızca bütün parantezlerden $b$ seçilerek oluşur. Demek ki
+\[
+(a+b)^3=a^3+3a^2b+3ab^2+b^3.
+\]
+
+Burada katsayıların $1,3,3,1$ çıkması tesadüf değildir. $a^2b$ teriminin katsayısı, üç parantezden hangisinden $b$ seçileceğinin sayısıdır; yani $\binom{3}{1}=3$'tür. $ab^2$ için de $b$ alınacak iki parantez seçilir; bunun sayısı $\binom{3}{2}=3$'tür.
+
+\begin{definition}[Binom ve binom açılımı]
+İki terimin toplamı ya da farkı biçimindeki $a+b$ ifadesine \textbf{binom} denir. $n\in\mathbb{N}$ için $(a+b)^n$ ifadesinin çarpma işlemi yapılarak toplam biçiminde yazılmasına \textbf{binom açılımı} denir.
+\end{definition}
+
+Şimdi genel duruma geçelim. $(a+b)^n$ çarpımında $n$ tane parantez yer alır. Açılımdaki $a^{n-k}b^k$ terimini elde etmek için bunların tam $k$ tanesinden $b$, kalan $n-k$ tanesinden $a$ seçmek gerekir. $b$ seçilecek $k$ parantezi belirlemek, $n$ nesneden $k$ tanesini sırasız seçmek demektir. Bu yüzden seçim sayısı doğrudan $\binom{n}{k}$ olur.
+
+\begin{theorem}[Binom teoremi]
+$a$ ve $b$ gerçel sayılar, $n\in\mathbb{N}$ olsun. O zaman
+\[
+(a+b)^n=\sum_{k=0}^{n}\binom{n}{k}a^{n-k}b^k.
+\]
+Başka bir deyişle,
+\[
+(a+b)^n=\binom{n}{0}a^n+\binom{n}{1}a^{n-1}b+\binom{n}{2}a^{n-2}b^2+\dots+\binom{n}{n}b^n.
+\]
+\end{theorem}
+
+\begin{proof}
+$n$ parantezin her birinden $a$ veya $b$ seçilir. $a^{n-k}b^k$ teriminin oluşması için tam $k$ parantezden $b$ seçilmelidir. Bu $k$ parantezin seçimi $\binom{n}{k}$ farklı yolla yapılır ve her seçim aynı çarpımı verir. Dolayısıyla söz konusu terimin katsayısı $\binom{n}{k}$'dır.
+
+$k$ indisi, $0$'dan $n$'ye kadar bütün değerleri alabilir. Bu değerlerin her biri farklı bir $b$ üssü ürettiğinden benzer başka terim kalmaz; bütün terimler toplandığında teoremdeki açılım elde edilir.
+\end{proof}
+
+Formülü uygularken iki düzeni birlikte takip etmek işi kolaylaştırır. Soldan sağa doğru ilerledikçe $a$'nın üssü birer birer azalırken $b$'nin üssü birer birer artar. Eşzamanlı olarak binom katsayıları $\binom{n}{0},\binom{n}{1},\ldots,\binom{n}{n}$ sırasında ilerler. Fark içeren ifadelerde ise ikinci terimin işaretini $b$'nin içinde taşımak güvenli bir yoldur: $(a-b)^n$ açılımında formüldeki $b$ yerine $-b$ yazılır.
+
+\subsection{Çözümlü örnekler}
+
+\begin{example}
+$(2x-3)^4$ ifadesini binom teoremiyle açınız.
+\end{example}
+\begin{proof}[Çözüm]
+Burada $a=2x$, $b=-3$ ve $n=4$'tür. Dördüncü kuvvete karşılık gelen binom katsayıları $1,4,6,4,1$ olduğundan temel açılımı yazalım:
+\begin{align*}
+(2x-3)^4={}&(2x)^4+4(2x)^3(-3)+6(2x)^2(-3)^2\\
+&+4(2x)(-3)^3+(-3)^4.
+\end{align*}
+Terimleri sadeleştirdiğimizde
+\[
+\boxed{(2x-3)^4=16x^4-96x^3+216x^2-216x+81}
+\]
+elde edilir. İşaretlerin sırayla değişmesi, $(-3)$'ün tek kuvvetlerinin negatif, çift kuvvetlerinin pozitif olmasından kaynaklanır.
+\end{proof}
+
+\begin{example}
+$(x^2+3x)^6$ açılımında $x^9$ teriminin katsayısını bulunuz.
+\end{example}
+\begin{proof}[Çözüm]
+İfadenin tamamını açmaya gerek yoktur. Genel terim, ikinci terimin $k$ kez seçildiği durumda
+\begin{align*}
+\binom{6}{k}(x^2)^{6-k}(3x)^k
+&=\binom{6}{k}3^k x^{12-2k+k}\\
+&=\binom{6}{k}3^k x^{12-k}
+\end{align*}
+olur. İstenen kuvvet $9$ olduğuna göre $12-k=9$, yani $k=3$ olmalıdır. Buradan katsayı
+\[
+\binom{6}{3}3^3=20\cdot27=540
+\]
+bulunur. Dolayısıyla aranan terim $540x^9$'dur.
+\end{proof}
+
+\begin{example}
+\[\left(x^2+\frac{2}{x}\right)^6\]
+açılımındaki sabit terimi bulunuz.
+\end{example}
+\begin{proof}[Çözüm]
+Sabit terimde $x$'in üssü sıfır olmalıdır. Genel terimi yazalım:
+\begin{align*}
+\binom{6}{k}(x^2)^{6-k}\left(\frac{2}{x}\right)^k
+&=\binom{6}{k}x^{12-2k}\cdot2^kx^{-k}\\
+&=\binom{6}{k}2^kx^{12-3k}.
+\end{align*}
+Sabit terim için $12-3k=0$ denklemi çözülürse $k=4$ elde edilir. O hâlde sabit terim
+\[
+\binom{6}{4}2^4=15\cdot16=240
+\]
+olur.
+\end{proof}
+
+\begin{example}
+$(1+t)^8$ açılımındaki bütün katsayıların toplamını, açılımı yapmadan bulunuz.
+\end{example}
+\begin{proof}[Çözüm]
+Katsayılar toplamını bulmak için değişkene $t=1$ değerini vermek yeterlidir; böylece her $t^k$ terimi $1$ çarpanına dönüşür:
+\[
+(1+1)^8=2^8=256.
+\]
+Bu sonuç, $\binom80+\binom81+\dots+\binom88$ toplamının $256$ olduğunu doğrudan gösterir.
+\end{proof}
+
+\textbf{Sık yapılan hata:} Genel terimde $k$ indisi, ikinci terimin kaç kez seçildiğini belirtir. Bu kitapta binom teoremini daima $\binom{n}{k}a^{n-k}b^k$ biçiminde ele alacağız.
+
+% ============================================================
+% 6.2 PASCAL ÜÇGENİ
+% ============================================================
+\section{Pascal Üçgeni}
+
+Binom teoremi açılım katsayılarını kombinasyon formülüyle verir. Aynı katsayıları $n=0,1,2,\dots$ için satır satır alt alta yazdığımızda son derece düzenli bir tablo ortaya çıkar. Örneğin $(a+b)^4$ açılımındaki katsayılar sırasıyla $\binom40,\binom41,\dots,\binom44$, yani $1,4,6,4,1$'dir. Bir sonraki satırı elde etmek için faktöriyelleri baştan hesaplamak gerekmez; her sayı, hemen üstündeki iki sayının toplamından elde edilebilir.
+
+\begin{definition}[Pascal üçgeni]
+$n$. satırında soldan sağa $\binom{n}{0},\binom{n}{1},\ldots,\binom{n}{n}$ binom katsayılarının yer aldığı üçgensel sayı dizilimine \textbf{Pascal üçgeni} denir. Satır numaralandırması $0$'dan başlar.
+\end{definition}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \foreach \i in {0,...,6} {
+    \foreach \j in {0,...,\i} {
+      \node[kutu, minimum size=7.5mm] (s\i\j) at (\j*0.8-\i*0.4, -\i*0.85) {};
+    }
+  }
+  \node at (s00) {1};
+  \node at (s10) {1}; \node at (s11) {1};
+  \node at (s22) {1};
+  \node at (s30) {1}; \node at (s32) {3}; \node at (s33) {1};
+  \node at (s40) {1}; \node at (s41) {4}; \node at (s42) {6}; \node at (s43) {4}; \node at (s44) {1};
+  \node at (s50) {1}; \node at (s51) {5}; \node at (s52) {10}; \node at (s53) {10}; \node at (s54) {5}; \node at (s55) {1};
+  \node at (s60) {1}; \node at (s61) {6}; \node at (s62) {15}; \node at (s63) {20}; \node at (s64) {15}; \node at (s65) {6}; \node at (s66) {1};
+  \node[kutu, minimum size=7.5mm, fill=kitapvurgu!12] (s20) at (-0.8,-1.7) {1};
+  \node[kutu, minimum size=7.5mm, fill=kitapvurgu!12] (s21) at (0,-1.7) {2};
+  \node[kutu, minimum size=7.5mm, vurgulu] (s31) at (-0.4,-2.55) {3};
+  \draw[vurgulu-kenar, -{Stealth[length=2.2mm, width=2.1mm]}] (s20.south) -- (s31.north);
+  \draw[vurgulu-kenar, -{Stealth[length=2.2mm, width=2.1mm]}] (s21.south) -- (s31.north);
+  \node[etiket, gray, anchor=east] at (-3.45,0) {0.};
+  \node[etiket, gray, anchor=east] at (-3.45,-0.85) {1.};
+  \node[etiket, gray, anchor=east] at (-3.45,-1.7) {2.};
+  \node[etiket, gray, anchor=east] at (-3.45,-2.55) {3.};
+  \node[etiket, gray, anchor=east] at (-3.45,-3.4) {4.};
+  \node[etiket, gray, anchor=east] at (-3.45,-4.25) {5.};
+  \node[etiket, gray, anchor=east] at (-3.45,-5.1) {6.};
+\end{tikzpicture}
+\caption{Pascal üçgeni (satır numaraları solda, $0$'dan başlar): kenarlar
+dışındaki her sayı, sol üst ve sağ üstündeki iki sayının toplamıdır ---
+örnekte $\binom{2}{0}+\binom{2}{1}=\binom{3}{1}$.}
+\end{figure}
+
+Üçgenin kenarlarındaki sayıların daima $1$ olması, $\binom{n}{0}=\binom{n}{n}=1$ eşitliklerinin sonucudur. Her satırın ortasına göre simetrik durması ise Bölüm 5'te gördüğümüz $\binom{n}{k}=\binom{n}{n-k}$ özelliğinin görsel yansımasıdır.
+
+Pascal bağıntısının komite seçimi üzerinden kombinatorik ve cebirsel ispatını Bölüm 5'te kurmuştuk. Bu bağıntıyı üçgen üzerinde şöyle okuruz:
+\[
+\binom{n}{k}=\binom{n-1}{k-1}+\binom{n-1}{k}\qquad(1\le k\le n-1).
+\]
+Demek ki Pascal üçgeninde kenarlar dışındaki her sayı, sol üst ve sağ üst çaprazındaki iki sayının toplamıdır. Böylece Bölüm 5'teki ``belirli bir kişi grupta yer alıyor mu?'' ayrımı, üçgende komşu iki sayının neden toplandığını da açıklar.
+
+Pascal üçgeni, binom açılımlarını hızlıca yazmak için oldukça pratiktir. Örneğin $7$. satır $1,7,21,35,35,21,7,1$ olduğundan
+\begin{align*}
+(u+v)^7={}&u^7+7u^6v+21u^5v^2+35u^4v^3\\
+&+35u^3v^4+21u^2v^5+7uv^6+v^7.
+\end{align*}
+Her terimde üslerin toplamının $7$ olduğunu kontrol etmek, olası yazım hatalarını yakalamak için iyi bir yöntemdir.
+
+\subsection{Çözümlü örnekler}
+
+\begin{example}
+$6$. satırı kullanarak Pascal üçgeninin $7$. satırını oluşturunuz. Ardından $(p+q)^7$ açılımının katsayılarını yazınız.
+\end{example}
+\begin{proof}[Çözüm]
+$6$. satır $1,6,15,20,15,6,1$ değerlerinden oluşur. Yeni satırın kenarlarına $1$ yazılır; aradaki sayılar ardışık üst komşuların toplamıdır:
+\[
+1,\ 1+6,\ 6+15,\ 15+20,\ 20+15,\ 15+6,\ 6+1,\ 1.
+\]
+Böylece $7$. satır $1,7,21,35,35,21,7,1$ olarak bulunur. $(p+q)^7$ açılımının katsayıları da doğrudan bu dizidir.
+\end{proof}
+
+\begin{example}
+Pascal üçgenini kullanarak $(x-1)^5$ ifadesini açınız.
+\end{example}
+\begin{proof}[Çözüm]
+$5$. satırdaki katsayılar $1,5,10,10,5,1$'dir. İkinci terim $-1$ olduğundan işaretler ardışık olarak değişir:
+\[
+\boxed{(x-1)^5=x^5-5x^4+10x^3-10x^2+5x-1.}
+\]
+Katsayıların büyüklüğü Pascal üçgeninden, işaretler ise $(-1)^k$ çarpanından gelir.
+\end{proof}
+
+\begin{example}
+Pascal üçgeninin $8$. satırındaki ortanca terimi yalnızca bir önceki satırdan yararlanarak bulunuz.
+\end{example}
+\begin{proof}[Çözüm]
+$7$. satırdaki ortadaki iki sayı $35$ ve $35$'tir. $8$. satırın ortasındaki sayı bu iki değerin toplamıdır:
+\[
+\binom84=35+35=70.
+\]
+Bu değer, $\frac{8\cdot7\cdot6\cdot5}{4\cdot3\cdot2\cdot1}=70$ formülüyle de doğrulanır.
+\end{proof}
+
+\begin{example}
+$1,4,6,4,1$ sayılarının $(a+b)^4$ açılımının katsayıları olmasını parantez seçimi üzerinden açıklayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Dört parantezin hiçbirinden $b$ seçilmezse yalnızca $a^4$ terimi oluşur; katsayı $\binom40=1$'dir. Bir parantezden $b$ seçmek için $4$ farklı seçenek vardır ve $a^3b$ katsayısı $\binom41=4$ olur. İki parantezden $b$ seçmenin yolu $\binom42=6$ tanedir ve bu da $a^2b^2$ terimini verir. Simetriden ötürü sonraki katsayılar $4$ ve $1$ olarak gelir. Sonuçta
+\[
+(a+b)^4=a^4+4a^3b+6a^2b^2+4ab^3+b^4
+\]
+ifadesi elde edilir.
+\end{proof}
+
+% ============================================================
+% 6.3 ÖZDEŞLİKLER
+% ============================================================
+\section{Özdeşlikler}
+
+Bir özdeşlik, değişkenlerin tanım kümesindeki her değer için sağlanan bir eşitliktir. Binom teoremi yalnızca parantez açmaya yaramaz; $a$ ve $b$ yerine uygun sayılar yerleştirildiğinde kombinasyon katsayılarına dair pek çok toplam bağıntısı kendiliğinden belirir.
+
+En temel durumla başlayalım. $(1+1)^n$ ifadesinde her terim $1$ ile çarpılmış olur. Binom teoremi bu durumda satırdaki tüm katsayıların toplamını verir:
+\[
+\binom{n}{0}+\binom{n}{1}+\cdots+\binom{n}{n}=2^n.
+\]
+Bu eşitlik, Bölüm 1'de ele aldığımız ``$n$ elemanlı bir kümenin $2^n$ alt kümesi vardır'' gerçeğiyle tam bir uyum içindedir: $\binom{n}{k}$ değeri tam $k$ elemanlı alt kümelerin sayısıdır ve bütün $k$ değerleri üzerinden toplamak tüm alt kümeleri sayar.
+
+\begin{theorem}[Satır toplamı ve alternatif toplam]
+$n\in\mathbb{N}$ için
+\[
+\sum_{k=0}^{n}\binom{n}{k}=2^n.
+\]
+Ayrıca $n\ge1$ ise
+\[
+\sum_{k=0}^{n}(-1)^k\binom{n}{k}=0.
+\]
+\end{theorem}
+
+\begin{proof}
+Binom teoreminde $a=1$, $b=1$ alındığında $(1+1)^n=\sum_{k=0}^{n}\binom{n}{k}$ olur ve ilk eşitlik çıkar.
+
+İkinci eşitlik için $a=1$, $b=-1$ seçilir. $n\ge1$ olduğundan $(1-1)^n=0$'dır. Açılımın sağ tarafı ise $\binom{n}{0}-\binom{n}{1}+\binom{n}{2}-\cdots+(-1)^n\binom{n}{n}$ biçimindedir. Böylece işaret değiştiren toplamın sıfır olduğu görülür.
+\end{proof}
+
+Alternatif toplam, çift ve tek indisli katsayıların dengeli bir dağılım sergilediğini ortaya koyar. Çift indisli katsayıların toplamına $C$, tek indisli katsayıların toplamına $T$ dersek; satır toplamı $C+T=2^n$, alternatif toplam ise $C-T=0$ verir. Bu iki eşitlik birlikte çözüldüğünde
+\[
+C=T=2^{n-1}
+\]
+bulunur. Yani boş kümeden farklı $n$ elemanlı bir kümenin çift sayıda eleman içeren alt kümeleri ile tek sayıda eleman içeren alt kümeleri eşit sayıdadır.
+
+\begin{theorem}[Hokey sopası özdeşliği]
+$n\ge r\ge0$ için
+\[
+\binom{r}{r}+\binom{r+1}{r}+\binom{r+2}{r}+\cdots+\binom{n}{r}
+=\binom{n+1}{r+1}.
+\]
+\end{theorem}
+
+\begin{proof}
+Pascal bağıntısını ardışık olarak uygulayalım. İlk iki terim için $\binom{r}{r}=\binom{r+1}{r+1}$ yazarak
+\[
+\binom{r}{r}+\binom{r+1}{r}
+=\binom{r+1}{r+1}+\binom{r+1}{r}
+=\binom{r+2}{r+1}
+\]
+elde ederiz. Bu sonuca sıradaki $\binom{r+2}{r}$ terimi eklendiğinde Pascal bağıntısı yeniden çalışır ve $\binom{r+3}{r+1}$ bulunur. Bu zincirleme sadeleşme son terime kadar devam eder ve geriye yalnızca
+\[
+\binom{n}{r+1}+\binom{n}{r}=\binom{n+1}{r+1}
+\]
+kalır.
+\end{proof}
+
+Bu özdeşliğe, Pascal üçgeninde sabit bir köşegen boyunca ilerleyip son adımda yön değiştirildiğinde ortaya çıkan şekilden ötürü hokey sopası adı verilmiştir. Bölüm 5'te incelediğimiz $\binom{10}{3}+\binom{10}{4}+\binom{11}{5}$ toplamı bu zincirin kısa bir örneğiydi; burada aynı mekanizmayı genel hâliyle kurmuş olduk. Buradaki asıl kazanım, uzun bir toplamın tek bir kombinasyon terimine indirgenebilmesidir.
+
+\subsection{Çözümlü örnekler}
+
+\begin{example}
+$10$ elemanlı bir kümenin çift sayıda elemana sahip kaç alt kümesi vardır?
+\end{example}
+\begin{proof}[Çözüm]
+Küme boş kümeden farklıdır; dolayısıyla çift ve tek sayıda eleman içeren alt kümelerin sayıları eşittir. Toplam alt küme sayısı $2^{10}$ olduğuna göre aranan sayı bunun yarısıdır:
+\[
+2^{10-1}=2^9=512.
+\]
+Sıfır çift bir sayı olduğundan, tek elemanı bulunmayan boş küme de bu sayıma dahildir.
+\end{proof}
+
+\begin{example}
+Aşağıdaki toplamı hesaplayınız:
+\[
+\binom{3}{3}+\binom{4}{3}+\binom{5}{3}+\binom{6}{3}+\binom{7}{3}.
+\]
+\end{example}
+\begin{proof}[Çözüm]
+İfade, $r=3$ ve $n=7$ parametreleriyle hokey sopası özdeşliğine tam olarak uyar:
+\[
+\sum_{i=3}^{7}\binom{i}{3}=\binom84=70.
+\]
+Terimleri tek tek toplamak ($1+4+10+20+35=70$) yerine özdeşlik sonucu doğrudan verir.
+\end{proof}
+
+\begin{example}
+\[
+\binom90-\binom91+\binom92-\cdots-\binom99
+\]
+toplamını bulunuz.
+\end{example}
+\begin{proof}[Çözüm]
+İşaretler almaşık ilerlediği için bu ifade $n=9$ durumundaki alternatif toplamdır. $9\ge1$ olduğundan doğrudan
+\[
+(1-1)^9=0
+\]
+elde edilir. Son terimin eksi işaretli oluşu, $9$ tek sayı olduğundan $(-1)^9=-1$ gelmesindendir.
+\end{proof}
+
+\begin{example}
+İlk $n$ pozitif tam sayının toplamını hokey sopası özdeşliğinden elde ediniz.
+\end{example}
+\begin{proof}[Çözüm]
+Özdeşlikte $r=1$ alalım:
+\[
+\binom11+\binom21+\cdots+\binom n1=\binom{n+1}{2}.
+\]
+$\binom{i}{1}=i$ olduğundan sol taraf doğrudan $1+2+\cdots+n$ toplamıdır. Sağ taraf açıldığında $\binom{n+1}{2}=\frac{n(n+1)}{2}$ elde edilir. Böylece Bölüm 2'de tümevarımla kanıtladığımız toplama Pascal üçgeni üzerinden de ulaşmış oluruz.
+\end{proof}
+
+\textbf{Uyarı:} $n=0$ için alternatif toplam $1$'dir; çünkü açılımda yalnızca $\binom00=1$ terimi bulunur. Bu nedenle toplamın sıfıra eşit olması için $n\ge1$ koşulu şarttır.
+
+% ============================================================
+% 6.4 KOMBİNATORİK İSPAT
+% ============================================================
+\section{Kombinatorik İspat}
+
+Bir eşitliği cebirsel işlemlerle doğrulamak mümkündür; ancak kombinasyon katsayıları içeren durumlarda çoğu kez daha aydınlatıcı bir yol vardır: Eşitliğin iki yanını da aynı nesnelerin sayısı olarak yorumlamak. Bu yaklaşıma \textbf{kombinatorik ispat} ya da Bölüm 10'da ayrıntısıyla ele alacağımız adıyla \textbf{çifte sayım} denir.
+
+Yöntemin dayanağı basittir. Belirli bir nesne kümesi belirlenir. Bu kümedeki elemanlar birinci bir bakış açısıyla sayılıp $A$ sonucu bulunur; ardından aynı nesneler farklı bir gruplama veya sıra gözetilerek sayılıp $B$ sonucu elde edilir. Aynı kümenin eleman sayısı iki farklı değer alamayacağından $A=B$ olmak zorundadır. Burada dikkat edilmesi gereken tek husus, iki yöntemin de harfiyen \emph{aynı} nesneleri saydığından emin olmaktır.
+
+Bölüm 5'te başkanlı komite kurgusuyla ispatladığımız
+\[
+k\binom{n}{k}=n\binom{n-1}{k-1}
+\]
+özdeşliği bu yöntemin ilk örneğiydi. Oradaki $k$ çarpanı, seçilen grubun içinden bir başkan belirleme hamlesine karşılık geliyordu. Şimdi bu fikri, grup büyüklüğünün serbest bırakıldığı daha kapsamlı bir toplama taşıyalım.
+
+\begin{theorem}
+Her $n\ge1$ için
+\[
+\sum_{k=1}^{n}k\binom{n}{k}=n2^{n-1}.
+\]
+\end{theorem}
+
+\begin{proof}
+$n$ kişilik bir topluluktan boş olmayan bir çalışma grubu ve bu grubun içinden bir lider seçeceğimizi varsayalım.
+
+Grubun büyüklüğü $k$ olarak belirlenmişse grubu seçmenin $\binom{n}{k}$, grup içinden lideri seçmenin ise $k$ yolu vardır. $k=1,2,\ldots,n$ durumları birbirini dışladığından toplam liderli grup sayısı $\sum_{k=1}^{n}k\binom{n}{k}$ olur.
+
+Aynı seçimi ters sırada yapalım: Önce tüm topluluktan lideri seçelim; bunun $n$ farklı yolu vardır. Lider belirlendikten sonra kalan $n-1$ kişinin her biri gruba dahil olabilir ya da olmayabilir. Bu kişilerin oluşturabileceği alt grupların sayısı $2^{n-1}$'dir. Dolayısıyla toplam $n2^{n-1}$ farklı liderli grup kurulabilir. Her iki sayım da aynı nesneleri listelediğinden eşitlik kanıtlanmış olur.
+\end{proof}
+
+\begin{theorem}[Vandermonde özdeşliği]
+$m,n,r\in\mathbb{N}$ ve $r\le m+n$ için
+\[
+\sum_{k=0}^{r}\binom{m}{k}\binom{n}{r-k}=\binom{m+n}{r}.
+\]
+Geçersiz seçimlere karşılık gelen binom katsayıları $0$ kabul edilir.
+\end{theorem}
+
+\begin{proof}
+Bir toplulukta $m$ kişilik birinci grup ve $n$ kişilik ikinci grup bulunsun. Toplam $m+n$ kişi arasından $r$ kişilik bir kurul seçeceğiz.
+
+Tüm topluluktan doğrudan seçim yapıldığında kurul sayısı $\binom{m+n}{r}$ olur. İkinci bir yolla, kurulda birinci gruptan yer alacak kişi sayısına $k$ diyelim. Birinci gruptan $k$ kişi $\binom{m}{k}$ yolla, ikinci gruptan kalan $r-k$ kişi ise $\binom{n}{r-k}$ yolla seçilir. Bu çarpım, içinde birinci gruptan tam $k$ üye barındıran kurulların sayısını verir. $k$'nın olası tüm değerleri ayrık durumlar oluşturduğundan, toplama kuralı gereğince sol taraf elde edilir. Her iki yol da aynı $r$ kişilik kurulları saydığı için eşitlik geçerlidir.
+\end{proof}
+
+\subsection{Çözümlü örnekler}
+
+\begin{example}
+\[
+\sum_{k=0}^{n}\binom{n}{k}^2=\binom{2n}{n}
+\]
+özdeşliğini Vandermonde özdeşliğinden çıkarınız.
+\end{example}
+\begin{proof}[Çözüm]
+Vandermonde özdeşliğinde $m=n$ ve $r=n$ değerlerini yerine koyalım:
+\[
+\sum_{k=0}^{n}\binom{n}{k}\binom{n}{n-k}=\binom{2n}{n}.
+\]
+Bölüm 5'teki simetri kuralından $\binom{n}{n-k}=\binom{n}{k}$ olduğunu biliyoruz. Böylece sol taraftaki her çarpım terimi bir kareye dönüşür ve istenen eşitlik doğrudan çıkar. Örneğin $n=3$ için sol taraf $1^2+3^2+3^2+1^2=20$, sağ taraf ise $\binom63=20$ değerini verir.
+\end{proof}
+
+\begin{example}
+Bir sınıfta $5$ kız ve $7$ erkek öğrenci vardır. Dört kişilik bir ekibi kız öğrenci sayısına göre sınıflandırarak toplam ekip sayısını bulunuz.
+\end{example}
+\begin{proof}[Çözüm]
+Ekipteki kız sayısı $0,1,2,3$ veya $4$ olabilir. Her durum için kız ve erkek öğrencileri bağımsız olarak seçeriz:
+\begin{align*}
+&\binom50\binom74+\binom51\binom73+\binom52\binom72\\
+&\qquad+\binom53\binom71+\binom54\binom70.
+\end{align*}
+Vandermonde özdeşliği gereği bu toplam
+\[
+\binom{5+7}{4}=\binom{12}{4}=495
+\]
+değerine eşittir. Aynı sonuca $12$ kişi arasından doğrudan $4$ kişi seçerek de varılır.
+\end{proof}
+
+\begin{example}
+\[
+\binom81+2\binom82+3\binom83+\cdots+8\binom88
+\]
+toplamını bulunuz.
+\end{example}
+\begin{proof}[Çözüm]
+Verilen ifade $\sum_{k=1}^{8}k\binom{8}{k}$ yapısındadır. Liderli grup özdeşliğinde $n=8$ alınırsa
+\[
+\sum_{k=1}^{8}k\binom{8}{k}=8\cdot2^7=1024
+\]
+elde edilir. Uzun toplamı terim terim hesaplamak yerine, ifadenin liderli grupları saydığını görmek çözümü doğrudan verir.
+\end{proof}
+
+\begin{example}
+\[
+\sum_{k=0}^{n}\binom{n}{k}2^k=3^n
+\]
+eşitliğini hem binom teoremiyle hem de sayma yoluyla açıklayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Binom teoreminde $a=1$ ve $b=2$ seçildiğinde $(1+2)^n=\sum_{k=0}^{n}\binom{n}{k}2^k$ olur; bu da toplamın $3^n$ olduğunu gösterir.
+
+Sayma yorumu için $n$ nesnenin her birini üç renkten biriyle boyadığımızı varsayalım. Her nesne için $3$ bağımsız seçenek bulunduğundan toplam boyama sayısı $3^n$'dir. Alternatif olarak, ilk rengin dışındaki iki renkten birini alan nesnelerin sayısına $k$ diyelim. Önce bu $k$ nesne $\binom{n}{k}$ yolla belirlenir; ardından her biri kalan iki renkten biriyle $2^k$ farklı biçimde boyanır. $k$ üzerinden toplandığında sol taraf elde edilir. İki yaklaşım da aynı boyamaları saydığından eşitlik sağlanır.
+\end{proof}
+
+\textbf{Son kontrol noktası:} Bir kombinatorik ispatı incelerken daima ``iki yöntem de tam olarak aynı nesne kümesini mi sayıyor?'' sorusu sorulmalıdır. İlk yolun komiteleri, ikinci yolun ise başkanlı komiteleri sayması gibi ufak bir odak kayması ispatı geçersiz kılar. Sayılan nesneyi ispatın en başında açıkça tarif etmek bu tür yanılgıları engeller.
+
+Bu bölümde binom katsayılarının yalnızca cebirsel birer çarpan olmadığını; parantezlerden yapılan seçimleri, Pascal üçgenindeki geometrik konumları ve farklı sayma yollarını temsil ettiğini gördük. Bir sonraki bölümde (Bölüm 7), kombinasyon formüllerine başvurmadan, nesneleri kutulara dağıtmanın kaçınılmaz sonuçlarını ele alan güvercin yuvası ilkesini inceleyeceğiz.

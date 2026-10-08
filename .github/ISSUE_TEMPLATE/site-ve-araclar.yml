@@ -1,0 +1,57 @@
+name: Site veya araç hatası
+description: Tanıtım sitesinde, PDF bağlantılarında ya da derleme betiklerinde bir sorun mu var?
+title: "[Araç] "
+labels: ["araç"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bu form, kitabın **tanıtım sitesi** ve **derleme/denetim araçları** için.
+        Kitabın metnindeki hatalar için "Hata bildirimi" formunu kullanın.
+  - type: dropdown
+    id: nerede
+    attributes:
+      label: Sorun nerede?
+      options:
+        - Tanıtım sitesi (bilgisayar-olimpiyatlari.com)
+        - PDF indirme / sayfa bağlantıları
+        - compile_book.py (derleme)
+        - audit_book.py / audit_log.py (denetim)
+        - build_site.py / check_site.py (site üretimi)
+        - Diğer bir betik
+    validations:
+      required: true
+  - type: input
+    id: adres
+    attributes:
+      label: Adres ya da komut
+      description: Sorunun görüldüğü sayfa adresi ya da çalıştırdığınız komut.
+      placeholder: "python3 scripts/check_site.py"
+    validations:
+      required: true
+  - type: textarea
+    id: beklenen
+    attributes:
+      label: Beklenen ve gerçekleşen
+      description: Ne olmasını bekliyordunuz, ne oldu?
+    validations:
+      required: true
+  - type: textarea
+    id: cikti
+    attributes:
+      label: Hata çıktısı
+      description: Varsa terminal çıktısını olduğu gibi yapıştırın.
+      render: text
+    validations:
+      required: false
+  - type: textarea
+    id: ortam
+    attributes:
+      label: Ortam
+      description: İşletim sistemi, Python sürümü ve varsa tectonic sürümü.
+      value: |
+        - İşletim sistemi:
+        - Python: `python3 --version`
+        - Tectonic: `tectonic --version`
+    validations:
+      required: false

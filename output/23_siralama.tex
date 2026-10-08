@@ -1,0 +1,586 @@
+\chapter[Sıralama · \textit{Temel}]{Sıralama}
+\chaptermark{Sıralama}
+
+\section{Neden Sıralarız: Sıralı Verinin Gücü}
+
+Elimizde $n$ adet tamsayıdan oluşan bir liste olduğunu düşünelim:
+\[
+A = [42, 17, 89, 5, 23, 71, 12, 60]
+\]
+Bu listede $23$ sayısının bulunup bulunmadığını kontrol etmek istersek, en kötü durumda listenin bütün elemanlarını tek tek incelememiz gerekir. Eğer liste $n$ elemanlıysa, her bir arama sorgusu için $O(n)$ işlem yaparız. $q$ adet sorgumuz varsa toplam süre $O(q \cdot n)$ olur. $n = 10^5$ ve $q = 10^5$ olduğunda yapılacak işlem sayısı $10^{10}$ mertebesine çıkar ve standart bir işlemci için bu süre saniyeler değil, dakikalar sürer.
+
+Şimdi aynı elemanları küçükten büyüğe sıralı bir biçimde tuttuğumuzu varsayalım:
+\[
+A_{\text{sıralı}} = [5, 12, 17, 23, 42, 60, 71, 89]
+\]
+Artık ortadaki elemana bakıp aradığımız sayının sağda mı yoksa solda mı kalması gerektiğini tek bir karşılaştırmayla anlarız. Her adımda arama uzayımız yarıya iner. Bölüm 24'te ayrıntılarına gireceğimiz ikili arama (binary search) sayesinde tek bir sorgu en fazla $\lceil \log_2 n \rceil$ adımda biter. $10^5$ sorgu için $10^5 \cdot 17 \approx 1.7 \times 10^6$ işlem yeterlidir; yani saniyenin küçük bir kesrinde işlem tamamlanır.
+
+Sıralama (sorting), yalnızca arama hızını artırmakla kalmaz; algoritmik düşüncede birçok karmaşık problemi doğrudan gözlemlere indirger.
+
+\begin{definition}[Sıralama Problemi]
+Üzerinde tam sıralama bağıntısı $\le$ tanımlı bir $S$ kümesinden alınan $n$ elemanlı bir $A = [a_1, a_2, \dots, a_n]$ dizisi verilsin. Sıralama problemi, Bölüm 4'te ele aldığımız $\{1, 2, \dots, n\}$ kümesinin öyle bir $\pi$ permütasyonunu bulma işlemidir ki,
+\[
+a_{\pi(1)} \le a_{\pi(2)} \le \dots \le a_{\pi(n)}
+\]
+koşulu sağlansın.
+\end{definition}
+
+Sıralı bir dizinin sunduğu başlıca yapısal avantajları şöyle özetleyebiliriz:
+\begin{enumerate}
+    \item \textbf{Uç Değerlere Erişim:} Minimum eleman daima $A[1]$, maksimum eleman ise daima $A[n]$ konumundadır. Dolayısıyla uç değerlere $O(1)$ sürede erişilir.
+    \item \textbf{Tekrarları ve Benzersiz Elemanları Bulma:} Rastgele bir dizide aynı elemandan birden fazla olup olmadığını anlamak doğrudan bir bakışla zordur. Oysa sıralı bir dizide birbirine eşit elemanlar zorunlu olarak yan yana gelir ($A[i] = A[i+1]$). Tek bir doğrusal geçişle ($O(n)$ sürede) tüm tekrarlar tespit edilir veya ayıklanır.
+    \item \textbf{Aralık ve Yakınlık Problemleri:} Dizi içindeki en yakın iki elemanın farkını bulmak için sırasız dizide tüm çiftleri denemek $\binom{n}{2} = O(n^2)$ karşılaştırma gerektirir. Sıralı dizide ise en yakın iki eleman kesinlikle art arda durmak zorundadır; $\min_{1 \le i < n} (A[i+1] - A[i])$ değeri $O(n)$ sürede hesaplanır.
+    \item \textbf{Greedy Stratejiler:} Bölüm 27'de göreceğimiz üzere, bir problemi en küçük ya da en büyük değerden başlayarak adım adım çözme stratejileri daima sıralanmış veri üzerinde anlam kazanır.
+\end{enumerate}
+
+\begin{example}
+Bir tam sayı dizisinde farkları birbirine en yakın iki elemanın mutlak farkını bulunuz.
+
+Örnek girdi: $A = [28, 4, 19, 45, 12, 73]$
+\end{example}
+
+\begin{proof}[Çözüm]
+Tüm olası çiftleri incelersek: $(28,4), (28,19), \dots$ toplam $\binom{6}{2} = 15$ karşılaştırma gerekir. Genel durumda $n$ eleman için $\binom{n}{2} = \frac{n(n-1)}{2}$ çift vardır ve bu yaklaşım $O(n^2)$ zaman alır. 
+
+Oysa reel sayı doğrusunu düşündüğümüzde, birbirine en yakın iki nokta bu doğru üzerine dizildiklerinde zorunlu olarak komşu iki nokta olmak zorundadır. Araya başka bir nokta giriyorsa, komşulardan birine olan mesafe kesinlikle daha küçüktür.
+
+O halde diziyi küçükten büyüğe sıralayalım:
+\[
+A_{\text{sıralı}} = [4, 12, 19, 28, 45, 73]
+\]
+Şimdi ardışık farkları hesaplayalım:
+\begin{align*}
+12 - 4 &= 8 \\
+19 - 12 &= 7 \\
+28 - 19 &= 9 \\
+45 - 28 &= 17 \\
+73 - 45 &= 28
+\end{align*}
+En küçük fark $\min(8, 7, 9, 17, 28) = 7$'dir. Bu kontrol yalnızca $n-1$ adım sürdü. Sıralama maliyeti eklenince işlem toplamda $O(n \log n)$ sürede tamamlanır.
+\end{proof}
+
+\begin{example}
+Elimizde $n$ kişinin katıldığı bir yarışmanın puanları bulunmaktadır. Puanlar bir tamsayı dizisi olarak verilmiştir. Bir puanın dizide "çoğunluk" (strictly majority) oluşturup oluşturmadığını, yani $n/2$'den fazla kez tekrar edip etmediğini belirlemek istiyoruz.
+
+Örnek girdi: $A = [3, 7, 3, 2, 3, 5, 3, 3, 1]$ ($n = 9$)
+\end{example}
+
+\begin{proof}[Çözüm]
+Eğer dizide bir eleman $\lfloor n/2 \rfloor + 1$ veya daha fazla kez bulunuyorsa, dizi sıralandığında bu elemanın kapladığı aralık o kadar geniş olmalıdır ki, dizinin tam orta noktası olan $\lfloor n/2 \rfloor$. indekse (0-tabanlı indekste $\lfloor n/2 \rfloor$) denk gelmek \emph{zorundadır}.
+
+Verilen diziyi sıralayalım:
+\[
+A_{\text{sıralı}} = [1, 2, 3, 3, 3, 3, 3, 5, 7]
+\]
+Dizinin ortasındaki eleman: indeksi $\lfloor 9/2 \rfloor = 4$ olan eleman $A[4] = 3$'tür.
+Eğer dizide çoğunluk elemanı varsa, bu eleman kesinlikle $3$ olmak zorundadır. Şimdi tek bir geçişle $3$'ün kaç kez geçtiğini sayarız: tam $5$ defa geçmektedir ve $5 > 9/2$ olduğu için çoğunluk elemanı $3$'tür.
+
+Sıralama yapmasaydık her elemanın frekansını ayrı ayrı saymak veya ek veri yapıları kurmak zorunda kalacaktık. Sıralı yapının sunduğu geometrik yerleşim problemi tek bir noktaya indirgemiştir.
+\end{proof}
+
+\begin{example}
+$n$ adet kapalı aralık veriliyor: $[s_1, e_1], [s_2, e_2], \dots, [s_n, e_n]$. Bu aralıkların ortak bir kesişim kümesi olup olmadığını nasıl anlarız?
+\end{example}
+
+\begin{proof}[Çözüm]
+İki aralığın kesişmesi için birinin başlangıcının diğerinin bitişinden küçük veya eşit olması gerekir. $n$ aralık için ortak bir nokta $x$'in bulunması, her $i$ için $s_i \le x \le e_i$ olması demektir. Bu ise şu anlama gelir:
+\[
+\max_{1 \le i \le n} s_i \le \min_{1 \le i \le n} e_i
+\]
+Başlangıç ve bitiş noktalarını sıralı düşünelim. En büyük başlangıç noktası $S_{\max}$, en küçük bitiş noktası $E_{\min}$ olsun. Eğer $S_{\max} \le E_{\min}$ ise $[S_{\max}, E_{\min}]$ aralığındaki her nokta tüm aralıkların ortak kesişimidir; aksi halde kesişim boştur. Uç değerlerin sıralı düşünülmesi çözümü doğrudan verir.
+\end{proof}
+
+Bu kazanımlar bizi temel bir soruya götürür: Sıralama işlemini en düşük maliyetle ve en verimli şekilde nasıl gerçekleştirebiliriz?
+
+\section{Bubble Sort ve Insertion Sort: Basit Yaklaşımlar ve $O(n^2)$ Sezgisi}
+
+Sıralama algoritmalarını anlamanın en doğal yolu, küçük veri kümeleri üzerinde elle yapılan işlemlerin adımlarını incelemektir. Bu doğrultuda önce $O(n^2)$ karmaşıklığına sahip iki temel algoritmayla başlayalım: Kabarcık Sıralaması (Bubble Sort) ve Araya Ekleme Sıralaması (Insertion Sort).
+
+\subsection{Ters Düz Olma Sayısı (Inversion)}
+
+Bir dizinin ne kadar "karışık" olduğunu nasıl ölçeriz? Bu soru, sıralama algoritmalarının alt sınırlarını ve çalışma mantığını anlamak için temel bir kavramı doğurur.
+
+\begin{definition}[Ters Düz Çifti (Inversion)]
+Bir $A$ dizisinde, $i < j$ indisleri için $A[i] > A[j]$ koşulu sağlanıyorsa, $(i, j)$ çiftine bir \textbf{ters düz çifti} (inversion) denir.
+\end{definition}
+
+Örneğin $A = [3, 1, 2]$ dizisinde:
+\begin{itemize}
+    \item $i=1, j=2 \implies A[1] = 3 > A[2] = 1$ (ters düz)
+    \item $i=1, j=3 \implies A[1] = 3 > A[3] = 2$ (ters düz)
+    \item $i=2, j=3 \implies A[2] = 1 < A[3] = 2$ (sıralı)
+\end{itemize}
+Bu dizide toplam $2$ adet ters düz çifti vardır. Tamamen sıralı bir dizide ($[1, 2, 3]$) ters düz sayısı $0$'dır. Tamamen tersten sıralı bir dizide ($[3, 2, 1]$) ise olası her çift bir ters düzdür, yani $\binom{n}{2} = \frac{n(n-1)}{2}$ adet ters düz vardır.
+
+\begin{theorem}
+Yalnızca komşu iki elemanın yerini değiştiren herhangi bir sıralama algoritması, diziyi sıralamak için en az dizideki ters düz sayısı kadar takas (swap) işlemi yapmak zorundadır.
+\end{theorem}
+
+\begin{proof}
+Dizideki iki komşu eleman $A[k]$ ve $A[k+1]$ olsun. Bu iki eleman yer değiştirdiğinde:
+\begin{itemize}
+    \item $k$ ve $k+1$ dışındaki hiçbir indisin birbirine göre sırası değişmez.
+    \item Diğer elemanların $A[k]$ ve $A[k+1]$ ile olan bağıl konumları değişmez (çünkü elemanlar bir bütün olarak blok halinde yer değiştirir).
+    \item Yalnızca $A[k]$ ile $A[k+1]$ arasındaki sıra tersine döner.
+\end{itemize}
+Dolayısıyla tek bir komşu takası, toplam ters düz sayısını en fazla $1$ azaltabilir (eğer $A[k] > A[k+1]$ ise $1$ azalır, $A[k] < A[k+1]$ ise $1$ artar). Başlangıçta $I$ adet ters düz varsa ve hedef $0$ ters düze ulaşmaksa, en az $I$ adet takas zorunludur.
+\end{proof}
+
+\subsection{Kabarcık Sıralaması (Bubble Sort)}
+
+\textbf{Sezgi:} Su dolu bir kabın dibindeki büyük hava kabarcıklarının yüzeye doğru yükselmesi gibi, dizideki büyük elemanların da adım adım dizinin sonuna doğru "yüzdürülmesi" fikrine dayanır.
+
+Dizinin başından başlarız; her komşu çifte bakarız. Eğer soldaki sağdakinden büyükse yer değiştiririz. Bir tam geçişin sonunda en büyük eleman kesinlikle en sağdaki yerine oturmuş olur. İkinci geçişte ikinci en büyük yerine oturur.
+
+\begin{example}
+$A = [5, 1, 4, 2, 8]$ dizisini Bubble Sort adımlarıyla sıralayalım.
+\end{example}
+
+\begin{proof}[Çözüm]
+\textbf{1. Geçiş:}
+\begin{itemize}
+    \item $[ \mathbf{5, 1}, 4, 2, 8 ] \to 5 > 1$, takas et $\to [ 1, 5, 4, 2, 8 ]$
+    \item $[ 1, \mathbf{5, 4}, 2, 8 ] \to 5 > 4$, takas et $\to [ 1, 4, 5, 2, 8 ]$
+    \item $[ 1, 4, \mathbf{5, 2}, 8 ] \to 5 > 2$, takas et $\to [ 1, 4, 2, 5, 8 ]$
+    \item $[ 1, 4, 2, \mathbf{5, 8} ] \to 5 < 8$, dokunma $\to [ 1, 4, 2, 5, \mathbf{8} ]$
+\end{itemize}
+En büyük eleman ($8$) ait olduğu son pozisyona ulaştı.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \foreach \i/\vals in {
+    0/{5,1,4,2,8},
+    1/{1,5,4,2,8},
+    2/{1,4,5,2,8},
+    3/{1,4,2,5,8},
+    4/{1,4,2,5,8}
+  } {
+    \foreach \v [count=\j from 0] in \vals {
+      \node[kutu, minimum size=7.5mm] (b\i\j) at (\j*0.85, -\i*0.9) {\v};
+    }
+  }
+  \node[kutu, minimum size=7.5mm, fill=kitapvurgu!12] (b00) at (0,0) {5};
+  \node[kutu, minimum size=7.5mm, fill=kitapvurgu!12] (b01) at (0.85,0) {1};
+  \node[kutu, minimum size=7.5mm, fill=kitapvurgu!12] (b11) at (0.85,-0.9) {5};
+  \node[kutu, minimum size=7.5mm, fill=kitapvurgu!12] (b12) at (1.7,-0.9) {4};
+  \node[kutu, minimum size=7.5mm, fill=kitapvurgu!12] (b22) at (1.7,-1.8) {5};
+  \node[kutu, minimum size=7.5mm, fill=kitapvurgu!12] (b23) at (2.55,-1.8) {2};
+  \node[kutu, minimum size=7.5mm, fill=kitapvurgu!12] (b33) at (2.55,-2.7) {5};
+  \node[kutu, minimum size=7.5mm, fill=kitapvurgu!12] (b34) at (3.4,-2.7) {8};
+  \node[kutu, minimum size=7.5mm, vurgulu] (b44) at (3.4,-3.6) {8};
+  \node[etiket, gray, anchor=east] at (-1.9,0) {başlangıç};
+  \node[etiket, gray, anchor=east] at (-1.9,-0.9) {1. takas};
+  \node[etiket, gray, anchor=east] at (-1.9,-1.8) {2. takas};
+  \node[etiket, gray, anchor=east] at (-1.9,-2.7) {3. takas};
+  \node[etiket, gray, anchor=east] at (-1.9,-3.6) {geçiş sonu};
+\end{tikzpicture}
+\caption{Bubble Sort'un 1. geçişi: açık vurgulu çift her adımda takas edilen
+komşulardır; geçiş sonunda en büyük eleman (8) en sağda yerine oturur.}
+\end{figure}
+
+\textbf{2. Geçiş:}
+\begin{itemize}
+    \item $[ \mathbf{1, 4}, 2, 5, 8 ] \to 1 < 4$, dokunma
+    \item $[ 1, \mathbf{4, 2}, 5, 8 ] \to 4 > 2$, takas et $\to [ 1, 2, 4, 5, 8 ]$
+    \item $[ 1, 2, \mathbf{4, 5}, 8 ] \to 4 < 5$, dokunma
+\end{itemize}
+Bu geçişte ikinci en büyük eleman ($5$) yerine yerleşti.
+
+\textbf{3. Geçiş:}
+Dizi taranır, hiçbir takas gerçekleşmez. Eğer bir geçiş boyunca hiç takas yapılmamışsa dizi zaten sıralıdır ve algoritma erkenden sonlandırılabilir.
+\end{proof}
+
+C dilinde gerçekleme:
+\begin{lstlisting}[language=CTemel]
+void bubble_sort(int A[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        int takas_oldu = 0;
+        for (int j = 0; j < n - 1 - i; j++) {
+            if (A[j] > A[j + 1]) {
+                int gecici = A[j];
+                A[j] = A[j + 1];
+                A[j + 1] = gecici;
+                takas_oldu = 1;
+            }
+        }
+        if (!takas_oldu) break; // Erken bitirme optimizasyonu
+    }
+}
+\end{lstlisting}
+
+\textbf{Karmaşıklık Analizi:}
+\begin{itemize}
+    \item En kötü durumda (dizi tersten sıralıysa): $\sum_{i=0}^{n-2} (n - 1 - i) = \frac{n(n-1)}{2}$ karşılaştırma ve aynı sayıda takas yapılır. Karmaşıklık $O(n^2)$'dir.
+    \item En iyi durumda (dizi zaten sıralıysa): İlk geçişte hiç takas olmaz, $n-1$ karşılaştırma ile biter; $O(n)$ zaman alır.
+\end{itemize}
+
+\subsection{Araya Ekleme Sıralaması (Insertion Sort)}
+
+\textbf{Sezgi:} Elimize aldığımız oyun kartlarını tek tek sıralamaya benzer. Sol elimizde her zaman sıralı bir deste tutarız. Masadan yeni bir kart çektiğimizde, bu kartı sol elimizdeki destenin sağından başlayarak sola doğru kaydırır ve ait olduğu uygun konuma yerleştiririz.
+
+\begin{definition}[Değişmez (Invariant) İlkesi]
+Bölüm 18'de incelediğimiz değişmez (invaryant) kavramı uyarınca, Insertion Sort algoritmasının $i$. adımının başında dizinin ilk $i$ elemanı olan $A[0 \dots i-1]$ kendi içinde sıralıdır. Algoritmanın amacı, $A[i]$ elemanını bu sıralı alt dizinin doğru yerine yerleştirerek değişmezi $A[0 \dots i]$ için korumaktır.
+\end{definition}
+
+\begin{example}
+$A = [6, 3, 7, 1, 4]$ dizisini Insertion Sort ile adım adım sıralayalım.
+\end{example}
+
+\begin{proof}[Çözüm]
+Başlangıçta ilk eleman tek başına sıralıdır: $[6]$.
+
+\textbf{Adım 1 ($i=1$):} Eleman $3$.
+$3$, $6$'dan küçüktür; $6$ sağa kaydırılır ve $3$ başa yazılır:
+\[
+[ \mathbf{3, 6}, 7, 1, 4 ]
+\]
+
+\textbf{Adım 2 ($i=2$):} Eleman $7$.
+$7$, $6$'dan büyüktür; yeri zaten doğrudur, kaydırma yapılmaz:
+\[
+[ \mathbf{3, 6, 7}, 1, 4 ]
+\]
+
+\textbf{Adım 3 ($i=3$):} Eleman $1$.
+$1$; sırasıyla $7$, $6$ ve $3$'ten küçüktür. Tümü birer sağa kayar:
+\[
+[ \mathbf{1, 3, 6, 7}, 4 ]
+\]
+
+\textbf{Adım 4 ($i=4$):} Eleman $4$.
+$4$; $7$ ve $6$'dan küçüktür, sağa kayarlar. $3$'ten büyüktür, $3$'ün sağına yerleşir:
+\[
+[ \mathbf{1, 3, 4, 6, 7} ]
+\]
+Dizi tamamen sıralandı.
+\end{proof}
+
+Sözde kod ile gerçekleme:
+\begin{lstlisting}
+Algorithm InsertionSort(A)
+    n = length(A)
+    for i = 1 to n - 1 do
+        key = A[i]
+        j = i - 1
+        while j >= 0 and A[j] > key do
+            A[j + 1] = A[j]
+            j = j - 1
+        end while
+        A[j + 1] = key
+    end for
+End Algorithm\end{lstlisting}
+
+\begin{theorem}[Insertion Sort Karmaşıklığı]
+$n$ elemanlı ve içinde $I$ adet ters düz çifti barındıran bir dizide, Insertion Sort tam olarak $I$ adet kaydırma (eleman atama) işlemi yapar. Algoritmanın çalışma zamanı $\Theta(n + I)$'dır.
+\end{theorem}
+
+\begin{proof}
+$A[i]$ elemanı sola doğru kaydırılırken, kendisinden önce gelen ve kendisinden kesinlikle büyük olan her elemanın üzerinden tam bir adım atlar. Bu durum, $A[i]$'nin sağda yer aldığı her bir ters düz çifti için tam olarak bir kaydırmaya karşılık gelir. Dizi üzerinde $n-1$ dış döngü adımı atıldığından, yapılan toplam iş $\Theta(n + I)$ mertebesindedir.
+\end{proof}
+
+Bu teorem önemli bir pratik sonucu doğurur: \textbf{Neredeyse sıralı dizilerde} (yani her elemanın nihai yerinden en fazla $k$ uzaklıkta olduğu durumlarda, $I \le k \cdot n$), Insertion Sort $O(k \cdot n)$ gibi doğrusal bir sürede çalışır. Bu nedenle günümüz gelişmiş kütüphane algoritmaları (örneğin Timsort), diziler küçüldüğünde Insertion Sort'a geçiş yapar.
+
+\begin{example}
+Bir dizide her elemanın ait olması gereken sıralı konumundan en fazla $k$ pozisyon uzakta olduğu bilinmektedir ($k \ll n$). Bu dizi için neden Insertion Sort $O(nk)$ zaman alır?
+\end{example}
+
+\begin{proof}[Çözüm]
+İlk hamle olarak döngünün her adımındaki hareketi inceleyelim. Eklenen eleman $A[i]$, gerçek sıralı yerinden en fazla $k$ kadar uzaktadır. Dolayısıyla \texttt{while} döngüsü her bir $i$ için en fazla $k$ kez dönebilir.
+Dış döngü $n$ adım sürdüğüne göre, içteki kaydırmaların toplamı en fazla $n \cdot k$ olabilir. Toplam karşılaştırma ve işlem sayısı $O(n \cdot k)$ ile sınırlıdır. $k$ küçük bir sabitse bu süre $O(n)$'dir.
+\end{proof}
+
+\subsection{En Sık Yapılan Hatalar}
+\begin{itemize}
+    \item \textbf{Bubble Sort'ta Döngü Sınırları:} İç döngüyü her zaman $n-1$'e kadar koşturmak gereksiz karşılaştırmalara yol açar. $i$. geçişten sonra son $i$ eleman zaten yerleşmiştir, iç döngü $n - 1 - i$'de bitmelidir.
+    \item \textbf{Insertion Sort'ta Dizi Dışına Çıkma:} \texttt{while} döngüsünde \texttt{j >= 0} kontrolünü \texttt{A[j] > anahtar} koşulundan \emph{önce} yazmamak, C gibi dillerde negatif indeks erişimine (\texttt{A[-1]}) ve tanımsız davranışa (segmentation fault) yol açar.
+\end{itemize}
+
+\section{Merge Sort ve Quick Sort: Böl-ve-Fethet ve $O(n \log n)$ Sınırı}
+
+$O(n^2)$ algoritmaları $n = 10^5$ gibi olimpiyat boyutlarında kesinlikle zaman aşımına (TLE) uğrar. $n^2 = 10^{10}$ işlem saniyeleri aşarken, $n \log_2 n \approx 1.7 \times 10^6$ işlem hızla tamamlanır. Bu sıçramayı sağlayan temel yaklaşım \textbf{Böl ve Fethet} (Divide and Conquer) paradigmasıdır.
+
+\subsection{Karşılaştırma Tabanlı Sıralamaların Alt Sınırı}
+
+Acaba daha da hızlı sıralayabilir miyiz? Örneğin $O(n)$ sürede ikişer ikişer karşılaştırarak genel bir diziyi sıralamak mümkün müdür?
+
+\begin{theorem}[Bilgi-Kuramsal Alt Sınır]
+Yalnızca elemanların ikili karşılaştırmalarına dayanan herhangi bir sıralama algoritması, en kötü durumda en az $\lceil \log_2(n!) \rceil = \Omega(n \log n)$ karşılaştırma yapmak zorundadır.
+\end{theorem}
+
+\begin{proof}
+$n$ farklı elemandan oluşan bir dizinin $n!$ farklı olası sıralanışı (permütasyonu) vardır. Algoritma başlangıçta bu $n!$ permütasyondan hangisinin doğru olduğunu bilmez.
+
+Yapılan her $A[i] \le A[j]$ karşılaştırması "evet" veya "hayır" olmak üzere en fazla 2 yanıt üretebilir. Bu durum, olası durumlar kümesini bir karar ağacında (decision tree) iki dala ayırır.
+$k$ adet karşılaştırma yapıldığında ağacın en fazla $2^k$ yaprağı olabilir. Tüm permütasyonları ayırt edebilmek için yaprak sayısı en az permütasyon sayısı kadar olmalıdır:
+\[
+2^k \ge n! \implies k \ge \log_2(n!)
+\]
+Stirling yaklaşımına göre ($n! \approx \sqrt{2\pi n} (n/e)^n$):
+\[
+\log_2(n!) = \sum_{i=1}^n \log_2 i \ge \sum_{i=\lfloor n/2 \rfloor}^n \log_2 i \ge \frac{n}{2} \log_2\left(\frac{n}{2}\right) = \Omega(n \log n)
+\]
+Demek ki karşılaştırma tabanlı hiçbir algoritma genel durumda $O(n \log n)$'den daha hızlı olamaz. Merge Sort ve Quick Sort bu teorik sınıra ulaşan optimal algoritmalardır.
+\end{proof}
+
+\subsection{Birleştirmeli Sıralama (Merge Sort)}
+
+Merge Sort dengeli bir stratejiye dayanır:
+\begin{enumerate}
+    \item \textbf{Böl:} Diziyi tam ortasından iki eşit (veya neredeyse eşit) parçaya ayır.
+    \item \textbf{Fethet:} Her iki yarıyı rekürsif olarak kendi içinde sırala.
+    \item \textbf{Birleştir (Merge):} Sıralı iki alt diziyi tek bir sıralı dizi halinde birleştir.
+\end{enumerate}
+
+Algoritmanın temel adımı "Birleştirme" (Merge) aşamasıdır. Sıralı iki diziyi birleştirmek oldukça basittir: her iki dizinin de en küçük elemanı en baştadır. Bölüm 22'deki two pointers mantığıyla, iki baştaki elemanı karşılaştırır, küçük olanı yeni diziye ekler ve o dizideki işaretçimizi bir adım ilerletiriz.
+
+\begin{example}
+$L = [2, 5, 9]$ ve $R = [1, 4, 8]$ sıralı listelerini tek bir sıralı dizide birleştirelim.
+\end{example}
+
+\begin{proof}[Çözüm]
+İki işaretçi kullanalım: $i$, $L$'nin başında; $j$, $R$'nin başında olsun.
+\begin{enumerate}
+    \item $L[i]=2$, $R[j]=1 \implies 1 < 2$, $1$'i al, $j$ ilerler. Sonuç: $[1]$
+    \item $L[i]=2$, $R[j]=4 \implies 2 < 4$, $2$'yi al, $i$ ilerler. Sonuç: $[1, 2]$
+    \item $L[i]=5$, $R[j]=4 \implies 4 < 5$, $4$'ü al, $j$ ilerler. Sonuç: $[1, 2, 4]$
+    \item $L[i]=5$, $R[j]=8 \implies 5 < 8$, $5$'i al, $i$ ilerler. Sonuç: $[1, 2, 4, 5]$
+    \item $L[i]=9$, $R[j]=8 \implies 8 < 9$, $8$'i al, $j$ ilerler. Sonuç: $[1, 2, 4, 5, 8]$
+    \item $R$ bitti. $L$'de kalan elemanları ($9$) sona ekle. Sonuç: $[1, 2, 4, 5, 8, 9]$
+\end{enumerate}
+$n$ elemanlı birleştirme işlemi sadece $O(n)$ zamanda bitti.
+\end{proof}
+
+\begin{figure}[htbp]
+\centering
+\begin{verbatim}
+                [38, 27, 43, 3, 9, 82, 10]
+                     /              \
+         [38, 27, 43, 3]          [9, 82, 10]
+           /         \              /       \
+       [38, 27]    [43, 3]        [9, 82]   [10]
+        /    \      /    \        /    \      |
+      [38]  [27]  [43]   [3]    [9]   [82]   [10]
+        \    /      \    /        \    /      |
+       [27, 38]    [3, 43]        [9, 82]    [10]
+           \         /              \       /
+         [3, 27, 38, 43]          [9, 10, 82]
+                     \              /
+                [3, 9, 10, 27, 38, 43, 82]
+\end{verbatim}
+\caption{Merge Sort'un rekürsif ayrışma ve birleşme ağacı.}
+\end{figure}
+
+Merge Sort'un zaman karmaşıklığı şu rekürsif bağıntı ile ifade edilir:
+\[
+T(n) = 2T(n/2) + O(n)
+\]
+Ağacın derinliği $\log_2 n$ seviyedir ve her seviyedeki birleştirmelerin toplam maliyeti $O(n)$'dir. Dolayısıyla toplam süre her durumda (en iyi, ortalama, en kötü) $\Theta(n \log n)$'dir.
+
+Merge Sort'un temel bedeli bellekten gelir: İki parçayı birleştirmek için orijinal dizi dışında $O(n)$ ek alana (yardımcı diziye) ihtiyaç duyar.
+
+\begin{example}
+Bir dizideki toplam ters düz (inversion) sayısını $O(n \log n)$ sürede nasıl buluruz?
+\end{example}
+
+\begin{proof}[Çözüm]
+Ters düz çiftlerinin konumuna odaklanalım. Tanım gereği $i < j$ iken $A[i] > A[j]$ aranır. Diziyi ikiye böldüğümüzde bir ters düz $(i, j)$ çifti üç yerde bulunabilir:
+\begin{enumerate}
+    \item İkisi de sol yarıdadır ($i, j \le \text{orta}$).
+    \item İkisi de sağ yarıdadır ($i, j > \text{orta}$).
+    \item Biri sol yarıda, diğeri sağ yarıdadır ($i \le \text{orta} < j$).
+\end{enumerate}
+1 ve 2. durumlar rekürsif çağrılarla hesaplanır. Kritik nokta 3. durumdur: Sol ve sağ yarı sıralandıktan sonra birleştirme aşamasında, eğer $R[j] < L[i]$ ise, $L$ sıralı olduğu için $L$'de $i$'den sonra gelen \emph{tüm} elemanlar da $R[j]$'den büyük olmak zorundadır.
+Dolayısıyla $R[j]$'yi birleşik diziye alırken, tek adımda sol dizide kalan eleman sayısı kadar ($|L| - i$) ters düzü sayaç değişkenimize ekleriz.
+
+Böylece diziyi sıralarken aynı zamanda ters düz sayısını ek bir maliyet olmadan $O(n \log n)$ zamanda saymış oluruz.
+\end{proof}
+
+\subsection{Hızlı Sıralama (Quick Sort)}
+
+Quick Sort, Merge Sort'un tersi bir felsefeyle çalışır:
+\begin{itemize}
+    \item Merge Sort: Bölme işi önemsizdir (ortadan ikiye kır), asıl iş birleştirmededir.
+    \item Quick Sort: Asıl iş bölmededir (bölümleme - partitioning), birleştirme işi ise ek işlem gerektirmez.
+\end{itemize}
+
+\textbf{Algoritmanın Mantığı:}
+\begin{enumerate}
+    \item Diziden bir eleman seç: Buna \textbf{pivot} denir.
+    \item Diziyi öyle ikiye ayır ki (bölümleme): Pivotun solundakiler pivottan küçük veya eşit, sağındakiler ise pivottan büyük olsun. Pivot artık dizideki nihai ve doğru yerine oturmuştur.
+    \item Pivotun solunda ve sağında kalan alt dizileri aynı yöntemle sırala.
+\end{enumerate}
+
+Bölümleme için yaygın iki yöntem vardır: Lomuto ve Hoare bölümleme algoritmaları. Burada anlaşılması en duru olan Hoare bölümleme yaklaşımına yakın two pointers yaklaşımını ele alacağız.
+
+Sözde kod ile gösterimi:
+\begin{lstlisting}
+FUNCTION quickSort(A)
+    IF length(A) <= 1 THEN
+        RETURN A
+    END IF
+
+    pivot = A[floor(length(A) / 2)]
+
+    left = [x IN A WHERE x < pivot]
+    middle = [x IN A WHERE x == pivot]
+    right = [x IN A WHERE x > pivot]
+
+    RETURN concatenate(quickSort(left), middle, quickSort(right))
+END FUNCTION\end{lstlisting}
+
+Yukarıdaki kod ek bellek harcar; pratikte yarışmalarda Quick Sort \emph{yerinde} (in-place, $O(1)$ ek bellek ile) yazılır:
+
+\begin{lstlisting}[language=CTemel]
+void swap(int *a, int *b) {
+    int t = *a; *a = *b; *b = t;
+}
+
+int bolumle(int A[], int bas, int son) {
+    int pivot = A[son]; // Son elemani pivot secelim
+    int i = bas - 1;
+    for (int j = bas; j < son; j++) {
+        if (A[j] <= pivot) {
+            i++;
+            swap(&A[i], &A[j]);
+        }
+    }
+    swap(&A[i + 1], &A[son]);
+    return i + 1; // Pivotun nihai indeksi
+}
+
+void quick_sort_yerinde(int A[], int bas, int son) {
+    if (bas < son) {
+        int p = bolumle(A, bas, son);
+        quick_sort_yerinde(A, bas, p - 1);
+        quick_sort_yerinde(A, p + 1, son);
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Quick Sort'un Zayıf Karnı: Kötü Pivot Seçimi}
+
+Pivot her adımda alt diziyi dengeli iki yarıya ($n/2$ ve $n/2$) bölerse:
+\[
+T(n) = 2T(n/2) + O(n) \implies O(n \log n)
+\]
+Ancak son elemanı pivot seçtiğimiz bir uygulamada, dizi zaten sıralıysa (örneğin $[1, 2, 3, 4, 5]$):
+\begin{itemize}
+    \item Pivot $5$ olur; sol taraf $4$ elemanlı, sağ taraf $0$ elemanlı kalır.
+    \item Bir sonraki adımda pivot $4$ olur; sol taraf $3$ elemanlı kalır.
+    \item Problem her adımda yalnızca $1$ küçülür:
+    \[
+    T(n) = T(n-1) + O(n) = O(n^2)
+    \]
+\end{itemize}
+
+Bu durum yarışmalarda test senaryolarını hazırlayanların sıkça başvurduğu bir durumdur. Deterministik olarak hep ilk ya da hep son elemanı pivot seçen bir Quick Sort, özel olarak hazırlanmış sıralı veya tersten sıralı testlerde anında $O(n^2)$ karmaşıklığına geriler ve zaman sınırını aşar.
+
+\textbf{Çözüm: Rastgele Pivot (Randomized Quick Sort)}
+Pivotu sabit bir indis yerine aralıktan rastgele seçilen bir indeks olarak belirlersek:
+\[
+\text{pivot\_indeks} = \text{bas} + \operatorname{rand}() \pmod{\text{son} - \text{bas} + 1}
+\]
+ve bu elemanı son elemanla takas edip algoritmayı çalıştırırsak, hiçbir özel girdi algoritmayı doğrudan $O(n^2)$'ye zorlayamaz. Matematiksel beklenti değeri (expected value) her türlü girdide $O(n \log n)$ düzeyinde kalır.
+
+\section{Karmaşıklık ve Karakteristiklerin Karşılaştırması}
+
+Bir algoritmanın yalnızca asimptotik çalışma zamanını bilmek yarışmalarda doğru tercihi yapmak için tek başına yeterli olmayabilir. Algoritmanın bellek tüketimi, kararlılığı ve pratikteki sabit katsayıları belirleyici rol oynar.
+
+\subsection{Sıralamada Kararlılık (Stability)}
+
+\begin{definition}[Kararlı Sıralama (Stable Sort)]
+Eğer bir sıralama algoritması, sıralama anahtarları birbirine eşit olan elemanların dizideki göreceli giriş sırasını koruyorsa, bu algoritmaya \textbf{kararlı (stable)} sıralama denir.
+
+Biçimsel olarak: $i < j$ ve $A[i] = A[j]$ iken, sıralama sonrasında da $A[i]$'den gelen eleman $A[j]$'den gelen elemanın solunda kalıyorsa algoritma kararlıdır.
+\end{definition}
+
+\begin{example}
+Elimizde öğrencilerin puanları ve isimleri olsun:
+\[
+[(\text{Ali}, 80), (\text{Ayşe}, 90), (\text{Burak}, 80), (\text{Cem}, 70)]
+\]
+Puana göre küçükten büyüğe sıralama yapıldığında:
+\begin{itemize}
+    \item \textbf{Kararlı Sonuç:} $[(\text{Cem}, 70), (\text{Ali}, 80), (\text{Burak}, 80), (\text{Ayşe}, 90)]$
+    \item \textbf{Kararsız Sonuç:} $[(\text{Cem}, 70), (\text{Burak}, 80), (\text{Ali}, 80), (\text{Ayşe}, 90)]$
+\end{itemize}
+Kararlı algoritmada Ali, Burak'tan önce geldiği için sıralama sonrasında da sırasını korumuştur. Çok kriterli sıralamalarda (örneğin önce sınıfa, sonra ada göre) kararlılık vazgeçilmezdir.
+\end{example}
+
+\begin{itemize}
+    \item \textbf{Insertion Sort:} Kararlıdır (eşitlik durumunda eleman diğerinin soluna geçirilmez).
+    \item \textbf{Bubble Sort:} Kararlıdır ($A[j] > A[j+1]$ katı büyüklük kontrolü yapıldığı sürece).
+    \item \textbf{Merge Sort:} Kararlıdır (eşitlik durumunda sol dizideki eleman öncelikli seçilirse).
+    \item \textbf{Quick Sort:} \textbf{Kararsızdır} (uzak mesafeli takaslar eşit elemanların sırasını bozar).
+\end{itemize}
+
+\subsection{Büyük Tablo}
+
+\begin{center}
+\begin{small}\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Algoritma} & \textbf{En İyi} & \textbf{Ortalama} & \textbf{En Kötü} & \textbf{Ek Bellek} & \textbf{Kararlı} \\
+\hline
+Bubble Sort & $O(n)$ & $O(n^2)$ & $O(n^2)$ & $O(1)$ & Evet \\
+Insertion Sort & $O(n)$ & $O(n^2)$ & $O(n^2)$ & $O(1)$ & Evet \\
+Merge Sort & $O(n \log n)$ & $O(n \log n)$ & $O(n \log n)$ & $O(n)$ & Evet \\
+Quick Sort & $O(n \log n)$ & $O(n \log n)$ & $O(n^2)$ & $O(\log n)$ & Hayır \\
+\hline
+\end{tabular}\end{small}
+\end{center}
+
+\subsection{Hangi Sıralama Ne Zaman Kullanılır?}
+
+\begin{enumerate}
+    \item \textbf{$n \le 50$ veya Veri Neredeyse Sıralıysa:} \textbf{Insertion Sort}. İlave bellek istemez, dallanma tahmin edicileri (branch predictor) ve önbellek (cache) dostudur, çok az komut koşturur.
+    \item \textbf{Garantili Süre ve Kararlılık Gerekiyorsa:} \textbf{Merge Sort}. Dış bellek sıralamalarında (verinin RAM'e sığmadığı durumlarda) ve bağlantılı listelerde (linked list) en uygun tercihtir.
+    \item \textbf{Genel Amaçlı ve Bellek Kısıtlıysa:} \textbf{Quick Sort}. Önbellek dostu ardışık erişimi ve küçük sabit katsayıları nedeniyle pratikte Merge Sort'tan 2-3 kat daha hızlı çalışır.
+    \item \textbf{Yarışmalarda Standart Kütüphane Kullanımı:} C++'taki \linebreak[4]\texttt{std::sort}, Quick Sort ile başlar, rekürsiyon derinliği $\approx 2\log n$'i aşarsa en kötü durum $O(n^2)$'den kaçınmak için Heap Sort'a geçer, alt diziler küçüldüğünde ise Insertion Sort'a döner (bu hibrit yaklaşıma \textbf{IntroSort} denir). C++'ta kararlı sıralama gerektiğinde ise \texttt{std::stable\_sort} (temelde Merge Sort türevi) kullanılır.
+\end{enumerate}
+
+\begin{example}
+Elimizde $n$ elemanlı bir dizi var. Bu dizideki en küçük $k$ elemanı sıralı olarak bulmak istiyoruz ($k \ll n$, örneğin $n = 10^6, k = 5$). Dizinin tamamını $O(n \log n)$ sürede sıralamak yerine nasıl bir yol izleyebiliriz?
+\end{example}
+
+\begin{proof}[Çözüm]
+Tüm diziyi sıralamak gereksiz bir emektir; çünkü $k$'nın ötesindeki elemanların kendi arasındaki sırası bizi ilgilendirmemektedir.
+
+Seçenek 1: Bubble Sort mantığıyla yalnızca $k$ geçiş yaparız. Her geçişte bir minimum eleman başa çekilir. Karmaşıklık $O(k \cdot n)$ olur. $k=5$ için bu süre $5n$'dir; $n \log n$'den ($20n$) belirgin biçimde daha hızlıdır.
+
+Seçenek 2: Quick Sort'un bölümleme adımını tek taraflı çalıştırırız (QuickSelect). Pivot indeksi $p$ olsun:
+\begin{itemize}
+    \item $p = k$ ise ilk $k$ eleman bulunmuştur, bu $k$ elemanı kendi içinde sıralarız ($O(k \log k)$).
+    \item $p > k$ ise yalnızca sol tarafa dallanırız.
+    \item $p < k$ ise yalnızca sağ tarafa dallanırız.
+\end{itemize}
+QuickSelect ortalama $n + n/2 + n/4 + \dots = O(n)$ sürede ilk $k$ elemanı seçer. Üzerine $k$ elemanın sıralanması $O(k \log k)$ eklenirse toplam süre $O(n + k \log k)$ olur.
+\end{proof}
+
+\begin{example}
+Yalnızca $0, 1$ ve $2$ değerlerinden oluşan $n$ elemanlı bir diziyi tek bir geçişte, ek bellek kullanmadan ($O(1)$) nasıl sıralarsınız? (Hollanda Ulusal Bayrağı Problemi, Edsger W. Dijkstra)
+
+Örnek girdi: $A = [2, 0, 2, 1, 1, 0]$
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölüm 22'de ele aldığımız two pointers tekniğini burada üç işaretçiye genişletiriz. Dizide yalnızca üç farklı değer vardır. Sıralı halde tüm $0$'lar en solda, tüm $1$'ler ortada, tüm $2$'ler ise en sağda toplanmalıdır. Bu dağılım üç bölgeyi yöneten şu yapıyı gerektirir:
+\begin{itemize}
+    \item $0 \dots \text{sol}-1$: kesinlikle $0$'ların bölgesi.
+    \item $\text{sol} \dots \text{orta}-1$: kesinlikle $1$'lerin bölgesi.
+    \item $\text{orta} \dots \text{sag}$: henüz incelenmemiş elemanlar.
+    \item $\text{sag}+1 \dots n-1$: kesinlikle $2$'lerin bölgesi.
+\end{itemize}
+
+Başlangıçta $\text{sol} = 0$, $\text{orta} = 0$, $\text{sag} = n - 1$.
+$\text{orta} \le \text{sag}$ olduğu sürece $A[\text{orta}]$'ya bakarız:
+\begin{enumerate}
+    \item $A[\text{orta}] == 0$: Bu eleman sol bölgeye aittir. $A[\text{orta}]$ ile $A[\text{sol}]$ takas edilir; $\text{sol}++$, $\text{orta}++$.
+    \item $A[\text{orta}] == 1$: Zaten ait olduğu orta bölgededir; sadece $\text{orta}++$.
+    \item $A[\text{orta}] == 2$: Bu eleman sağ bölgeye aittir. $A[\text{orta}]$ ile $A[\text{sag}]$ takas edilir; $\text{sag}--$. Dikkat: $\text{orta}$ ilerlemez, çünkü sağdan takasla gelen yeni elemanın ne olduğunu henüz bilmiyoruz, bir sonraki adımda incelenmelidir.
+\end{enumerate}
+
+Her adımda incelenmemiş bölgenin uzunluğu ($\text{sag} - \text{orta} + 1$) kesinlikle $1$ azalır. Dolayısıyla algoritma tam olarak $O(n)$ adımda biter, hiç karşılaştırma operatörü kullanmaz ve ek bellek harcamaz.
+\end{proof}
+
+Sıralama algoritmaları, yalnızca veriyi dizmekle kalmaz; ters düz sayıları, böl-ve-fethet tekniği, değişmez kavramı ve bilgi kuramı sınırları gibi bilgisayar biliminin temel analitik araçlarını bünyesinde barındırır. Sıradaki bölümlerde bu sıralı yapının üzerine inşa edeceğimiz arama ve veri yapısı tekniklerine zemin oluşturacaktır.

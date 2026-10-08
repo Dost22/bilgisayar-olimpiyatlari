@@ -1,0 +1,633 @@
+\chapter[Asal Sayılar · \textit{Temel}]{Asal Sayılar}
+\chaptermark{Asal Sayılar}
+
+Tam sayılar dünyasını bir kimya laboratuvarına benzetirsek asal sayılar, bu evrenin bölünemez en temel ``kimyasal elementleridir''. Su molekülünü hidrojen ve oksijene, tuzu sodyum ve klora ayrıştırabildiğimiz gibi $60$ sayısını da bileşenlerine ayırabiliriz: $60 = 2 \cdot 2 \cdot 3 \cdot 5$. Ancak $2$, $3$ ve $5$ sayılarına ulaştığımızda artık daha küçük çarpanlara inemeyiz. Sayılar teorisindeki teoremler, algoritmik yapılar ve modern kriptografik protokoller, bu temel yapı taşlarının dağılımına ve özelliklerine dayanır.
+
+Bölüm 11'de bölünebilme bağıntısını, kalan kavramını ve temel aritmetik özelliklerini incelemiştik. Şimdi bu yapının temel taşı olan asal sayıları, aralarında asallık ilişkisini ve her tam sayıya benzersiz bir çarpan kimliği kazandıran Aritmetiğin Temel Teoremi'ni ayrıntılarıyla ele alacağız.
+
+\section{Asal Sayılar ve Eratosthenes Kalburu}
+
+Bir problemi incelerken eldeki sayının daha küçük çarpanlara ayrılıp ayrılamayacağını belirlemek çoğu zaman ilk adımdır. Bir sayının asallığını nasıl test ederiz? Tek bir sayının asallığı ile belirli bir aralıktaki binlerce sayının asallığını denetlemek arasında algoritmik açıdan nasıl bir fark vardır? Bu sorular, bizi antik döneme uzanan klasik bir algoritmaya götürür.
+
+\subsection{Asal Sayı Tanımı ve Sezgisel Yaklaşım}
+
+$1$'den büyük her tam sayı en az iki pozitif bölene sahiptir: $1$ ve kendisi. Bir sayının bu zorunlu iki bölen dışında hiçbir pozitif böleni yoksa, o sayı çarpanlarına daha fazla ayrılamaz.
+
+\begin{definition}[Asal Sayı ve Bileşik Sayı]
+$1$'den büyük bir $p$ tamsayısının pozitif bölenleri yalnızca $1$ ve $p$ ise, $p$'ye bir \textbf{asal sayı} denir. $1$'den büyük olup asal olmayan tamsayılara ise \textbf{bileşik sayı} (kompozit sayı) adı verilir.
+\end{definition}
+
+\begin{example}
+İlk birkaç asal sayıyı yazalım:
+\[ 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, \dots \]
+Burada $2$ sayısı özel bir yere sahiptir: hem en küçük asal sayıdır hem de \textbf{çift olan yegâne asal sayıdır}. $2$'den büyük tüm çift sayılar $2$'ye bölünebildiğinden bileşik sayıdır.
+\end{example}
+
+\textbf{En sık yapılan hata:} $1$ sayısını asal kabul etmek sık rastlanan bir yanılgıdır. $1$ sayısı ne asaldır ne de bileşiktir; bir ``birim''dir (unit). $1$'in asal kabul edilmemesinin en temel gerekçesi, birazdan göreceğimiz \emph{Aritmetiğin Temel Teoremi}'nin tekliğini korumaktır. Eğer $1$ asal olsaydı, örneğin $6$ sayısı $2 \cdot 3$ olarak da, $1 \cdot 2 \cdot 3$ veya $1^5 \cdot 2 \cdot 3$ olarak da asal çarpanlarına ayrılabilirdi ve çarpanlara ayırmanın tekliği bozulurdu.
+
+\subsection{Bir Sayının Asallığını Test Etme: Deneme Bölmesi}
+
+$n = 101$ sayısının asal olup olmadığını nasıl anlarız? En kaba yaklaşım, $2$'den $100$'e kadar olan tüm tam sayıları tek tek deneyip $101$'i bölüp bölmediğine bakmaktır. Ancak bu işlem büyük sayılar için oldukça yavaştır.
+
+Bir $n$ sayısı bileşik ise, $1 < a \le b < n$ olmak üzere $n = a \cdot b$ şeklinde iki tam sayının çarpımı olarak yazılabilir. Şimdi şu gözlemi yapalım: $a$ ve $b$ çarpanlarının her ikisi birden $\sqrt{n}$'den büyük olabilir mi?
+Eğer $a > \sqrt{n}$ ve $b > \sqrt{n}$ olsaydı:
+\[ a \cdot b > \sqrt{n} \cdot \sqrt{n} = n \]
+elde edilirdi ki bu bir çelişkidir ($a \cdot b = n$ idi). Dolayısıyla çarpanlardan en az biri $\sqrt{n}$ değerine eşit ya da bundan küçük olmak zorundadır.
+
+\begin{theorem}[Karekök Sınırı Teoremi]
+$n > 1$ bir bileşik sayı ise, $n$'nin $1 < p \le \sqrt{n}$ koşulunu sağlayan en az bir $p$ asal böleni vardır.
+\end{theorem}
+
+\begin{proof}
+$n$ bileşik olduğundan $n = a \cdot b$ olacak şekilde $1 < a \le b < n$ tamsayıları vardır. Yukarıdaki eşitsizlikten ötürü $a \le \sqrt{n}$ olmak zorundadır. Aritmetiğin Temel Teoremi gereği (veya $1$'den büyük her sayının en küçük böleninin asal olması ilkesinden), $a$'nın en az bir $p$ asal böleni vardır. $p \mid a$ ve $a \mid n$ olduğundan $p \mid n$ olur. Ayrıca $p \le a \le \sqrt{n}$ sağlandığından, $n$'nin $\sqrt{n}$'den küçük ya da eşit bir $p$ asal böleni mutlaka mevcuttur.
+\end{proof}
+
+Bu teorem hesaplama açısından önemli bir hızlanma sağlar: Bir sayının asal olup olmadığını sınamak için $n-1$'e kadar değil, yalnızca $\lfloor\sqrt{n}\rfloor$'e kadar olan asal sayıları denemek yeterlidir.
+
+\begin{example}
+$n = 101$ sayısının asal olup olmadığını inceleyelim.
+\end{example}
+\begin{proof}[Çözüm]
+$\sqrt{101} \approx 10{,}049$ olduğundan, yalnızca $10$'a kadar olan asalları kontrol etmemiz yeterlidir: Bu asallar $2, 3, 5, 7$'dir.
+\begin{itemize}
+    \item $101$ çift değildir, $2 \nmid 101$.
+    \item Rakamlar toplamı $1+0+1 = 2$ olup $3$'ün katı değildir, $3 \nmid 101$.
+    \item Son basamağı $0$ veya $5$ değildir, $5 \nmid 101$.
+    \item $101 = 7 \cdot 14 + 3$ olduğundan $7 \nmid 101$.
+\end{itemize}
+$\sqrt{101}$'e kadar hiçbir asal $101$'i bölmediğine göre $101$ kesinlikle asaldır. Yalnızca 4 bölme işlemi ile sonuca ulaştık.
+\end{proof}
+
+Aşağıdaki algoritma tek bir sayının asallığını $O(\sqrt{n})$ zaman karmaşıklığında denetler:
+
+\begin{lstlisting}
+FUNCTION isPrime(n)
+    IF n <= 1 THEN
+        RETURN False
+    END IF
+    IF n <= 3 THEN
+        RETURN True
+    END IF
+    IF n MOD 2 = 0 OR n MOD 3 = 0 THEN
+        RETURN False
+    END IF
+
+    SET i = 5
+    WHILE i * i <= n DO
+        IF n MOD i = 0 OR n MOD (i + 2) = 0 THEN
+            RETURN False
+        END IF
+        i = i + 6
+    END WHILE
+
+    RETURN True
+END FUNCTION\end{lstlisting}
+
+\subsection{Aralıktaki Asalları Bulma: Eratosthenes Kalburu}
+
+Tek bir sayının değil de $1$'den $N$'e kadar olan tüm sayıların asallığına ihtiyaç duyuluyorsa her sayı için ayrı ayrı deneme bölmesi yapmak $O(N\sqrt{N})$ zaman alır. $N = 10^7$ gibi büyük değerler için bu yaklaşım verimsizdir.
+
+Kirenesli Eratosthenes, sayıları tek tek test etmek yerine tersine bir yöntem kurdu: Sayıları bir listeye yazıp, asal olduğu bilinen sayıların katlarını listeden eleyerek geriye yalnızca asalları bırakmak.
+
+\textbf{Adım Adım Kalbur Mekanizması ($N = 30$ için):}
+\begin{enumerate}
+    \item $2$'den $30$'a kadar tüm sayıları yazalım.
+    \item Karşılaştığımız ilk silinmemiş sayı $2$'dir; $2$ asaldır. $2$'nin $2$'den büyük tüm katlarını ($4, 6, 8, \dots, 30$) çizelim.
+    \item Sıradaki silinmemiş sayı $3$'tür; $3$ asaldır. $3$'ün katlarını çizelim ($6, 9, 12, \dots$). Burada $6$ sayısı $2$'nin katı olarak zaten çizilmiştir; bu nedenle çizmeye doğrudan $3^2 = 9$'dan başlayabiliriz.
+    \item Sıradaki silinmemiş sayı $5$'tir; $5$ asaldır. $5^2 = 25 \le 30$ olduğundan $25$'i de çizeriz.
+    \item Bir sonraki sayı $7$'dir. $7^2 = 49 > 30$ olduğundan işlem tamamlanır. Silinmeden kalan tüm sayılar ($2, 3, 5, 7, 11, 13, 17, 19, 23, 29$) asaldır.
+\end{enumerate}
+
+\begin{theorem}[Eratosthenes Kalburunun Karmaşıklığı]
+$N$ sayısına kadar olan asal sayıları Eratosthenes kalburu ile bulmanın zaman karmaşıklığı $O(N \log \log N)$'dir.
+\end{theorem}
+\begin{proof}[Sezgi ve Taslak]
+Her $p$ asalı için yapılan eleme işlemi sayısı yaklaşık $\frac{N}{p}$ kadardır. Dolayısıyla toplam işlem sayısı:
+\[ \sum_{p \le N, p \text{ asal}} \frac{N}{p} = N \sum_{p \le N} \frac{1}{p} \]
+Mertens'in ikinci teoremi uyarınca, asal sayıların çarpmaya göre terslerinin toplamı $\sum_{p \le N} \frac{1}{p} = \ln(\ln N) + O(1)$ şeklinde büyür. Bu nedenle kalburun karmaşıklığı $O(N \log \log N)$ olur. Bu süre, pratikte $O(N)$ doğrusal zamana oldukça yakındır.
+\end{proof}
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+#include <stdbool.h>
+#define MAXN 10000000
+
+bool asal[MAXN + 1];
+
+void eratosthenes_kalburu(int n) {
+    for (int i = 2; i <= n; i++)
+        asal[i] = true;
+        
+    for (int p = 2; p * p <= n; p++) {
+        if (asal[p]) {
+            // p'nin katlarini p*p'den baslayarak eliyoruz
+            for (int i = p * p; i <= n; i += p)
+                asal[i] = false;
+        }
+    }
+}
+\end{lstlisting}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \foreach \n in {2,3,5,7,11,13,17,19,23,29,31} {
+    \pgfmathtruncatemacro{\k}{\n-2}
+    \pgfmathtruncatemacro{\r}{div(\k,6)}
+    \pgfmathtruncatemacro{\c}{mod(\k,6)}
+    \node[kutu, minimum size=7.5mm] at (\c*0.9, -\r*0.9) {\n};
+  }
+  \foreach \n in {4,6,8,9,10,12,14,15,16,18,20,21,22,24,25,26,27,28,30} {
+    \pgfmathtruncatemacro{\k}{\n-2}
+    \pgfmathtruncatemacro{\r}{div(\k,6)}
+    \pgfmathtruncatemacro{\c}{mod(\k,6)}
+    \node[kutu, minimum size=7.5mm, fill=black!6, text=black!45] at (\c*0.9, -\r*0.9) {\n};
+  }
+\end{tikzpicture}
+\caption{Eratosthenes kalburu ($2$--$31$): 2, 3 ve 5'in katları elendikçe griye
+döner; kalan siyah sayılar asaldır.}
+\end{figure}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+$p$, $p+2$ ve $p+4$ sayılarının üçünün birden asal olmasını sağlayan tüm $p$ asal sayılarını bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Küçük asal değerleri deneyerek bir örüntü arayalım:
+\begin{itemize}
+    \item $p = 2 \implies 2, 4, 6$ ($4$ ve $6$ asal değil).
+    \item $p = 3 \implies 3, 5, 7$ (Üçü de asaldır; bir çözüm bulundu).
+    \item $p = 5 \implies 5, 7, 9$ ($9 = 3 \cdot 3$ asal değil).
+    \item $p = 7 \implies 7, 9, 11$ ($9$ asal değil).
+\end{itemize}
+Her denemede sayılardan biri $3$'ün katı çıkmaktadır. Ardışık tek sayılar, Bölüm 14'te ayrıntılandıracağımız modüler aritmetik yaklaşımıyla $3$ modunda incelenmelidir.
+
+Herhangi bir $p$ tam sayısının $3$'e bölümünden kalan $0, 1$ veya $2$ olabilir.
+\begin{enumerate}
+    \item $p \equiv 0 \pmod 3$: $p$ bir asal sayı olduğundan ve $3$'e bölündüğünden zorunlu olarak $p = 3$ olmalıdır. Bu durumda $p+2 = 5$ ve $p+4 = 7$ olup her üç sayı da asaldır.
+    \item $p \equiv 1 \pmod 3$: Bu durumda $p+2 \equiv 1 + 2 \equiv 0 \pmod 3$ olur. $p > 1$ olduğundan $p+2 > 3$'tür ve $3$'e bölünen $3$'ten büyük bir sayı asal olamaz ($p+2$ bileşiktir).
+    \item $p \equiv 2 \pmod 3$: Bu durumda $p+4 \equiv 2 + 4 \equiv 0 \pmod 3$ olur. Benzer şekilde $p+4 > 3$ olduğundan $p+4$ bileşiktir.
+\end{enumerate}
+Sonuç olarak koşulu sağlayan tek asal sayı $p = 3$'tür.
+\end{proof}
+
+\begin{example}
+$n > 1$ bir tam sayı olmak üzere, $n^4 + 4$ sayısının asal olamayacağını kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bir ifadenin asal olmadığını göstermek için onu $1$'den büyük iki tam sayının çarpımı şeklinde yazabiliriz. $n^4 + 4$ ifadesi Sophie Germain özdeşliğiyle tam kareye tamamlanabilir. İfadeye $4n^2$ terimini ekleyip çıkaralım:
+\begin{align*}
+n^4 + 4 &= (n^4 + 4n^2 + 4) - 4n^2 \\
+        &= (n^2 + 2)^2 - (2n)^2
+\end{align*}
+İki kare farkı özdeşliğini ($A^2 - B^2 = (A-B)(A+B)$) uygularsak:
+\[ n^4 + 4 = (n^2 - 2n + 2)(n^2 + 2n + 2) \]
+çarpanlarını elde ederiz. Bu çarpanların büyüklüklerini inceleyelim:
+\[ n^2 - 2n + 2 = (n-1)^2 + 1 \]
+$n > 1$ olduğundan $(n-1)^2 \ge 1$ ve dolayısıyla $(n-1)^2 + 1 \ge 2 > 1$'dir.
+Diğer çarpan da açıkça $n^2 + 2n + 2 > 2$'dir.
+$n^4 + 4$ sayısı, $1$'den büyük iki tam sayının çarpımı olarak yazılabildiğinden hiçbir $n > 1$ tam sayısı için asal olamaz.
+\end{proof}
+
+\begin{example}[Öklid Teoremi]
+Asal sayıların sonsuz çoklukta olduğunu kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölüm 2'de gördüğümüz çelişkiyle ispat yöntemini kullanalım. Asal sayıların sonlu sayıda, tam olarak $k$ tane olduğunu varsayalım. Bu asalları sıralayalım:
+\[ p_1 = 2, p_2 = 3, p_3 = 5, \dots, p_k \]
+Şimdi tüm bu asalların çarpımının $1$ fazlası olan bir $N$ sayısı tanımlayalım:
+\[ N = (p_1 \cdot p_2 \dots p_k) + 1 \]
+$N > 1$ olduğundan $N$'nin en az bir asal böleni bulunmalıdır. Listemiz tüm asalları içerdiğinden bu bölen, listedeki asallardan biri (örneğin $p_i$, $1 \le i \le k$) olmak zorundadır.
+O halde $p_i \mid N$ olur.
+
+Diğer taraftan $p_i$ sayısı $p_1 \cdot p_2 \dots p_k$ çarpımının çarpanlarından biridir:
+\[ p_i \mid (p_1 \cdot p_2 \dots p_k) \]
+Bölünebilmenin temel kuralı gereği, bir sayı iki tam sayıyı da bölüyorsa farklarını da böler:
+\[ p_i \mid \Big( N - (p_1 \cdot p_2 \dots p_k) \Big) \implies p_i \mid 1 \]
+Fakat $1$'i bölen hiçbir asal sayı yoktur ($p_i \ge 2$). Bu çelişki, asal sayıların sonlu olduğu varsayımının yanlış olduğunu gösterir; asal sayılar kümesi sonsuzdur.
+\end{proof}
+
+\section{Aralarında Asal Sayılar}
+
+İki sayının $1$ dışında ortak bir asal çarpana sahip olmaması, sayılar teorisinin en temel kavramları arasındadır. Kesirlerin en yalın haline sadeleştirilmesinden Bölüm 14'te göreceğimiz Çin Kalan Teoremi'ne kadar pek çok yapı bu özelliğe dayanır.
+
+\subsection{Tanım ve Temel Özellikler}
+
+\begin{definition}[Aralarında Asal]
+$a$ ve $b$ sıfırdan farklı iki tamsayı olsun. Eğer $a$ ve $b$'nin $1$'den büyük hiçbir pozitif ortak böleni yoksa, yani en büyük ortak bölenleri $\gcd(a, b) = 1$ ise, $a$ ve $b$ sayılarına \textbf{aralarında asal} (coprime veya relatively prime) denir.
+\end{definition}
+
+\textbf{En sık yapılan hata:} Aralarında asal olan sayıların kendilerinin de asal olması gerektiği yanılgısıdır. Örneğin:
+\[ a = 8 = 2^3 \quad \text{ve} \quad b = 9 = 3^2 \]
+Her iki sayı da bileşiktir; ancak pozitif ortak bölenleri yalnızca $1$ olduğundan $\gcd(8, 9) = 1$'dir, yani $8$ ile $9$ aralarında asaldır.
+
+\subsection{İkili ve Kümesel Aralarında Asallık Ayrımı}
+
+Üç veya daha fazla sayı söz konusu olduğunda iki farklı aralarında asallık düzeyi ayırt edilmelidir:
+\begin{enumerate}
+    \item \textbf{Birlikte (kümesel) aralarında asal:} $\gcd(a_1, a_2, \dots, a_k) = 1$.
+    \item \textbf{İkişer ikişer (pairwise) aralarında asal:} Her $i \ne j$ için $\gcd(a_i, a_j) = 1$.
+\end{enumerate}
+
+\begin{example}
+$6, 10, 15$ sayılarını ele alalım:
+\[ \gcd(6, 10, 15) = 1 \]
+Dolayısıyla bu üç sayı birlikte aralarında asaldır. Fakat ikili ortak bölenlere baktığımızda:
+\[ \gcd(6, 10) = 2 \ne 1, \quad \gcd(6, 15) = 3 \ne 1, \quad \gcd(10, 15) = 5 \ne 1 \]
+Bu sayılar ikişer ikişer aralarında asal \textbf{değildir}. İkişer ikişer aralarında asallık, birlikte aralarında asallığa kıyasla daha güçlü bir koşuldur.
+\end{example}
+
+\subsection{Temel Teoremler}
+
+Aralarında asallık analizlerinde Öklid Lemması ve türevleri temel araçlardır. EBOB hesaplarına ve Bölüm 13'te ele alacağımız Öklid algoritmasına zemin hazırlayan bu sonuçları netleştirelim.
+
+\begin{theorem}[Öklid Lemması]
+$a, b, c$ tamsayılar olsun. Eğer $a \mid bc$ ve $\gcd(a, b) = 1$ ise, o halde $a \mid c$ olmak zorundadır.
+\end{theorem}
+\begin{proof}[Sezgi]
+$a$ sayısı $bc$ çarpımını bölmektedir; yani çarpım $a$'nın tüm asal çarpanlarını içerir. Ancak $\gcd(a, b) = 1$ olduğundan $a$, bu çarpanların hiçbirini $b$'den alamaz. Dolayısıyla $a$'nın gerektirdiği tüm çarpanlar $c$'de bulunmalıdır; yani $a \mid c$.
+\end{proof}
+
+\begin{theorem}[Kuvvetlerin Aralarında Asallığı]
+$a$ ve $b$ pozitif tamsayılar olmak üzere $\gcd(a, b) = 1$ ise:
+\begin{enumerate}
+    \item Her $m, n \ge 1$ için $\gcd(a^m, b^n) = 1$'dir.
+    \item Eğer $a \cdot b = c^k$ olacak şekilde bir $c$ tamsayısı ve $k \ge 1$ pozitif tamsayısı varsa, $a$ ve $b$ sayılarının her biri birer tam $k$. kuvvet olmak zorundadır. Yani $a = x^k$ ve $b = y^k$ olacak biçimde $x, y$ tamsayıları vardır.
+\end{enumerate}
+\end{theorem}
+
+Bu ikinci özellik, tam sayı katsayılı denklemlerde çarpanları ayırırken sıkça kullanılır. Çarpımları bir tam kare (veya tam küp) olan aralarında asal iki pozitif tam sayı varsa, her bir çarpan da ayrı ayrı bir tam kare (veya tam küp) olmak zorundadır.
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Her $n$ pozitif tamsayısı için $n$ ile $n+1$ sayılarının aralarında asal olduğunu kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+İki sayının ortak bölenini ararken farklarını incelemek böleni sınırlandırmanın pratik bir yoludur.
+
+$d = \gcd(n, n+1)$ olsun.
+En büyük ortak bölen tanımı gereği $d \mid n$ ve $d \mid (n+1)$ olmalıdır.
+Bölüm 11'den bildiğimiz üzere $d$, bu sayıların doğrusal kombinasyonlarını da böler:
+\[ d \mid \big( (n+1) - n \big) \implies d \mid 1 \]
+Pozitif bir bölen olan $d$, $1$'i bölüyorsa $d = 1$ olmak zorundadır.
+Demek ki ardışık iki pozitif tam sayı daima aralarında asaldır.
+\end{proof}
+
+\begin{example}[Uluslararası Matematik Olimpiyatı 1959, Problem 1]
+Her $n$ pozitif tamsayısı için
+\[ \frac{21n + 4}{14n + 3} \]
+kesrinin sadeleştirilemez olduğunu gösteriniz.
+\end{example}
+
+Bu klasik problem, pay ve paydası aralarında asal olan kesirlerin sadeleşemeyeceği
+gözlemine dayanır. Soruyu, Öklid algoritmasını kurduktan sonra Bölüm 13'te tam
+olarak ele alacağız.
+
+\begin{example}
+$\gcd(a, b) = 1$ ise $\gcd(a+b, a \cdot b) = 1$ olduğunu kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Karşıt varsayımla başlayalım: Ortak bir $p$ asal böleni bulunduğunu varsayıp bunun $\gcd(a, b) = 1$ kabulüyle çeliştiğini gösterelim.
+
+Varsayalım ki $\gcd(a+b, ab) > 1$ olsun. Bu durumda $a+b$ ve $ab$ sayılarını bölen bir $p$ asal sayısı vardır:
+\[ p \mid (a+b) \quad \text{ve} \quad p \mid ab \]
+$p$ bir asal sayı ve $p \mid ab$ olduğundan, Öklid Lemması uyarınca $p \mid a$ veya $p \mid b$ olmalıdır.
+\begin{itemize}
+    \item Eğer $p \mid a$ ise: $p \mid (a+b)$ olduğundan $b = (a+b) - a$ sayısını da böler; yani $p \mid b$ olur.
+    \item Eğer $p \mid b$ ise: benzer biçimde $a = (a+b) - b$ olduğundan $p \mid a$ olur.
+\end{itemize}
+Her iki durumda da $p \mid a$ ve $p \mid b$ elde edilir. Bu ise $p$'nin $a$ ve $b$'nin bir ortak böleni olduğu anlamına gelir:
+\[ p \le \gcd(a, b) = 1 \]
+Bu sonuç $p \ge 2$ asallığı ile çelişir. O halde $\gcd(a+b, ab) = 1$ olmak zorundadır.
+\end{proof}
+
+\begin{example}
+$\{1, 2, 3, \dots, 2n\}$ kümesinden rastgele $n+1$ tane tamsayı seçiliyor. Seçilen bu sayılar arasında en az iki tanesinin aralarında asal olduğunu kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Aralarında asal en temel sayı çiftleri ardışık tam sayılardır ($\gcd(k, k+1) = 1$). Dolayısıyla seçilen sayılar arasında ardışık iki sayının varlığını garanti etmek yeterlidir. Bu yapı Bölüm 7'de incelediğimiz Güvercin Yuvası İlkesi ile doğrudan kurulabilir.
+
+Kümeyi ardışık elemanlardan oluşan $n$ ayrık ikiliye ayıralım:
+\[ Y_1 = \{1, 2\}, \quad Y_2 = \{3, 4\}, \quad Y_3 = \{5, 6\}, \quad \dots, \quad Y_n = \{2n-1, 2n\} \]
+Toplam $n$ kümemiz (yuva) vardır.
+Bu yuvalardan $n+1$ eleman (güvercin) seçildiğinde Güvercin Yuvası İlkesi gereği en az iki eleman aynı ikiliye ait olmak zorundadır.
+Aynı ikilideki sayılar $\{2k-1, 2k\}$ biçiminde ardışık iki tam sayıdır ve $\gcd(2k-1, 2k) = 1$'dir. Böylece seçilen sayılar arasında mutlaka aralarında asal en az iki sayı bulunur.
+\end{proof}
+
+\section{Aritmetiğin Temel Teoremi ve Asal Çarpanlara Ayırma}
+
+Asal sayıların önemi, tüm pozitif tam sayılar kümesini benzersiz biçimde inşa etme gücünden gelir.
+
+\subsection{Aritmetiğin Temel Teoremi}
+
+\begin{theorem}[Aritmetiğin Temel Teoremi]
+$1$'den büyük her $n$ pozitif tamsayısı, asal sayıların bir çarpımı olarak yazılabilir. Dahası, çarpanların yazılış sırası dikkate alınmazsa, bu gösterim \textbf{benzersizdir (tektir)}.
+\end{theorem}
+
+\begin{proof}[İspat Taslağı]
+Teorem iki iddiadan oluşur: Varlık ve Teklik.
+\begin{enumerate}
+    \item \textbf{Varlık (Her sayı asal çarpımı olarak yazılabilir):}
+    Kuvvetli tümevarım uygulayalım. $n = 2$ bir asaldır, dolayısıyla tek bir asalın çarpımıdır (doğru).
+    $2 \le k < n$ koşulunu sağlayan tüm tamsayıların asal çarpımı olarak yazılabildiğini varsayalım.
+    $n$ sayısı asal ise iddia doğrudur. Eğer $n$ bileşik ise, $1 < a, b < n$ olmak üzere $n = a \cdot b$ yazılabilir.
+    Tümevarım varsayımı gereği hem $a$ hem de $b$ asal sayıların çarpımı olarak yazılabilir. Bu iki çarpımın yan yana getirilmesiyle $n$ de asalların çarpımı olarak ifade edilmiş olur.
+    
+    \item \textbf{Teklik (Bu gösterim sırası hariç tektir):}
+    Tersini varsayalım; gösterimi tek olmayan en az bir tamsayı bulunsun. Pozitif tamsayıların iyi sıralılık ilkesi gereği, iki farklı asal çarpan gösterimine sahip en küçük sayı $n$ olsun:
+    \[ n = p_1 p_2 \dots p_r = q_1 q_2 \dots q_s \]
+    Burada $p_i$ ve $q_j$ asal sayılardır. $p_1 \mid n$ olduğundan $p_1 \mid (q_1 q_2 \dots q_s)$ olur. Öklid lemması gereği $p_1$, $q$ asallarından en az birini bölmek zorundadır. Sıralamayı düzenleyerek $p_1 \mid q_1$ olduğunu kabul edelim.
+    $p_1$ ve $q_1$ birer asal sayı olduğundan bu ancak $p_1 = q_1$ olmasıyla mümkündür!
+    Her iki tarafı bu ortak asala bölersek:
+    \[ \frac{n}{p_1} = p_2 \dots p_r = q_2 \dots q_s \]
+    elde edilir. Fakat $\frac{n}{p_1} < n$ sayısı da iki farklı asal çarpan açılımına sahip olur. Bu durum $n$'nin ``en küçük'' böylesi sayı olması kabulümüzle çelişir. Dolayısıyla çarpanlara ayrılış tektir.
+\end{enumerate}
+\end{proof}
+
+\subsection{Kanonik Asal Çarpanlar Açılımı}
+
+Her $n > 1$ tam sayısı, aynı asallar kuvvet olarak toplanarak tek biçimde ifade edilir:
+\[ n = p_1^{\alpha_1} p_2^{\alpha_2} \dots p_k^{\alpha_k} \]
+Burada $p_1 < p_2 < \dots < p_k$ farklı asal sayılar, $\alpha_i \ge 1$ pozitif tam sayı üslerdir. Bu gösterime $n$'nin \textbf{kanonik asal açılımı} denir.
+
+\begin{example}
+$360$ sayısının kanonik açılımı:
+\[ 360 = 2^3 \cdot 3^2 \cdot 5^1 \]
+\end{example}
+
+\subsection{Bölen Sayısı Formülü: $d(n)$}
+
+$n$ sayısının pozitif bölenlerini inceleyelim. Bir $d$ tam sayısının $n$'yi bölebilmesi için, $d$'nin asal çarpanlarının $n$'nin asal çarpanları arasından seçilmesi ve üslerinin $n$'dekileri aşmaması gerekir:
+\[ d = p_1^{\beta_1} p_2^{\beta_2} \dots p_k^{\beta_k}, \quad 0 \le \beta_i \le \alpha_i \]
+
+\textbf{Kombinatorik Çıkarım:}
+Her bir $\beta_i$ üssünü belirlemek bağımsız birer seçim adımıdır:
+\begin{itemize}
+    \item $\beta_1$ için $\{0, 1, 2, \dots, \alpha_1\}$ olmak üzere $\alpha_1 + 1$ farklı seçenek vardır.
+    \item $\beta_2$ için $\{0, 1, 2, \dots, \alpha_2\}$ olmak üzere $\alpha_2 + 1$ farklı seçenek vardır.
+    \item $\dots$
+    \item $\beta_k$ için $\{0, 1, 2, \dots, \alpha_k\}$ olmak üzere $\alpha_k + 1$ farklı seçenek vardır.
+\end{itemize}
+Bölüm 3'te gördüğümüz çarpma kuralı uyarınca bu seçenekleri çarparız.
+
+\begin{theorem}[Pozitif Bölen Sayısı Formülü]
+$n = p_1^{\alpha_1} p_2^{\alpha_2} \dots p_k^{\alpha_k}$ kanonik açılımına sahip bir $n$ tamsayısının pozitif bölen sayısı $d(n)$ (veya $\tau(n)$):
+\[ d(n) = (\alpha_1 + 1)(\alpha_2 + 1)\dots(\alpha_k + 1) \]
+formülü ile hesaplanır.
+\end{theorem}
+
+\begin{example}
+$360 = 2^3 \cdot 3^2 \cdot 5^1$ sayısının pozitif bölen sayısını bulalım:
+\[ d(360) = (3 + 1)(2 + 1)(1 + 1) = 4 \cdot 3 \cdot 2 = 24 \]
+$360$'ın tam olarak $24$ farklı pozitif böleni vardır.
+\end{example}
+
+\subsection{Pozitif Bölenlerin Toplamı: $\sigma(n)$}
+
+Tüm pozitif bölenlerin toplamı $\sigma(n)$ ile gösterilir. Bu toplam, şu çarpımın parantezlerinin açılmış halidir:
+\[ \sigma(n) = \big(1 + p_1 + p_1^2 + \dots + p_1^{\alpha_1}\big) \big(1 + p_2 + p_2^2 + \dots + p_2^{\alpha_2}\big) \dots \big(1 + p_k + \dots + p_k^{\alpha_k}\big) \]
+Geometrik dizi toplam formülü ($1 + p + \dots + p^\alpha = \frac{p^{\alpha+1} - 1}{p - 1}$) kullanılırsa:
+\begin{theorem}[Bölenler Toplamı Formülü]
+\[ \sigma(n) = \prod_{i=1}^k \frac{p_i^{\alpha_i + 1} - 1}{p_i - 1} \]
+\end{theorem}
+
+\subsection{Pozitif Bölenlerin Çarpımı}
+
+$n$'nin tüm pozitif bölenlerini küçükten büyüğe $d_1, d_2, \dots, d_m$ olarak sıralayalım ($m = d(n)$).
+Her $d$ böleni için $\frac{n}{d}$ de $n$'nin bir bölenidir. Bölenleri baştan ve sondan eşleştirdiğimizde:
+\[ d_1 \cdot d_m = n, \quad d_2 \cdot d_{m-1} = n, \quad \dots \]
+Tüm $m$ bölen çarpıldığında her çift $n$ değerini verir:
+
+\begin{theorem}[Bölenler Çarpımı]
+$n$ sayısının pozitif bölenlerinin çarpımı:
+\[ P(n) = n^{\frac{d(n)}{2}} = \sqrt{n^{d(n)}} \]
+\end{theorem}
+
+\subsection{Legendre Formülü ($n!$ İçindeki Asal Üsleri)}
+
+Faktöriyelli ifadelerin çarpan analizinde Legendre formülü temel bir rol oynar. $n! = 1 \cdot 2 \cdot 3 \dots n$ çarpımının asal açılımında bir $p$ asalının üssü şu teoremle hesaplanır:
+
+\begin{theorem}[Legendre Formülü]
+$n!$ sayısının asal çarpanlarına ayrılmış biçimindeki $p$ asalının en büyük üssü $v_p(n!)$:
+\[ v_p(n!) = \sum_{j=1}^{\infty} \left\lfloor \frac{n}{p^j} \right\rfloor = \left\lfloor \frac{n}{p} \right\rfloor + \left\lfloor \frac{n}{p^2} \right\rfloor + \left\lfloor \frac{n}{p^3} \right\rfloor + \dots \]
+ile verilir. Buradaki toplam, $p^j > n$ olduğunda terimler sıfırlandığı için sonludur.
+\end{theorem}
+
+\begin{proof}[Sezgi]
+$1$'den $n$'ye kadar olan sayılar arasında:
+\begin{itemize}
+    \item $p$'nin katı olan $\lfloor \frac{n}{p} \rfloor$ tane sayı vardır. Bunların her biri çarpıma en az bir adet $p$ çarpanı kazandırır.
+    \item $p^2$'nin katı olan $\lfloor \frac{n}{p^2} \rfloor$ tane sayı vardır. Bunlar ikinci bir $p$ çarpanı daha kazandırır.
+    \item $p^3$'ün katı olan sayılar üçüncü bir $p$ çarpanı kazandırır ve süreç bu şekilde devam eder.
+\end{itemize}
+Tüm bu katkılar toplandığında formül doğrudan elde edilir.
+\end{proof}
+
+\begin{example}
+$100!$ sayısının sonunda kaç tane sıfır vardır?
+\end{example}
+\begin{proof}[Çözüm]
+Bir sayının sonundaki sıfır sayısı, çarpanlarındaki $10 = 2 \cdot 5$ adedine, yani $\min(v_2(100!), v_5(100!))$ değerine eşittir. Faktöriyel çarpımında $2$ çarpanı her iki adımda bir gelirken $5$ çarpanı beş adımda bir geldiğinden, $2$'nin kuvveti her zaman $5$'in kuvvetinden büyüktür. Dolayısıyla yalnızca $v_5(100!)$ değerini hesaplamak yeterlidir:
+\[ v_5(100!) = \left\lfloor \frac{100}{5} \right\rfloor + \left\lfloor \frac{100}{25} \right\rfloor + \left\lfloor \frac{100}{125} \right\rfloor = 20 + 4 + 0 = 24 \]
+Demek ki $100!$ sayısının sonunda tam $24$ adet sıfır bulunur.
+\end{proof}
+
+\subsection{Algoritmik Uygulama: Hızlı Asal Çarpanlara Ayırma}
+
+Tek bir $n$ sayısını $O(\sqrt{n})$ sürede asal çarpanlarına ayıran algoritma:
+
+\begin{lstlisting}
+FUNCTION primeFactors(n)
+    factors = EMPTY_MAP
+    d = 2
+    WHILE d * d <= n DO
+        IF n MOD d == 0 THEN
+            count = 0
+            WHILE n MOD d == 0 DO
+                count = count + 1
+                n = n DIV d
+            END WHILE
+            factors[d] = count
+        END IF
+        d = d + 1
+    END WHILE
+    IF n > 1 THEN
+        factors[n] = 1
+    END IF
+    RETURN factors
+END FUNCTION\end{lstlisting}
+
+\textbf{En Küçük Asal Bölen (SPF) Yaklaşımı:}
+$1$'den $N$'e kadar çok sayıda sayı için art arda çarpanlara ayırma sorgusu yapılacaksa (örneğin $10^5$ sorgu), her sayı için $O(\sqrt{n})$ deneme yapmak toplamda maliyetlidir. Bunun yerine Eratosthenes kalburu uyarlanarak her sayının \textbf{en küçük asal böleni} (Smallest Prime Factor - SPF) $O(N \log \log N)$ sürede önceden hesaplanabilir. Ardından herhangi bir $n$ sayısı $O(\log n)$ adımda çarpanlarına ayrılabilir:
+
+\begin{lstlisting}[language=CTemel]
+#define MAXN 1000000
+int spf[MAXN + 1];
+
+void spf_hesapla(int n) {
+    for (int i = 1; i <= n; i++) spf[i] = i;
+    for (int i = 2; i * i <= n; i++) {
+        if (spf[i] == i) { // i asal
+            for (int j = i * i; j <= n; j += i) {
+                if (spf[j] == j)
+                    spf[j] = i; // j'nin en kucuk asal boleni i'dir
+            }
+        }
+    }
+}
+
+// n'i O(log n) surede carpanlarina ayirma:
+void carpani_yazdir(int n) {
+    while (n > 1) {
+        int p = spf[n];
+        int kuvvet = 0;
+        while (n % p == 0) {
+            kuvvet++;
+            n /= p;
+        }
+        printf("%d^%d ", p, kuvvet);
+    }
+    printf("\n");
+}
+\end{lstlisting}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Tam olarak $12$ tane pozitif böleni olan en küçük pozitif tamsayı kaçtır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Aradığımız sayı $n = p_1^{\alpha_1} p_2^{\alpha_2} \dots p_k^{\alpha_k}$ olsun. Pozitif bölen sayısı formülünden:
+\[ d(n) = (\alpha_1 + 1)(\alpha_2 + 1)\dots(\alpha_k + 1) = 12 \]
+Sayının en küçük olmasını sağlamak için:
+\begin{enumerate}
+    \item En küçük asalları taban olarak seçmeliyiz ($2, 3, 5, \dots$).
+    \item Büyük üsleri daha küçük asal tabanlara dağıtmalıyız ($p_1 < p_2 < \dots$ iken $\alpha_1 \ge \alpha_2 \ge \dots$).
+\end{enumerate}
+$12$'nin çarpan gruplarını inceleyelim:
+\begin{itemize}
+    \item $12 = 12 \implies \alpha_1 + 1 = 12 \implies \alpha_1 = 11$.
+    Aday: $2^{11} = 2048$.
+    \item $12 = 6 \cdot 2 \implies \alpha_1 = 5, \alpha_2 = 1$.
+    Aday: $2^5 \cdot 3^1 = 32 \cdot 3 = 96$.
+    \item $12 = 4 \cdot 3 \implies \alpha_1 = 3, \alpha_2 = 2$.
+    Aday: $2^3 \cdot 3^2 = 8 \cdot 9 = 72$.
+    \item $12 = 3 \cdot 2 \cdot 2 \implies \alpha_1 = 2, \alpha_2 = 1, \alpha_3 = 1$.
+    Aday: $2^2 \cdot 3^1 \cdot 5^1 = 4 \cdot 3 \cdot 5 = 60$.
+\end{itemize}
+Bulunan adaylar ($2048, 96, 72, 60$) arasında en küçüğü $60$'tır.
+Gerçekten de $60 = 2^2 \cdot 3^1 \cdot 5^1$ için $d(60) = (2+1)(1+1)(1+1) = 12$ olur.
+\end{proof}
+
+\begin{example}
+$n$ pozitif bir tamsayı olmak üzere, $d(n)$ tek sayıdır ancak ve ancak $n$ bir tam karedir. Kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+\textbf{1. Yol (Cebirsel Açılım):}
+$n = p_1^{\alpha_1} p_2^{\alpha_2} \dots p_k^{\alpha_k}$ olsun.
+\[ d(n) = (\alpha_1 + 1)(\alpha_2 + 1)\dots(\alpha_k + 1) \]
+Bir çarpımın tek sayı olması ancak ve ancak tüm çarpanlarının tek sayı olmasıyla mümkündür:
+\[ \alpha_i + 1 \text{ tektir} \iff \alpha_i \text{ çifttir} \quad (\forall i = 1, 2, \dots, k) \]
+Tüm $\alpha_i$ üsleri çift sayı ise, $\alpha_i = 2\beta_i$ yazabiliriz:
+\[ n = p_1^{2\beta_1} p_2^{2\beta_2} \dots p_k^{2\beta_k} = \left( p_1^{\beta_1} p_2^{\beta_2} \dots p_k^{\beta_k} \right)^2 \]
+Bu da $n$'nin bir tam kare olduğunu gösterir.
+
+\textbf{2. Yol (Bölüm 10'daki Eşleme Yöntemi):}
+$n$'nin herhangi bir $d$ pozitif böleni verildiğinde $\frac{n}{d}$ de bir pozitif bölendir. Bölenleri $(d, \frac{n}{d})$ çiftleri halinde gruplayalım.
+Eğer $n$ bir tam kare değilse hiçbir zaman $d = \frac{n}{d}$ (yani $d^2 = n$) olamaz. Dolayısıyla tüm bölenler ikişerli eşleşir ve bölen sayısı kesinlikle çift kalır.
+Yalnızca $n$ bir tam kare olduğunda $d = \sqrt{n}$ böleni kendisiyle eşleşerek tek başına kalır; bu da toplam bölen sayısını tek yapar.
+\end{proof}
+
+\begin{example}
+$x^2 - y^2 = 2024$ denklemini sağlayan kaç farklı $(x, y)$ pozitif tamsayı ikilisi vardır?
+\end{example}
+
+\begin{proof}[Çözüm]
+İki kare farkı özdeşliğini uygulayarak $(x-y)(x+y) = 2024$ yazalım. Burada iki temel noktaya dikkat edilmelidir:
+\begin{enumerate}
+    \item $x, y \in \mathbb{Z}^+$ olduğundan $x+y > x-y > 0$ olmalıdır.
+    \item Bölüm 17'de ele aldığımız parite kontrolü: $(x+y) + (x-y) = 2x$ (çift) olduğundan, $x+y$ ve $x-y$ çarpanlarının teklik-çiftlik durumları aynı olmalıdır (ya ikisi de tek ya ikisi de çift).
+\end{enumerate}
+$2024$ sayısını asal çarpanlarına ayıralım:
+\[ 2024 = 2^3 \cdot 11 \cdot 23 \]
+Çarpımları $2024$ olan ve ikisi de çift olan $A = x-y$ ve $B = x+y$ sayılarını arıyoruz. Çarpanlar çift olduğundan $A = 2u$ ve $B = 2v$ yazabiliriz:
+\[ (2u)(2v) = 2024 \implies 4uv = 2024 \implies uv = 506 \]
+$506$ sayısının asal çarpanları:
+\[ 506 = 2 \cdot 11 \cdot 23 \]
+Şimdi $uv = 506$ ve $u < v$ ($x-y < x+y$ olduğundan) koşulunu sağlayan $(u, v)$ çiftlerinin sayısını belirleyelim.
+$506$'nın pozitif bölen sayısı:
+\[ d(506) = (1+1)(1+1)(1+1) = 8 \]
+$506$ bir tam kare olmadığından bölenler $4$ çift oluşturur ($u < v$ koşulunu sağlayan tam $4$ adet $(u, v)$ çifti vardır).
+Belirlenen her $(u, v)$ çifti için:
+\[ x - y = 2u, \quad x + y = 2v \implies x = u + v, \quad y = v - u \]
+tek biçimde pozitif tam sayı çözümler üretir ($v > u \ge 1$ olduğundan $x, y > 0$ sağlanır).
+Dolayısıyla denklemin tam $4$ farklı pozitif tam sayı çözümü vardır.
+\end{proof}
+
+\begin{example}
+$12^n \cdot 18^{2n}$ sayısının pozitif bölen sayısı $2091$ olduğuna göre, $n$ pozitif tamsayısını bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölen sayısı formülünü uygulayabilmek için sayıyı önce asal tabanlarda, yani kanonik biçimde yazmalıyız:
+
+Verilen sayıyı $A$ olarak adlandıralım:
+\[ A = 12^n \cdot 18^{2n} \]
+$12$ ve $18$'i asal çarpanlarına ayıralım:
+\[ 12 = 2^2 \cdot 3, \quad 18 = 2 \cdot 3^2 \]
+Yerine yazıp üsleri toplayalım:
+\begin{align*}
+A &= (2^2 \cdot 3)^n \cdot (2 \cdot 3^2)^{2n} \\
+  &= (2^{2n} \cdot 3^n) \cdot (2^{2n} \cdot 3^{4n}) \\
+  &= 2^{2n + 2n} \cdot 3^{n + 4n} \\
+  &= 2^{4n} \cdot 3^{5n}
+\end{align*}
+Artık kanonik formdayız. Pozitif bölen sayısı formülünü uygulayabiliriz:
+\[ d(A) = (4n + 1)(5n + 1) \]
+Soruda bu değerin $2091$ olduğu verilmiştir:
+\[ (4n + 1)(5n + 1) = 2091 \]
+İfadeyi açıp ikinci dereceden denklemi çözelim:
+\[ (4n+1)(5n+1) = 2091 \implies 20n^2 + 9n + 1 = 2091 \implies 20n^2 + 9n - 2090 = 0 \]
+Bu ifade çarpanlarına ayrılırsa:
+\[ (n - 10)(20n + 209) = 0 \]
+elde edilir (kontrol: $20n^2 + 209n - 200n - 2090 = 20n^2 + 9n - 2090$). $n$ pozitif olduğundan $20n + 209 = 0$ kökü elenir ve $n = 10$ bulunur.
+
+Sağlama: $n = 10$ için $(4n+1)(5n+1) = 41 \times 51 = 2091$.
+\end{proof}
+
+\begin{example}
+$A = \frac{1000!}{500! \cdot 500!} = \binom{1000}{500}$ binom katsayısının $7$'ye bölünebilen en büyük kuvvetini bulunuz. Yani $v_7\left(\binom{1000}{500}\right)$ değerini hesaplayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölüm 5 ve 6'da incelediğimiz kombinasyon ifadelerinin çarpan yapısını belirlerken bölme kuralı gereği asal üslerin farkını alırız:
+\[ v_7\left(\frac{1000!}{(500!)^2}\right) = v_7(1000!) - 2 \cdot v_7(500!) \]
+Legendre formülünü kullanarak $v_7(1000!)$ ve $v_7(500!)$ değerlerini ayrı ayrı hesaplayalım.
+$7$'nin kuvvetleri: $7^1 = 7$, $7^2 = 49$, $7^3 = 343$, $7^4 = 2401 > 1000$.
+
+Önce $v_7(1000!)$'i bulalım:
+\begin{align*}
+v_7(1000!) &= \left\lfloor \frac{1000}{7} \right\rfloor + \left\lfloor \frac{1000}{49} \right\rfloor + \left\lfloor \frac{1000}{343} \right\rfloor \\
+           &= 142 + 20 + 2 = 164
+\end{align*}
+
+Şimdi $v_7(500!)$'i bulalım:
+\begin{align*}
+v_7(500!) &= \left\lfloor \frac{500}{7} \right\rfloor + \left\lfloor \frac{500}{49} \right\rfloor + \left\lfloor \frac{500}{343} \right\rfloor \\
+          &= 71 + 10 + 1 = 82
+\end{align*}
+
+Şimdi farkı alalım:
+\[ v_7\left(\binom{1000}{500}\right) = 164 - 2 \cdot (82) = 164 - 164 = 0 \]
+Böylece $\binom{1000}{500}$ sayısı $7$ ile bölünemez; bu asalın en büyük kuvveti $7^0 = 1$'dir.
+\end{proof}

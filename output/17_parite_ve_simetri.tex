@@ -1,0 +1,518 @@
+\chapter[Parite ve Simetri · \textit{Temel}]{Parite ve Simetri}
+\chaptermark{Parite ve Simetri}
+
+Kombinatorik ve algoritma tasarımında en etkili çözümler çoğu zaman uzun hesaplamaların değil, problemin altında yatan dengenin fark edilmesiyle ortaya çıkar. Bir durum uzayı çok geniş olabilir; milyarlarca durum arasından belirli bir hedefe ulaşılıp ulaşılamayacağını adım adım aramak (örneğin kaba kuvvet ile tüm yolları denemek) algoritmik açıdan pratik değildir. İşte bu noktada güçlü bir matematiksel filtreye başvururuz: \emph{Parite} ve \emph{simetri}.
+
+Parite, bir nesnenin veya durumun ikiye bölünme karakterini (teklik-çiftlik durumunu) inceler. Bir sürecin her adımında bu nitelik korunuyorsa (bir değişmez oluşturuyorsa), başlangıç durumu ile hedef durumun pariteleri karşılaştırılarak hedefe ulaşmanın imkânsızlığı hızla gösterilebilir. Simetri ise durum uzayını birbiriyle eşdeğer parçalara bölerek hem sayma problemlerini küçültür hem de algoritmik stratejilerde rakibin hamlelerini aynalayarak kesin kazanç yolları sunar.
+
+Bu bölümde; algoritma sorularında ve yarışmalarda sıkça karşımıza çıkan imkânsızlık ispatlarını, satranç tahtası ve ızgara renklendirmelerini ve simetri yardımıyla sayma tekniklerini ele alacağız.
+
+\section{Parite ve İmkânsızlık}
+
+Bir problemin çözümünü aramak yerine, böyle bir çözümün \emph{asla var olamayacağını} göstermek bilgisayar biliminde önemli bir kazanımdır. Arama uzayını gereksiz dallardan temizlemek (budama / pruning) ve ulaşılamaz durumları baştan tespit etmek algoritmanın çalışma zamanını ciddi biçimde düşürür. Bu imkânsızlık ispatlarının en temel aracı paritedir.
+
+\subsection{Teklik-Çiftlik Aritmetiği ve Değişmezler}
+
+Günlük hayattan bildiğimiz basit tek-çift kuralları, Bölüm 14'te ele aldığımız modüler aritmetiğin ($\bmod 2$) temelidir.
+
+\begin{definition}[Parite]
+Bir $n \in \mathbb{Z}$ tam sayısı için; eğer $n = 2k$ ($k \in \mathbb{Z}$) biçiminde yazılabiliyorsa $n$'ye \textbf{çift}, $n = 2k + 1$ ($k \in \mathbb{Z}$) biçiminde yazılabiliyorsa $n$'ye \textbf{tek} sayı denir. Bir sayının çift veya tek olma durumuna o sayının \textbf{paritesi} adı verilir. $n$ çift ise $n \equiv 0 \pmod 2$, tek ise $n \equiv 1 \pmod 2$ yazılır.
+\end{definition}
+
+Temel işlemler altında paritenin davranışı şu kurallara dayanır:
+\begin{align*}
+\text{Çift} \pm \text{Çift} &= \text{Çift}, & \text{Tek} \pm \text{Tek} &= \text{Çift}, \\
+\text{Çift} \pm \text{Tek} &= \text{Tek}, & \text{Tek} \pm \text{Çift} &= \text{Tek}, \\
+\text{Çift} \times \text{Herhangi Bir Tam Sayı} &= \text{Çift}, & \text{Tek} \times \text{Tek} &= \text{Tek}.
+\end{align*}
+
+Bu tablodan çıkan temel sonuç şudur: \textbf{İki sayının toplamı ile farkının paritesi her zaman aynıdır.} Çünkü:
+\[
+(a + b) - (a - b) = 2b
+\]
+farkı her zaman çifttir. Dolayısıyla $a+b$ tek ise $a-b$ de tek, $a+b$ çift ise $a-b$ de çifttir.
+
+\begin{definition}[Değişmez (Invariant)]
+Bir sistemde izin verilen hamleler veya durum geçişleri boyunca değeri hiç değişmeyen matematiksel bir niceliğe veya özelliğe \textbf{değişmez} (\textit{invariant}) denir (bu tekniğin genelleştirilmiş halini Bölüm 18'de ayrıntılı inceleyeceğiz).
+\end{definition}
+
+Eğer başlangıç durumunun sahip olduğu değişmez bir özellik hedef durumda bulunmuyorsa, başlangıçtan hedefe izin verilen kurallarla ulaşmak imkânsızdır.
+
+\begin{example}
+Bir tahtada $1, 2, 3, \dots, 2025$ sayıları yazılıdır. Her adımda tahtadan rastgele iki sayı $a$ ve $b$ silinir ve yerlerine bu iki sayının farkı olan $|a - b|$ yazılır. Bu işlem tahtada tek bir sayı kalana kadar tekrarlanıyor. Son kalan sayı $0$ olabilir mi?
+\end{example}
+
+\begin{proof}[Çözüm]
+İşlem her adımda tahtadaki sayı adedini 1 azaltır. Toplamda 2024 adım sonra tahtada tek bir sayı kalacaktır. Tüm olası silme sıralamalarını tek tek denemek imkânsızdır ($2025!$ civarında dallanma vardır). O halde her adımda korunan bir nicelik (değişmez) aramalıyız. Silinen iki sayının yerine farkları yazıldığına göre, tahtadaki sayıların \emph{toplamının} nasıl değiştiğine odaklanalım.
+
+Tahtadaki tüm sayıların toplamına $S$ diyelim. Bir adımda $a$ ve $b$ silinip yerine $|a - b|$ yazıldığında yeni toplam:
+\[
+S' = S - a - b + |a - b|
+\]
+olur. $a$ ve $b$'nin büyüklük sırasına bakılmaksızın, mutlak değer $|a - b|$ ifadesi ya $a - b$ ya da $b - a$'dır. Her iki durumda da:
+\[
+S - S' = (a + b) - |a - b|
+\]
+ifadesi daima çift bir sayıdır. Nitekim $a \ge b$ ise $(a + b) - (a - b) = 2b$ (çift), $a < b$ ise $(a + b) - (b - a) = 2a$ (çift) olur. 
+
+Bu durum, $S$ ile $S'$ toplamlarının paritelerinin aynı olduğunu gösterir:
+\[
+S' \equiv S \pmod 2.
+\]
+Yani her adımda tahtadaki sayıların toplamının teklik-çiftliği \textbf{değişmez} kalır.
+
+Başlangıçtaki toplamı hesaplayalım:
+\[
+S_0 = \sum_{k=1}^{2025} k = \frac{2025 \times 2026}{2} = 2025 \times 1013.
+\]
+İki tek sayının çarpımı tek olduğundan, $S_0$ tektir ($S_0 \equiv 1 \pmod 2$).
+
+Son durumda tahtada tek bir $x$ sayısı kaldığında, tahtadaki sayıların toplamı doğrudan bu $x$ sayısına eşit olur. Değişmez prensibi gereğince:
+\[
+x \equiv S_0 \equiv 1 \pmod 2
+\]
+olmalıdır. Dolayısıyla son kalan sayı mutlaka bir \textbf{tek sayı} olmak zorundadır. $0$ bir çift sayı olduğundan ($0 \equiv 0 \pmod 2$), son sayının $0$ olması kesinlikle \textbf{imkânsızdır}.
+\end{proof}
+
+\subsection{El Sıkışma Lemması ve Çift Sayıda Tek Derece}
+
+Paritenin graf teorisindeki en temel uygulaması El Sıkışma Lemması'dır (Handshaking Lemma).
+
+\begin{theorem}[El Sıkışma Lemması]
+Sonlu sayıda insanın bulunduğu bir odada, tek sayıda kişiyle tokalaşmış olan kişilerin sayısı daima \textbf{çifttir}.
+\end{theorem}
+
+\begin{proof}
+Odada $n$ kişi bulunsun ve $i$. kişinin yaptığı tokalaşma sayısı $d_i$ olsun. Her tokalaşma eylemi iki kişi arasında gerçekleşir. Dolayısıyla tüm kişilerin tokalaşma sayılarının toplamı, toplam tokalaşma sayısının ($T$) tam olarak iki katıdır (bu ``el sıkışma lemması''nı Bölüm 10'da çifte sayım bağlamında graf modeliyle kurmuştuk; burada aynı gözlemi parite aracına dönüştürüyoruz):
+\[
+\sum_{i=1}^n d_i = 2T.
+\]
+Eşitliğin sağ tarafı $2T$ olduğundan, toplam daima bir çift sayıdır. Bu toplamı, tokalaşma sayısı tek olanlar (``Tek'') ve çift olanlar (``Çift'') olarak iki gruba ayıralım:
+\[
+\sum_{i \in \text{Tek}} d_i + \sum_{j \in \text{Çift}} d_j = 2T.
+\]
+$\sum_{j \in \text{Çift}} d_j$ toplamı çift sayıların toplamı olduğu için çifttir. Çift bir sayıdan çift bir sayı çıkarıldığında sonuç çift kalır:
+\[
+\sum_{i \in \text{Tek}} d_i = 2T - \sum_{j \in \text{Çift}} d_j \equiv 0 \pmod 2.
+\]
+Tek sayıların toplamının çift olabilmesi ancak ve ancak toplanan tek sayıların adedinin \textbf{çift} olmasıyla mümkündür. Dolayısıyla tek sayıda kişiyle tokalaşanların sayısı çifttir.
+\end{proof}
+
+\begin{example}
+Bir bilgi yarışmasında 15 yarışmacı vardır. Her yarışmacının diğer yarışmacılardan tam olarak 7 tanesiyle daha önce tanışmış olması mümkün müdür?
+\end{example}
+
+\begin{proof}[Çözüm]
+Yarışmacıları birer nokta, tanışıklıkları ise bu noktalar arasındaki çizgiler olarak düşünelim. Eğer bu durum mümkün olsaydı, her birinin tanışıklık sayısı (derecesi) $d_i = 7$ olan 15 yarışmacı bulunurdu.
+Yarışmacıların tamamı tek sayıda (7) tanışıklığa sahiptir. Dolayısıyla tek sayıda tanışıklığı olan kişilerin sayısı 15'tir. Ancak 15 bir tek sayıdır; oysa El Sıkışma Lemması gereğince tek dereceli kişilerin sayısı çift olmak zorundadır. Dolayısıyla böyle bir durumun gerçekleşmesi \textbf{mümkün değildir}.
+\end{proof}
+
+\subsection{Alan ve Yol Paritesi (Grid Parity)}
+
+İki boyutlu ızgaralarda (grid) hareket eden robotlar veya piyonlar, her adımda koordinatlarını değiştirir. Bir kafes graf üzerindeki yollar parite analiziyle doğrudan sınırlandırılabilir.
+
+\begin{example}
+Bir robot $5 \times 5$'lik bir ızgaranın sol alt köşesinde $(1, 1)$ noktasında durmaktadır. Robot her adımda yalnızca komşu bir kareye (yukarı, aşağı, sağa, sola) gidebilmektedir. Robotun ızgaradaki her kareyi \textbf{tam olarak bir kez} ziyaret edip başladığı $(1, 1)$ karesine geri dönmesi mümkün müdür?
+\end{example}
+
+\begin{proof}[Çözüm]
+Bir kareyi tam bir kez ziyaret edip başa dönmek bir Hamilton çevrimi arayışıdır. İncelemeyi adım sayısına ve koordinatların toplamına dayandıralım.
+
+Robotun bulunduğu kareyi $(x, y)$ koordinatlarıyla gösterelim ($1 \le x, y \le 5$). Robot her adımda ya $x$'i $\pm 1$ değiştirir ya da $y$'yi $\pm 1$ değiştirir. Her iki durumda da koordinatların toplamı olan $x + y$ değerinin paritesi değişir:
+\[
+(x \pm 1) + y \equiv (x + y) + 1 \pmod 2, \quad x + (y \pm 1) \equiv (x + y) + 1 \pmod 2.
+\]
+Başlangıç noktasında $x + y = 1 + 1 = 2$ (çift) değerindedir.
+\begin{itemize}
+    \item 1. adımda: Tek bir kareye gider.
+    \item 2. adımda: Çift bir kareye gider.
+    \item Genel olarak, $k$ adım sonra robotun bulunduğu karenin koordinat toplamı $k$ ile aynı paritededir:
+    \[
+    x_k + y_k \equiv x_0 + y_0 + k \equiv k \pmod 2.
+    \]
+\end{itemize}
+Robotun $5 \times 5 = 25$ farklı karenin her birini tam olarak bir kez ziyaret etmesi için 24 adım atması, ardından başlangıç karesine geri dönmesi için 1 adım daha atarak toplam $25$ adım atması gerekir.
+
+Fakat 25 adım sonra robotun ulaştığı karenin koordinat toplamının paritesi:
+\[
+x_{25} + y_{25} \equiv 25 \equiv 1 \pmod 2 \quad (\text{Tek})
+\]
+olmalıdır. Oysa başlangıç karesi $(1, 1)$ için koordinat toplamı $1 + 1 = 2$ (Çift) idi. Tek pariteye sahip bir noktada bulunan robotun, koordinat toplamı çift olan başlangıç karesinde olması imkânsızdır. Dolayısıyla böyle bir kapalı tur \textbf{yapılamaz}.
+\end{proof}
+
+Aşağıdaki algoritma parçası, tahtada rastgele yapılan fark hamlelerinin toplam paritesini nasıl koruduğunu doğrulamaktadır:
+
+\begin{lstlisting}
+FUNCTION checkParity(numbers)
+    list = COPY(numbers)
+    initialParity = SUM(list) MOD 2
+    
+    WHILE LENGTH(list) > 1 DO
+        indexA = RANDOM_INTEGER(0, LENGTH(list) - 1)
+        valueA = REMOVE_AT(list, indexA)
+        
+        indexB = RANDOM_INTEGER(0, LENGTH(list) - 1)
+        valueB = REMOVE_AT(list, indexB)
+        
+        difference = ABSOLUTE(valueA - valueB)
+        APPEND difference TO list
+        
+        ASSERT (SUM(list) MOD 2) EQUALS initialParity
+    END WHILE
+    
+    RETURN list[0]
+END FUNCTION
+
+sampleList = SEQUENCE(1 TO 5)
+finalNumber = checkParity(sampleList)
+
+IF finalNumber MOD 2 EQUALS 1 THEN
+    parityString = "Odd"
+ELSE
+    parityString = "Even"
+END IF
+
+OUTPUT "Remaining number: ", finalNumber, ", Parity: ", parityString\end{lstlisting}
+
+\begin{center}
+\fbox{\begin{minipage}{0.9\textwidth}
+\textbf{En Sık Yapılan Hata:} 
+Bir problemin parite argümanıyla çözülebilmesi için durum geçişlerinin tamamında paritenin korunması gerekir. Sadece bazı hamlelerde korunan bir özellik değişmez (\textit{invariant}) değildir. Ayrıca, bir hedefin parite testini geçmesi (örneğin hedefin de tek olması), o hedefe kesinlikle \emph{ulaşılabileceğini} kanıtlamaz; parite yalnızca imkânsızlığı kanıtlamak için tek yönlü bir engeldir (gerek koşuldur, yeter koşul değildir).
+\end{minipage}}
+\end{center}
+
+\section{Renklendirme Argümanları}
+
+Izgara problemleri iki boyutlu yapıda olduğundan, tek bir parite değişkeni her zaman yeterli bilgiyi taşımaz. Bir satranç tahtasını siyah ve beyaz karelere boyamak, aslında iki boyutlu bir parite fonksiyonu tanımlamaktır:
+\[
+\text{Renk}(x, y) = (x + y) \bmod 2.
+\]
+Bu iki renkli yapı yetersiz kaldığında, tahtayı 3, 4 veya daha fazla renkle periyodik olarak boyayarak daha kapsamlı değişmezler elde edebiliriz.
+
+\subsection{Kesik Satranç Tahtası ve Domino Kaplamaları}
+
+Klasik renklendirme yaklaşımının bilinen örneği, dominolarla ($1 \times 2$ boyutundaki taşlarla) alan kaplama problemidir.
+
+\begin{definition}[Domino ve Tromino]
+Bir $1 \times 2$'lik dikdörtgene \textbf{domino}; $1 \times 3$'lük dikdörtgene \textbf{düz tromino}; 3 birim kareden oluşan "L" şeklindeki parçaya ise \textbf{L-tromino} denir. Bir alanın bu taşlarla örtülmesine, taşların üst üste binmemesi ve tahtanın dışına taşmaması şartıyla \textbf{kaplama} (tiling) adı verilir.
+\end{definition}
+
+\begin{example}
+Standart bir $8 \times 8$ satranç tahtasından, karşılıklı iki çapraz köşe karesi kesilip atılıyor. Kalan 62 kareyi, her biri $1 \times 2$ boyutunda olan 31 adet domino taşı ile tamamen örtmek mümkün müdür?
+\end{example}
+
+\begin{proof}[Çözüm]
+Kalan alan $62$ birim karedir ve 31 domino tam olarak $31 \times 2 = 62$ birim karelik yer tutar. Alan hesabı açısından bir engel görünmemektedir. Ancak tahtanın geometrik yapısı parite dengesini etkiler.
+
+Standart satranç tahtası renklendirmesini düşünelim:
+\begin{enumerate}
+    \item $8 \times 8$'lik tahtada 32 adet siyah, 32 adet beyaz kare vardır.
+    \item Tahtaya yerleştirilen her $1 \times 2$'lik domino, tahtanın neresine ve hangi yönde (yatay ya da dikey) konulursa konsun, mutlaka \textbf{bir siyah ve bir beyaz} kareyi örter.
+    \item Dolayısıyla 31 adet domino yerleştirildiğinde, örtülen toplam kareler tam olarak 31 siyah ve 31 beyaz kare olmak zorundadır.
+\end{enumerate}
+
+Şimdi kesilen köşeleri inceleyelim:
+Satranç tahtasında zıt çapraz köşeler aynı renge sahiptir. Örneğin sol alt köşe $(1, 1)$ beyaz ise ($1+1=2$), sağ üst köşe $(8, 8)$ de beyazdır ($8+8=16$). 
+Bu iki beyaz köşe tahtadan çıkarıldığında geriye:
+\[
+32 \text{ siyah ve } 30 \text{ beyaz kare}
+\]
+kalır. Oysa 31 dominonun kaplayabilmesi için eşit sayıda (31'e 31) siyah ve beyaz kareye ihtiyaç vardır. Siyah ve beyaz kare sayıları eşit olmadığından, bu 62 kareyi dominolarla kaplamak \textbf{kesinlikle imkânsızdır}.
+\end{proof}
+
+\subsection{Daha Fazla Renk: Çok Renkli Argümanlar}
+
+Her parça iki kare kaplamaz. Örneğin $1 \times 3$'lük düz trominolar üç kare kaplar. Standart 2-renkli dama tahtası boyaması bu taşlar için yetersiz kalır; çünkü bir domino gibi her tromino her renkten eşit sayıda almak zorunda değildir. Bu durumda renk sayısını artırmak gerekir.
+
+\begin{example}
+$10 \times 10$'luk bir tahta, $1 \times 4$'lük tetrominolar (çubuklar) kullanılarak tamamen kaplanabilir mi?
+\end{example}
+
+\begin{proof}[Çözüm]
+Tahtadaki toplam kare sayısı $10 \times 10 = 100$'dür. Her $1 \times 4$ tetromino 4 kare kaplar ve $100 / 4 = 25$ parça kullanılmalıdır; alan tam bölünmektedir. Standart iki renkle boyama yapsak, her $1 \times 4$ parça 2 siyah ve 2 beyaz örter, tahtada da 50 siyah 50 beyaz bulunur; buradan bir çelişki doğmaz. O halde parçanın uzunluğu olan 4'e uygun bir \textbf{4-renkli boyama} kuralım.
+
+Kareleri $(i, j)$ koordinatlarıyla gösterelim ($0 \le i, j \le 9$). Bir $(i, j)$ karesini şu kurala göre $\{0, 1, 2, 3\}$ renklerinden birine boyayalım:
+\[
+\text{Renk}(i, j) = (i + j) \bmod 4.
+\]
+Bu boyamada herhangi bir satırda veya sütunda yan yana gelen 4 ardışık kare, $0, 1, 2, 3$ mod değerlerinin dördünü de tam birer kez içerir.
+Dolayısıyla, tahtaya ister yatay ister dikey yerleştirilsin, \textbf{her $1 \times 4$ tetromino her bir renkten (0, 1, 2 ve 3) tam olarak birer kare örter.}
+
+Eğer tahta 25 adet tetromino ile kaplanabiliyorsa, tahtada bulunan $0, 1, 2, 3$ renkli karelerin sayılarının \textbf{birbirine eşit ve 25'er adet} olması gerekir.
+
+Şimdi tahtadaki renk dağılımını hesaplayalım. Tahtayı $4 \times 4$'lük kare bloklara bölelim:
+\begin{itemize}
+    \item Bir $4 \times 4$'lük blokta her renkten tam olarak 4 adet bulunur.
+    \item Tahta $10 \times 10$ boyutunda olduğundan, bunu dört adet $4 \times 4$'lük blok, iki adet $4 \times 2$'lik blok, iki adet $2 \times 4$'lük blok ve bir adet $2 \times 2$'lik köşe bloğu olarak parçalayabiliriz:
+    \[
+    10 = 4 + 4 + 2.
+    \]
+\end{itemize}
+Genişliği veya yüksekliği 4'ün katı olan her bölgede renkler tamamen dengelidir (her renkten eşit sayıda vardır). Renk dengesini bozabilecek tek bölge, sağ altta kalan $2 \times 2$'lik artık bölgedir.
+
+Bu $2 \times 2$'lik bloğun koordinatları $i, j \in \{8, 9\}$ olsun:
+\begin{align*}
+(8, 8) &\implies 8 + 8 = 16 \equiv 0 \pmod 4, \\
+(8, 9) &\implies 8 + 9 = 17 \equiv 1 \pmod 4, \\
+(9, 8) &\implies 9 + 8 = 17 \equiv 1 \pmod 4, \\
+(9, 9) &\implies 9 + 9 = 18 \equiv 2 \pmod 4.
+\end{align*}
+Görüldüğü gibi bu artık bölgede:
+\begin{itemize}
+    \item 0 renginden 1 adet,
+    \item 1 renginden 2 adet,
+    \item 2 renginden 1 adet,
+    \item 3 renginden \textbf{0 adet} vardır.
+\end{itemize}
+
+Renklerin 4'ün katı olan kısımlardaki dağılımı eşitti. Bu artık bölge yüzünden tahtanın tamamında:
+\begin{itemize}
+    \item 1 rengine sahip karelerin sayısı, 3 rengine sahip karelerin sayısından 2 fazladır.
+    \item Dolayısıyla 3 rengine sahip karelerin sayısı 25 olamaz (en fazla 24 olabilir).
+\end{itemize}
+
+Her tetromino her renkten eşit sayıda örtmek zorunda olduğuna göre, bu tahtayı $1 \times 4$'lük tetrominolarla kaplamak \textbf{olanaksızdır}.
+\end{proof}
+
+\subsection{At Gezintisi ve Renk Değişimi}
+
+Satrançta atın (knight) hareketi, renklendirme ile çözülen tipik bir kural örneğidir.
+
+\begin{theorem}[Atın Renk Değişimi]
+Bir satranç tahtasında standart kurallarla hareket eden bir at, her hamlesinde bulunduğu karenin rengini \textbf{kesinlikle değiştirir}. Siyah kareden beyaza, beyaz kareden siyaha geçer.
+\end{theorem}
+
+\begin{proof}
+Atın hareketi bir yönde 1 birim, dik yönde 2 birim ilerlemektir. Yani koordinat değişimi $(\Delta x, \Delta y) \in \{(\pm 1, \pm 2), (\pm 2, \pm 1)\}$ kümesindedir.
+Yeni karenin koordinat toplamı:
+\[
+(x + \Delta x) + (y + \Delta y) = (x + y) + (\Delta x + \Delta y).
+\]
+Her olası hamle için $\Delta x + \Delta y$ değerleri şunlardır:
+\[
+\pm 1 \pm 2 \in \{-3, -1, 1, 3\}.
+\]
+Bu değerlerin tamamı \textbf{tek} sayıdır. Dolayısıyla:
+\[
+(x + \Delta x) + (y + \Delta y) \equiv (x + y) + 1 \pmod 2.
+\]
+Karenin paritesi her hamlede tersine döner. Yani at daima zıt renkli bir kareye basmak zorundadır.
+\end{proof}
+
+\begin{example}
+$5 \times 5$'lik bir satranç tahtasında bir at, $(1, 1)$ karesinden başlayıp her kareyi tam olarak bir kez ziyaret ederek yeniden $(1, 1)$ karesine dönebilir mi?
+\end{example}
+
+\begin{proof}[Çözüm]
+Tahtayı standart satranç düzeninde boyayalım. At her hamlede farklı renkte bir kareye geçmek zorundadır; dolayısıyla ziyaret ettiği karelerin renkleri sırayla değişir.
+
+Kapalı bir turda at başladığı kareye geri döner; yani tur başladığı renkte biter. Renkler sırayla değiştiğine göre, kapalı bir turda ziyaret edilen siyah ve beyaz kare sayıları birbirine eşit olmak zorundadır.
+
+Oysa $5 \times 5 = 25$ kareli tahtada
+\[
+\lceil 25 / 2 \rceil = 13 \text{ siyah}, \qquad \lfloor 25 / 2 \rfloor = 12 \text{ beyaz}
+\]
+kare bulunur. Sayılar eşit olmadığından bu tahtada kapalı bir at turu yoktur.
+\end{proof}
+
+\section{Simetri ile Sayma}
+
+Büyük kombinatorik uzaylarda her durumu tek tek listelemek yerine, uzayı birbirinin ayna görüntüsü olan eş parçalara ayırmak sayımı önemli ölçüde kolaylaştırır. Simetri, temelde bir \textbf{eşleme} (bijection / involution) fikridir.
+
+\subsection{Eşleme ve Yansıma Prensibi}
+
+Bir $S$ kümesinde öyle bir $f: S \to S$ dönüşümü tanımlayalım ki her $x \in S$ için $f(f(x)) = x$ olsun ($f$ bir involüsyondur) ve hiçbir $x$ için $f(x) = x$ olmasın (sabit nokta bulunmasın). Bu durumda $S$ kümesinin tüm elemanları $\{x, f(x)\}$ ikilileri halinde eşleşir. Buradan doğrudan şu sonucu çıkarırız:
+\[
+|S| \text{ çift sayıdır ve } |S| = 2 \times (\text{çiftlerin sayısı}).
+\]
+
+\begin{theorem}[Alt Kümelerin Parite Dengesi]
+$n \ge 1$ elemanlı sonlu bir kümenin tek sayıda elemana sahip alt kümelerinin sayısı ile çift sayıda elemana sahip alt kümelerinin sayısı birbirine eşittir ve her ikisi de $2^{n-1}$'dir:
+\[
+\sum_{k \text{ tek}} \binom{n}{k} = \sum_{k \text{ çift}} \binom{n}{k} = 2^{n-1}.
+\]
+\end{theorem}
+
+\begin{proof}
+Cebirsel olarak bu eşitlik Bölüm 6'da gördüğümüz $(1 - 1)^n = 0$ binom açılımından çıkar. Simetri ve eşleme (bijection) yaklaşımı ise duruma doğrudan yapısal bir açıklama getirir.
+
+Kümemiz $A = \{a_1, a_2, \dots, a_n\}$ olsun. Özel bir eleman seçelim, örneğin $a_1$.
+$A$'nın herhangi bir $X$ alt kümesi için şu eşleme kuralını tanımlayalım:
+\[
+f(X) = \begin{cases} 
+X \setminus \{a_1\}, & \text{eğer } a_1 \in X \text{ ise}, \\
+X \cup \{a_1\}, & \text{eğer } a_1 \notin X \text{ ise}.
+\end{cases}
+\]
+Bu $f$ fonksiyonunun özellikleri şunlardır:
+\begin{enumerate}
+    \item $f(f(X)) = X$'tir (kendi kendisinin tersidir).
+    \item $X$ kümesine $a_1$ eklenir ya da çıkarılır; dolayısıyla eleman sayısı $|f(X)| = |X| \pm 1$ olur.
+    \item Bir tek sayının 1 fazlası veya 1 eksiği çift; bir çift sayının 1 fazlası veya 1 eksiği tektir.
+\end{enumerate}
+Dolayısıyla $f$, tek elemanlı her alt kümeyi benzersiz bir çift elemanlı alt kümeyle eşleştirir ve hiçbir eleman açıkta kalmaz.
+
+Bu birebir eşleme, tek elemanlı alt kümelerin kümesi ile çift elemanlı alt kümelerin kümesinin eleman sayılarının tam olarak eşit olduğunu gösterir. Toplam $2^n$ alt küme olduğuna göre, her birinin sayısı $2^n / 2 = 2^{n-1}$'dir.
+\end{proof}
+
+\subsection{Palindrom Sayımı}
+
+Simetrinin dizgiler (stringler) üzerindeki en doğrudan uygulaması palindromlardır.
+
+\begin{definition}[Palindrom]
+Soldan sağa ve sağdan sola okunuşu aynı olan dizgilere veya sayılara \textbf{palindrom} denir. Bir $s = s_1 s_2 \dots s_n$ dizgisinin palindrom olması, her $1 \le i \le n$ için:
+\[
+s_i = s_{n - i + 1}
+\]
+olması demektir.
+\end{definition}
+
+Bir palindromun ilk yarısı belirlendiğinde, ikinci yarısı ayna simetrisi gereği \textbf{tek bir şekilde} belirlenir. Bu durum, serbestçe seçilebilecek bağımsız değişken sayısını (serbestlik derecesini) yarıya indirir.
+
+\begin{theorem}[Palindrom Sayısı]
+$\Sigma$ alfabesinin boyutu $|\Sigma| = k$ olsun. $n$ uzunluğundaki palindrom dizgilerin sayısı:
+\[
+k^{\lceil n / 2 \rceil}
+\]
+formülüyle verilir.
+\end{theorem}
+
+\begin{proof}
+Dizgimiz $s_1 s_2 \dots s_n$ olsun.
+\begin{itemize}
+    \item $n$ çift ise ($n = 2m$): İlk $m$ karakter ($s_1, s_2, \dots, s_m$) alfabedeki $k$ karakterden herhangi biri olarak serbestçe seçilebilir ($k^m$ yolla). Geriye kalan karakterler simetri kuralı gereğince $s_{m+1} = s_m, \dots, s_{2m} = s_1$ olarak zorunlu belirlenir. Toplam seçim sayısı $k^m = k^{n/2}$'dir.
+    \item $n$ tek ise ($n = 2m + 1$): Ortadaki karakter $s_{m+1}$ de dahil olmak üzere ilk $m+1$ karakter serbestçe seçilebilir ($k^{m+1}$ yolla). Sonraki $m$ karakter simetrik eşleriyle eşleşir. Toplam seçim sayısı $k^{m+1} = k^{\lceil n/2 \rceil}$'dir.
+\end{itemize}
+
+Her iki durum birleştirildiğinde sonuç $k^{\lceil n/2 \rceil}$ olur.
+\end{proof}
+
+\begin{example}
+$\{0, 1\}$ ikili alfabesi üzerinde tanımlı 10 uzunluğundaki tüm bit dizgilerinden rastgele biri seçiliyor. Seçilen dizginin palindrom \textbf{olmama} olasılığı kaçtır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Palindrom olmayan dizgileri doğrudan saymak yerine, simetrinin korunduğu durumu (tümleyen olayı) sayıp tüm durumlardan çıkarmak daha pratiktir.
+
+\begin{enumerate}
+    \item Toplam ikili dizgi sayısı: $2^{10} = 1024$.
+\item Palindrom olan ikili dizgi sayısı: $n = 10$ çift sayı olduğundan serbestlik derecesi $10 / 2 = 5$'tir. 
+Dolayısıyla ilk 5 bit serbestçe seçilir, son 5 bit bunların yansıması olur:
+\[
+\text{Palindrom Sayısı} = 2^5 = 32.
+\]
+\item Palindrom olmayan dizgilerin sayısı:
+\[
+1024 - 32 = 992.
+\]
+\item İstenen olasılık:
+    \[
+    P = \frac{992}{1024} = \frac{31}{32} \quad (\approx \%96{,}875).
+    \]
+\end{enumerate}
+\end{proof}
+
+\begin{example}
+$6 \times 6$'lık bir ızgaranın kareleri siyah ve beyaza boyanacaktır. Izgaranın merkezine göre $180^\circ$ döndürüldüğünde görüntüsünün değişmemesi (merkezi simetriye sahip olması) şartıyla kaç farklı boyama yapılabilir?
+\end{example}
+
+\begin{proof}[Çözüm]
+$180^\circ$ dönme simetrisi, her $(x, y)$ karesinin tahtanın merkezine göre simetriği olan kareyle aynı renge sahip olmasını gerektirir. Bu durum kareleri ikili denklik sınıflarına (yörüngelere) ayırır.
+
+Satır ve sütun indislerini $1 \le i, j \le 6$ olarak alalım.
+$(i, j)$ karesinin tahta merkezine göre $180^\circ$ döndürülmüş hali $(7 - i, 7 - j)$ karesidir.
+$6 \times 6$ tahtada $i = 7 - i$ olamaz çünkü 7 tek sayıdır (merkezde tek başına kalan sabit bir kare yoktur).
+
+Bu durumda tahtadaki 36 kare, birbirinin $180^\circ$ dönmüş hali olan çiftler halinde gruplanır:
+\[
+\{(i, j), (7 - i, 7 - j)\}.
+\]
+Toplam çift sayısı:
+\[
+\frac{36}{2} = 18.
+\]
+Her bir çiftin rengini belirlemek bağımsız bir seçimdir ve 2 seçenek vardır (ikisi birden siyah veya ikisi birden beyaz). Bir kare boyandığında simetriği de aynı renge boyanmak zorundadır.
+
+Dolayısıyla simetrik boyama sayısı:
+\[
+2^{18} = 262\,144
+\]
+farklı şekilde gerçekleştirilebilir.
+\end{proof}
+
+Aşağıdaki C kodu, verilen bir dizginin palindrom olup olmadığını simetri ekseninden dışa doğru Bölüm 22'de inceleyeceğimiz two pointers tekniğiyle kontrol eder:
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+
+// Iki isaretci ile simetri kontrolu: O(n) zaman, O(1) ekstra alan
+bool palindrom_mu(const char *str, int n) {
+    int sol = 0;
+    int sag = n - 1;
+    
+    while (sol < sag) {
+        if (str[sol] != str[sag]) {
+            return false; // Simetri bozuldu
+        }
+        sol++;
+        sag--;
+    }
+    return true; // Tum ayna ciftleri eslesti
+}
+
+int main() {
+    char s1[] = "kayak";
+    char s2[] = "tubitak";
+    
+    printf("%s: %s\n", s1, palindrom_mu(s1, strlen(s1)) ? "Palindrom" : "Degil");
+    printf("%s: %s\n", s2, palindrom_mu(s2, strlen(s2)) ? "Palindrom" : "Degil");
+    
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{Oyunlarda Simetri Stratejisi}
+
+Kombinatoryal oyun teorisinde simetri, genellikle ikinci oyuncu için belirleyici bir kazanma (veya kaybetmeme) stratejisi sunar. Tahtada merkezi veya eksensel bir simetri tanımlanabiliyorsa, rakibin her hamlesi simetrik noktaya yansıtılarak cevaplanabilir.
+
+\begin{example}[Simetri Stratejisi]
+Yuvarlak bir masanın üzerine iki oyuncu sırayla eşit büyüklükte madeni 1 TL'lik paralar koymaktadır. Paralar üst üste gelemez ve masanın dışına taşamaz. Masaya geçerli bir hamleyle son parayı koyan oyuncu oyunu kazanır (hamle yapamayan kaybeder). Oyunu doğru stratejiyle oynayan birinci oyuncunun daima kazanabileceğini kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+\textbf{Strateji:}
+Masa dairesel olduğundan \textbf{merkezi simetriye} sahiptir. Birinci oyuncu şu adımları izler:
+
+\begin{enumerate}
+    \item \textbf{İlk Hamle:} Birinci oyuncu ilk parasını tam olarak dairesel masanın \textbf{merkezine} yerleştirir.
+    \item \textbf{Sonraki Hamleler:} İkinci oyuncu masanın neresine bir para koyarsa koysun, birinci oyuncu bu paranın masanın merkezine göre tam simetriği olan noktaya kendi parasını koyar.
+\end{enumerate}
+
+\textbf{Neden çalışır?}
+Masa merkeze göre simetrik olduğundan, ikinci oyuncunun boş bulup para koyduğu bir yerin simetriği de \textbf{kesinlikle boştur ve masanın üzerindedir}. 
+Eğer bu simetrik nokta dolu olsaydı, simetri kuralı gereği ikinci oyuncunun oynadığı noktanın da daha önceden dolu olması gerekirdi; bu ise bir çelişkidir.
+
+Böylece ikinci oyuncu ne zaman geçerli bir hamle yapabilse, birinci oyuncunun daima ona karşılık gelen geçerli bir hamlesi hazır bulunur. Paraların kapladığı toplam alan sonlu olduğundan oyun belirli bir adım sonra biter. Son hamleyi mutlaka birinci oyuncu yapacaktır ve oyunu \textbf{birinci oyuncu kazanır}.
+\end{proof}
+
+\begin{center}
+\fbox{\begin{minipage}{0.9\textwidth}
+\textbf{En Sık Yapılan Hata:} 
+Simetri stratejilerinde simetri merkezinin hamle yapılabilir bir nokta olup olmadığına dikkat edilmelidir. Örneğin simetri merkezi boş kalamıyorsa ya da oyun tahtasının boyutları çift ise (merkez bir kare değil de karelerin kesişim noktasıysa), birinci oyuncu merkeze taş koyamaz. Bu durumda simetri avantajı genellikle \emph{ikinci oyuncuya} geçer.
+\end{minipage}}
+\end{center}
+
+\section{Bölüm Özeti ve İpuçları}
+
+Bu bölümde, kombinatorik problemleri ve algoritmik durum uzaylarını basitleştiren iki temel aracı inceledik:
+
+\begin{itemize}
+    \item \textbf{Parite:} Bir sayının 2'ye bölümünden kalandır. Toplam ve farkın paritesi aynıdır ($a+b \equiv a-b \pmod 2$). Süreç boyunca korunan bir parite (değişmez / invariant), ulaşılamaz durumları kesin bir dille ispatlar.
+\item \textbf{El Sıkışma Lemması:} Bir grafta tek dereceli düğümlerin sayısı daima çifttir. Tanışıklık, kenar ve derece sorularında ilk kontrol edilmesi gereken parite kuralıdır.
+    \item \textbf{Renklendirme:} İki boyutlu ızgaralarda dominolar için 2 renk (dama tahtası), $1 \times k$ boyutundaki parçalar için $k$ renk periyodik boyama kullanılır. Alan yeterli olsa dahi, renklerin sayısal dengesizliği kaplamanın imkânsız olduğunu gösterir.
+    \item \textbf{Simetri ve Eşleme:} Durum uzayını ayna çiftlerine ayırmak ($x \leftrightarrow f(x)$), eleman sayısının çift olduğunu veya iki kümenin boyutunun eşit olduğunu gösterir.
+    \item \textbf{Palindromlar:} Simetri ekseni serbestlik derecesini yarıya indirir. $n$ uzunluğundaki bir dizgide bağımsız seçim sayısı $\lceil n / 2 \rceil$'dir.
+    \item \textbf{Simetrik Oyunlar:} Tahtada simetriyi elinde tutan oyuncu, rakibinin hamlelerini aynalayarak her zaman geçerli bir hamle bulmayı garanti eder.
+\end{itemize}

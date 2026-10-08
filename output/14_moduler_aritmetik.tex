@@ -1,0 +1,565 @@
+\chapter[Modüler Aritmetik · \textit{Temel}]{Modüler Aritmetik}
+\chaptermark{Modüler Aritmetik}
+
+Gündelik yaşamda zamanı takip ederken farkında olmadan matematiğin en kullanışlı ve temel yapılarından birine başvururuz. Saat şu an $09:00$'u gösteriyorsa, $5$ saat sonra saatin $14:00$ değil de $02:00$ olduğunu söylemek son derece doğaldır. Benzer şekilde, günlerden salı ise $14$ gün sonra yine salı olacağını hemen hesaplarız; çünkü haftanın günleri yedişer yedişer tekrarlanan bir döngüden ibarettir.
+
+Olimpiyat matematiğinde ve bilgisayar biliminde büyük sayılarla işlem yaparken, sayıların kendisinden ziyade belirli bir periyoda göre bıraktıkları \emph{kalanlar} önem kazanır. Örneğin $2^{1000}$ sayısının tüm basamaklarını hesaplamak ne kâğıt üzerinde ne de standart veri tipleriyle pratik bir iştir; oysa bu sayının $7$ ile bölümünden kalanı bulmak yalnızca birkaç adımlık kısa bir işlem gerektirir. 
+
+Bölüm 11'de ele aldığımız bölünebilme kuralları ve bölen kavramı, sayıları tam bölen çarpanları inceliyordu. Burada ise bölünememenin geride bıraktığı fazlalıkları, yani kalanları sistematik bir cebirsel yapıya kavuşturacağız. Carl Friedrich Gauss'un temellerini attığı bu dile \textbf{modüler aritmetik} diyoruz.
+
+\section{Kongruans}
+
+\subsection{Motivasyon ve Sezgi}
+
+Kavramın çıkış noktasını anlamak için önce sayılar arasındaki farklara odaklanalım. $17$ ve $38$ sayılarını göz önüne alalım. Bu iki sayıyı ayrı ayrı $7$'ye böldüğümüzde:
+\[
+17 = 2 \times 7 + 3
+\]
+\[
+38 = 5 \times 7 + 3
+\]
+Görüldüğü üzere her iki sayı da $7$'ye bölündüğünde aynı kalanı ($3$) verir. Şimdi bu iki sayının farkına bakalım:
+\[
+38 - 17 = 21 = 3 \times 7
+\]
+Fark, $7$'nin tam katıdır. Bu beklenen bir durumdur: İki sayı aynı kalana sahipse, bu sayılardan kalan kısımları çıkardığımızda geriye yalnızca bölene ait tam katlar kalır. Dolayısıyla farkları bölene tam bölünmek zorundadır.
+
+Modüler aritmetiğin temel sezgisi şudur: Belli bir $m$ tam sayısı sabit tutulduğunda, $m$'ye bölündüklerinde aynı kalanı veren tüm tam sayılar ``eşdeğer'' kabul edilir.
+
+\begin{definition}[Kongruans (Denklik)]
+$m \ge 1$ bir pozitif tam sayı ve $a, b \in \mathbb{Z}$ olsun. Eğer $m$ sayısı $a - b$ farkını tam bölüyorsa, yani $m \mid (a - b)$ ise, $a$ sayısı $b$ sayısına \textbf{$m$ modülüne göre denktir (kongruanstır)} denir ve bu durum
+\[
+a \equiv b \pmod m
+\]
+biçiminde gösterilir. Buradaki $m$ değerine \textbf{modül} denir. Eğer $m \nmid (a - b)$ ise $a \not\equiv b \pmod m$ yazılır.
+\end{definition}
+
+Bu tanım, Bölüm 11'deki bölme algoritması gereği $a$ ile $b$'nin $m$'ye bölündüklerinde aynı kalanı vermesiyle tamamen eşdeğerdir. Gerçekten de $a = q_1 m + r_1$ ve $b = q_2 m + r_2$ ($0 \le r_1, r_2 < m$) yazılırsa:
+\[
+a - b = (q_1 - q_2)m + (r_1 - r_2)
+\]
+olur. $m \mid (a - b)$ olabilmesi için $m \mid (r_1 - r_2)$ olmalıdır. Ancak $-m < r_1 - r_2 < m$ olduğundan bu ancak ve ancak $r_1 - r_2 = 0$, yani $r_1 = r_2$ durumunda mümkündür.
+
+\subsection{Denklik Bağıntısı Olarak Kongruans}
+
+Kongruans simgesi ($\equiv$) sıradan eşitlik simgesine ($=$) kasıtlı olarak benzetilmiştir; zira kongruans, tam sayılar kümesi üzerinde bir \textbf{denklik bağıntısı} oluşturur.
+
+\begin{theorem}[Kongruansın Temel Özellikleri]
+Her $a, b, c \in \mathbb{Z}$ ve $m \in \mathbb{Z}^+$ için aşağıdaki özellikler sağlanır:
+\begin{enumerate}
+    \item \textbf{Yansıma (Reflexivity):} $a \equiv a \pmod m$.
+    \item \textbf{Simetri (Symmetry):} $a \equiv b \pmod m \implies b \equiv a \pmod m$.
+    \item \textbf{Geçişme (Transitivity):} $a \equiv b \pmod m$ ve $b \equiv c \pmod m \implies a \equiv c \pmod m$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Özellikleri sırasıyla kanıtlayalım:
+\begin{enumerate}
+    \item $a - a = 0 = 0 \cdot m$ olduğundan $m \mid (a - a)$ sağlanır, yani $a \equiv a \pmod m$.
+    \item $a \equiv b \pmod m \implies m \mid (a - b) \implies a - b = k \cdot m$ ($k \in \mathbb{Z}$). Buradan $b - a = (-k) \cdot m$ olur. $-k \in \mathbb{Z}$ olduğundan $m \mid (b - a)$ elde edilir, yani $b \equiv a \pmod m$.
+    \item $a \equiv b \pmod m$ ve $b \equiv c \pmod m$ ise $a - b = k_1 m$ ve $b - c = k_2 m$ olacak şekilde $k_1, k_2 \in \mathbb{Z}$ vardır. Taraf tarafa toplarsak:
+    \[
+    (a - b) + (b - c) = a - c = (k_1 + k_2)m
+    \]
+    $k_1 + k_2 \in \mathbb{Z}$ olduğundan $m \mid (a - c)$ çıkar, yani $a \equiv c \pmod m$.
+\end{enumerate}
+\end{proof}
+
+Bu üç özellik sayesinde tam sayılar kümesi $\mathbb{Z}$, $m$ modülüne göre $m$ tane ayrık kümeye parçalanır. Bu kümelere \textbf{kalan sınıfları} (denklik sınıfları) denir. Genellikle her sınıfı temsil etmek üzere $\{0, 1, 2, \dots, m-1\}$ kümesindeki en küçük negatif olmayan sayılar seçilir.
+
+\subsection{Negatif Sayılar ve Programlamada Mod İşlemi}
+
+Matematiksel tanıma göre bir sayının mod $m$'deki dengi her zaman pozitif olmak zorunda değildir; örneğin:
+\[
+-3 \equiv 4 \pmod 7
+\]
+çünkü $7 \mid (-3 - 4) \implies 7 \mid (-7)$ doğrudur. Ancak standart temsil istendiğinde, sonuca $m$'nin katları eklenerek $0 \le r < m$ aralığına düşürülür:
+\[
+-17 \pmod 5 \implies -17 + 4 \times 5 = 3 \implies -17 \equiv 3 \pmod 5
+\]
+
+\begin{example}
+$-44$ sayısının $9$ modülündeki en küçük negatif olmayan denkliğini bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+$-44$'e $9$'un katlarını ekleyelim:
+$-44 + 9 \times 5 = -44 + 45 = 1$.
+$0 \le 1 < 9$ olduğundan, $-44 \equiv 1 \pmod 9$ elde edilir.
+\end{proof}
+
+\subsubsection{Programlama Dillerinde Kalan İşlemi}
+
+Programlama yarışmalarında sık yapılan hatalardan biri, dillerdeki kalan operatörünün (\texttt{\%}) matematiksel modüler aritmetikle birebir örtüşmemesidir.
+
+C/C++ dillerinde \texttt{\%} operatörü sıfıra doğru yuvarlama mantığıyla çalışır. Bu nedenle negatif sayılarda negatif sonuç üretir:
+\begin{lstlisting}[language=CTemel]
+// C / C++ dillerinde:
+int r = -17 % 5; // r degeri -2 cikar! (Cunku -17 = (-3)*5 + (-2))
+\end{lstlisting}
+Oysa matematikte $r \in \{0, 1, 2, 3, 4\}$ olmalıdır (yani $-17 \equiv 3 \pmod 5$). Python'da ise \texttt{\%} operatörü tabanlama mantığıyla tanımlandığından matematiksel kongruansla doğrudan uyumludur:
+\begin{lstlisting}
+r = -17 MOD 5\end{lstlisting}
+
+C/C++ kullanırken negatif sayıların modunu güvenli bir biçimde almak için şu kalıp tercih edilir:
+\begin{lstlisting}[language=CTemel]
+long long guvenli_mod(long long a, long long m) {
+    long long r = a % m;
+    if (r < 0) r += m;
+    return r;
+}
+\end{lstlisting}
+
+\begin{example}
+$x \equiv 5 \pmod{11}$ olduğuna göre, $2x + 7$ ifadesinin $11$ modülündeki en küçük negatif olmayan temsilcisini bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+$x \equiv 5 \pmod{11}$ ifadesi, $x = 11k + 5$ ($k \in \mathbb{Z}$) anlamına gelir. İfadede yerine yazarsak:
+\[
+2x + 7 = 2(11k + 5) + 7 = 22k + 10 + 7 = 11(2k + 1) + 6
+\]
+$11$'in tam katı olan terim atılırsa geriye kalan $6$ olur. Dolayısıyla $2x + 7 \equiv 6 \pmod{11}$ bulunur.
+\end{proof}
+
+\section{Modüler Aritmetik ve Üs}
+
+\subsection{Aritmetik İşlemlerin Korunumu}
+
+Modüler aritmetiğin asıl kolaylığı, büyük sayılarla yapılan cebirsel işlemlerde her ara adımda mod alabilme esnekliğinden gelir. Bir sayıyı önce büyütüp sonra modunu almak ile, sayıların modunu alıp küçük sayılarla işlem yapmak tamamen aynı sonucu verir.
+
+\begin{theorem}[İşlem Korunumu]
+$a \equiv a' \pmod m$ ve $b \equiv b' \pmod m$ olsun. Bu takdirde:
+\begin{enumerate}
+    \item $a + b \equiv a' + b' \pmod m$
+    \item $a - b \equiv a' - b' \pmod m$
+    \item $a \cdot b \equiv a' \cdot b' \pmod m$
+    \item Her $k \in \mathbb{Z}^+$ için $a^k \equiv (a')^k \pmod m$
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Varsayımlar gereği $a - a' = k_1 m$ ve $b - b' = k_2 m$ olacak şekilde $k_1, k_2 \in \mathbb{Z}$ sayıları vardır.
+\begin{enumerate}
+    \item $(a + b) - (a' + b') = (a - a') + (b - b') = k_1 m + k_2 m = (k_1 + k_2)m$. Buradan $m \mid ((a+b)-(a'+b'))$, yani $a + b \equiv a' + b' \pmod m$.
+    \item $(a - b) - (a' - b') = (a - a') - (b - b') = (k_1 - k_2)m$. Dolayısıyla $a - b \equiv a' - b' \pmod m$.
+    \item Çarpım için şu cebirsel özdeşliği kuralım:
+    \[
+    a b - a' b' = a b - a' b + a' b - a' b' = b(a - a') + a'(b - b')
+    \]
+    Burada $a - a' = k_1 m$ ve $b - b' = k_2 m$ yazarsak:
+    \[
+    a b - a' b' = b(k_1 m) + a'(k_2 m) = m(b k_1 + a' k_2)
+    \]
+    Parantez içi bir tam sayı olduğundan $m \mid (ab - a'b')$, yani $ab \equiv a'b' \pmod m$ elde edilir.
+    \item Üçüncü özelliğin $k$ defa art arda uygulanmasıyla (veya matematiksel tümevarımla) $a^k \equiv (a')^k \pmod m$ doğrudan kanıtlanır.
+\end{enumerate}
+\end{proof}
+
+\subsection{Bölme İşlemi Neden Yapılamaz? (Sadeleştirme Kuralı)}
+
+Toplama, çıkarma ve çarpmada geçerli olan bu esneklik, \textbf{bölme işleminde doğrudan uygulanamaz}. 
+
+\begin{example}
+Aşağıdaki kongruansı inceleyelim:
+\[
+6 \equiv 2 \pmod 4
+\]
+Her iki tarafı $2$'ye bölersek $3 \equiv 1 \pmod 4$ elde ederiz. Fakat $3 - 1 = 2$ olup $4 \nmid 2$'dir; dolayısıyla denklik bozulur: $3 \not\equiv 1 \pmod 4$.
+\end{example}
+
+Bölme yaparken modülün de değişmesi gerekebilir:
+
+\begin{theorem}[Sadeleştirme Kuralı]
+$c \ne 0$ bir tam sayı olsun.
+\[
+a \cdot c \equiv b \cdot c \pmod m \iff a \equiv b \pmod{\frac{m}{\gcd(c, m)}}
+\]
+Özel olarak, eğer $\gcd(c, m) = 1$ ise (yani $c$ ile $m$ aralarında asal ise), her iki taraf $c$'ye doğrudan bölünebilir:
+\[
+a \cdot c \equiv b \cdot c \pmod m \iff a \equiv b \pmod m
+\]
+\end{theorem}
+
+\begin{proof}
+$ac \equiv bc \pmod m \implies m \mid (ac - bc) \implies m \mid c(a - b)$ demektir.
+Her iki tarafı $d = \gcd(c, m)$ değerine bölelim. Buradan:
+\[
+\frac{m}{d} \;\Bigm|\; \frac{c}{d}(a - b)
+\]
+elde edilir. EBOB tanımı gereği $\gcd\left(\frac{m}{d}, \frac{c}{d}\right) = 1$'dir. Bölüm 11'de gördüğümüz Öklid lemmasına göre, aralarında asal iki sayıdan biri diğerinin çarpanını bölmek zorundadır. Dolayısıyla:
+\[
+\frac{m}{d} \;\Bigm|\; (a - b) \iff a \equiv b \pmod{\frac{m}{d}}
+\]
+olup ispat tamamlanır.
+\end{proof}
+
+\begin{example}
+$15x \equiv 35 \pmod{20}$ kongruansını sağlayan tüm $x$ tam sayılarını bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Önce denklemi $5$ ile sadeleştirelim. Burada $c = 5$ ve modül $m = 20$'dir.
+$\gcd(5, 20) = 5$ olduğundan yeni modülümüz $20 / 5 = 4$ olur:
+\[
+3x \equiv 7 \pmod 4
+\]
+$7 \equiv 3 \pmod 4$ olduğundan denklem $3x \equiv 3 \pmod 4$ halini alır.
+Şimdi her iki tarafı $3$'e bölelim. Bölüm 13'ten bildiğimiz üzere $\gcd(3, 4) = 1$ olduğundan modül değişmez:
+\[
+x \equiv 1 \pmod 4
+\]
+Demek ki $x$, $4$'e bölündüğünde $1$ kalanını veren bir sayıdır. Ancak orijinal soruda modül $20$ idi. $x = 4k + 1$ biçimindeki sayıların mod $20$'deki karşılıklarını bulmak için $k \in \{0, 1, 2, 3, 4\}$ değerlerini veririz:
+\[
+x \in \{1, 5, 9, 13, 17\} \pmod{20}
+\]
+Orijinal modülde tam $5$ farklı çözüm vardır; bu sayı doğrudan $\gcd(15, 20) = 5$ değerine eşittir.
+\end{proof}
+
+\subsection{Hızlı Üs Alma (Binary Exponentiation)}
+
+Algoritmik problemlerde sıkça $a^b \pmod m$ değerini hesaplamamız istenir; burada $b$, $10^{18}$ gibi oldukça büyük bir sayı olabilir. $a$'yı $b$ defa kendisiyle çarpmak $O(b)$ adım sürer ve zaman sınırını aşar.
+
+Bunun yerine ikili (binary) üs alma tekniği kullanılır. Buradaki temel fikir, $b$'nin paritesine (tek ya da çift oluşuna) göre üssü yarıya indirmektir:
+\[
+a^b = 
+\begin{cases} 
+1, & b = 0 \\
+(a^{b/2})^2, & b \text{ çift ise} \\
+a \cdot (a^{(b-1)/2})^2, & b \text{ tek ise}
+\end{cases}
+\]
+Böylece her adımda üs yarıya iner ve hesaplama karmaşıklığı $O(\log b)$ seviyesine düşer.
+
+\begin{lstlisting}[language=CTemel]
+// O(log b) zamaninda a^b mod m hesabi
+long long hizli_us(long long a, long long b, long long m) {
+    long long sonuc = 1;
+    a %= m;
+    while (b > 0) {
+        if (b & 1) { // b tek sayi ise
+            sonuc = (sonuc * a) % m;
+        }
+        a = (a * a) % m;
+        b >>= 1; // b'yi 2'ye bol
+    }
+    return sonuc;
+}
+\end{lstlisting}
+
+\begin{example}
+$3^{25} \pmod{13}$ değerini hızlı üs alma mantığıyla elle hesaplayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+$25$'i ikili tabanda yazalım: $25 = 16 + 8 + 1 = (11001)_2$.
+$3$'ün $2$'nin kuvveti olan üslerini mod $13$'te adım adım karesini alarak belirleyelim:
+\begin{align*}
+3^1 &\equiv 3 \pmod{13} \\
+3^2 &\equiv 9 \equiv -4 \pmod{13} \\
+3^4 &\equiv (-4)^2 = 16 \equiv 3 \pmod{13} \\
+3^8 &\equiv 3^2 \equiv 9 \equiv -4 \pmod{13} \\
+3^{16} &\equiv (-4)^2 = 16 \equiv 3 \pmod{13}
+\end{align*}
+$25 = 16 + 8 + 1$ olduğundan bu bileşenleri çarparız:
+\[
+3^{25} = 3^{16} \cdot 3^8 \cdot 3^1 \equiv 3 \cdot (-4) \cdot 3 \pmod{13}
+\]
+\[
+3 \cdot (-4) \cdot 3 = -36
+\]
+$-36$'yı $13$ modülüne indirgersek: $-36 + 3 \times 13 = -36 + 39 = 3$.
+Dolayısıyla $3^{25} \equiv 3 \pmod{13}$ bulunur.
+\end{proof}
+
+\section{Son Basamak ve Kalan Problemleri}
+
+\subsection{Motivasyon ve Sayı Tabanlarıyla İlişki}
+
+$10$ tabanında yazılmış bir $N$ tam sayısını ele alalım:
+\[
+N = a_k 10^k + a_{k-1} 10^{k-1} + \dots + a_1 10 + a_0
+\]
+Burada $10$'un katı olan terimlerin tümü mod $10$'da sıfırlanır:
+\[
+N \equiv a_0 \pmod{10}
+\]
+Buna göre bir sayının:
+\begin{itemize}
+    \item Son bir basamağı (birler basamağı) $\iff N \pmod{10}$,
+    \item Son iki basamağı $\iff N \pmod{100}$,
+    \item Son $k$ basamağı $\iff N \pmod{10^k}$
+\end{itemize}
+değerine karşılık gelir. Dolayısıyla son basamak soruları, doğrudan mod $10^k$ aritmetiğidir.
+
+\subsection{Periyodiklik (Döngü İlkesi)}
+
+$a \pmod m$ dizisinin kuvvetlerini sıralayalım:
+\[
+a^1, a^2, a^3, a^4, \dots \pmod m
+\]
+Mod $m$'de yalnızca $m$ farklı kalan sınıfı $\{0, 1, \dots, m-1\}$ bulunabilir. Bölüm 7'de incelediğimiz güvercin yuvası ilkesi gereği, ilk $m+1$ terim içinde en az iki terim birbirine denk olmak zorundadır. Bir kalan tekrar ettiği anda, sonraki tüm adımlar aynı döngüyü izler.
+
+\begin{example}
+$7^{2026}$ sayısının birler basamağını bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Birler basamağını bulmak, ifadeyi mod $10$'da incelemek demektir. $7$'nin ardışık kuvvetlerine bakarak periyodu belirleyelim:
+\begin{align*}
+7^1 &\equiv 7 \pmod{10} \\
+7^2 &\equiv 49 \equiv 9 \pmod{10} \\
+7^3 &\equiv 9 \times 7 = 63 \equiv 3 \pmod{10} \\
+7^4 &\equiv 3 \times 7 = 21 \equiv 1 \pmod{10} \\
+7^5 &\equiv 1 \times 7 = 7 \pmod{10} \quad \text{(Döngü başa döndü)}
+\end{align*}
+Kalanlar $7, 9, 3, 1$ biçiminde $4$ adımda bir tekrarlanır. Bu nedenle üssün $4$ ile bölümünden kalanına bakarız:
+\[
+2026 = 4 \times 506 + 2 \implies 2026 \equiv 2 \pmod 4
+\]
+O halde:
+\[
+7^{2026} \equiv 7^2 \equiv 9 \pmod{10}
+\]
+Sayının birler basamağı $9$'dur.
+\end{proof}
+
+\subsection{Fermat'nın Küçük Teoremi}
+
+Bir önceki alt bölümde kuvvetlerin periyodunu incelemiştik. Modül asal olduğunda bu periyot için evrensel bir üst sınır vardır: periyot her zaman $p-1$ sayısını böler. Bu gözlem, büyük üsleri küçültmenin en pratik yolunu verir.
+
+\begin{theorem}[Fermat'nın Küçük Teoremi]
+$p$ bir asal sayı ve $a$ bir tam sayı olsun. Eğer $p \nmid a$ ise,
+\[ a^{p-1} \equiv 1 \pmod p \]
+olur.
+\end{theorem}
+
+\begin{proof}
+$a, 2a, 3a, \dots, (p-1)a$ sayılarını mod $p$'de inceleyelim.
+
+(i) Hiçbiri $0$'a denk değildir: $p$ asal, $p \nmid a$ ve $1 \le k \le p-1$ iken $p \mid ka$ olamaz.
+
+(ii) İkişer ikişer farklıdırlar: $ia \equiv ja \pmod p$ olsaydı $p \mid (i-j)a$ olurdu; $p$ asal ve $p \nmid a$ olduğundan $p \mid (i-j)$ çıkardı, ancak $|i-j| \le p-1$ olduğundan bu ancak $i = j$ ile mümkündür.
+
+(iii) Böylece bu $p-1$ sayının mod $p$'deki kalanları $\{1, 2, \dots, p-1\}$ kümesinin bir permütasyonudur. İki tarafın çarpımını eşitleyelim:
+\[ a \cdot 2a \cdots (p-1)a \equiv 1 \cdot 2 \cdots (p-1) \pmod p \]
+yani
+\[ a^{p-1}(p-1)! \equiv (p-1)! \pmod p \]
+elde edilir.
+
+(iv) $\gcd((p-1)!, p) = 1$ olduğundan (Sadeleştirme Kuralı) iki tarafı $(p-1)!$ ile sadeleştirebiliriz:
+\[ a^{p-1} \equiv 1 \pmod p. \]
+\end{proof}
+
+\begin{corollary}
+Her $a$ tam sayısı ve her $p$ asal sayısı için
+\[ a^p \equiv a \pmod p \]
+sağlanır. Gerçekten de $p \mid a$ ise iki taraf da $0$'a denktir; aksi halde Fermat'nın Küçük Teoremi'ni $a$ ile çarpmak yeterlidir.
+\end{corollary}
+
+\begin{example}
+\textbf{a)} $3^{100}$ sayısının $7$'ye bölümünden kalanı bulunuz.
+
+\textbf{b)} $2^{1000}$ sayısının $13$'e bölümünden kalanı bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+\textbf{a)} $7$ asal ve $3$ ile aralarında asal olduğundan $3^{6} \equiv 1 \pmod 7$'dir. $100 = 6 \cdot 16 + 4$ olduğundan
+\[ 3^{100} \equiv 3^{4} = 81 \equiv 4 \pmod 7 \]
+bulunur.
+
+\textbf{b)} $13$ asal ve $\gcd(2, 13) = 1$ olduğundan $2^{12} \equiv 1 \pmod{13}$'tür. $1000 = 12 \cdot 83 + 4$ olduğundan
+\[ 2^{1000} \equiv 2^{4} = 16 \equiv 3 \pmod{13} \]
+elde edilir.
+\end{proof}
+
+\begin{caution}
+Fermat'nın Küçük Teoremi bu biçimiyle yalnızca modül asal olduğunda kullanılabilir; bileşik modüllerde periyot yöntemine dönülür. Ayrıca teoremin uygulanabilmesi için $p \nmid a$ şartı gereklidir.
+\end{caution}
+
+\subsection{Kritik Bir Tuzak: Üste Mod Uygulanmaz}
+
+\begin{theorem}[Önemli Uyarı]
+Genel olarak $a^b \pmod m \ne a^{(b \pmod m)} \pmod m$. 
+Üs, tabanın tabi olduğu mod ile doğrudan sadeleştirilemez.
+\end{theorem}
+
+Örneğin $2^5 \pmod 3$ ifadesini ele alalım:
+\begin{itemize}
+    \item Doğru hesap: $2^5 = 32$ ve $32 = 3 \times 10 + 2 \implies 2^5 \equiv 2 \pmod 3$.
+    \item Hatalı işlem: Üssün modunu alıp $5 \equiv 2 \pmod 3$ diyerek $2^2 \equiv 4 \equiv 1 \pmod 3$ yazmak yanlıştır.
+\end{itemize}
+Görüldüğü gibi $2 \ne 1$'dir. Üslerin periyodu modülün kendisiyle değil, kuvvetlerin tekrar etme düzeniyle ilgilidir.
+
+\begin{example}
+$2^{103}$ sayısının $13$ ile bölümünden kalanı bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+İlk hamle olarak mod $13$'te $1$ ya da $-1$ değerini veren bir kuvvet arayalım:
+\begin{align*}
+2^1 &= 2 \\
+2^2 &= 4 \\
+2^3 &= 8 \\
+2^4 &= 16 \equiv 3 \pmod{13} \\
+2^5 &= 3 \times 2 = 6 \\
+2^6 &= 6 \times 2 = 12 \equiv -1 \pmod{13}
+\end{align*}
+$2^6 \equiv -1 \pmod{13}$ denkliği hesabı oldukça kolaylaştırır. $103$'ü $6$'ya bölelim:
+\[
+103 = 6 \times 17 + 1
+\]
+Üslü ifadeyi bu çarpanlara göre ayıralım:
+\[
+2^{103} = (2^6)^{17} \cdot 2^1 \equiv (-1)^{17} \cdot 2 \pmod{13}
+\]
+$(-1)^{17} = -1$ olduğundan:
+\[
+2^{103} \equiv -1 \cdot 2 = -2 \pmod{13}
+\]
+En küçük pozitif temsilci için $13$ ekleriz:
+\[
+-2 + 13 = 11
+\]
+Kalan $11$'dir.
+\end{proof}
+
+\begin{example}
+$3^{2025}$ sayısının son iki basamağını bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Son iki basamağı bulmak için sayıyı mod $100$'de incelememiz gerekir. $3$'ün kuvvetlerini yazarak başlayalım:
+\begin{align*}
+3^1 &= 3 \\
+3^2 &= 9 \\
+3^3 &= 27 \\
+3^4 &= 81 \equiv -19 \pmod{100} \\
+3^5 &= 243 \equiv 43 \pmod{100}
+\end{align*}
+Bu kuvvetler yerine $3^4 = 81$ değerini $80 + 1$ olarak yazıp açmak daha pratik bir yoldur:
+\[
+3^{2025} = 3 \cdot 3^{2024} = 3 \cdot (3^4)^{506} = 3 \cdot 81^{506} = 3 \cdot (1 + 80)^{506}
+\]
+Bölüm 6'da gördüğümüz binom açılımını mod $100$'de uygulayalım:
+\[
+(1 + 80)^{506} = 1 + \binom{506}{1} \cdot 80 + \binom{506}{2} \cdot 80^2 + \dots
+\]
+Burada $80^2 = 6400$ sayısı $100$'ün tam katıdır; dolayısıyla ikinci ve sonraki tüm terimler mod $100$'de sıfır olur:
+\[
+(1 + 80)^{506} \equiv 1 + 506 \times 80 \pmod{100}
+\]
+Şimdi $506 \times 80 \pmod{100}$ çarpımına bakalım:
+$506 \equiv 6 \pmod{10}$ olduğundan, $506 \times 80 = (500 + 6) \times 80 = 40000 + 480 \equiv 80 \pmod{100}$.
+Buradan:
+\[
+(1 + 80)^{506} \equiv 1 + 80 = 81 \pmod{100}
+\]
+elde edilir. Bunu baştaki $3$ katsayısıyla çarptığımızda:
+\[
+3^{2025} = 3 \cdot 81^{506} \equiv 3 \cdot 81 = 243 \equiv 43 \pmod{100}
+\]
+bulunur. Sayının son iki basamağı $43$'tür.
+\end{proof}
+
+\begin{example}
+$S = 1! + 2! + 3! + 4! + \dots + 2024!$ toplamının $15$ ile bölümünden kalanı bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Faktöriyel terimleri büyüdükçe bölenin asal çarpanlarını içermeye başlar.
+$15 = 3 \times 5$ olduğundan, çarpanlarında hem $3$ hem de $5$ bulunan ilk terim $5!$'dir ($5! = 120 = 15 \times 8$).
+Dolayısıyla her $n \ge 5$ için $15 \mid n!$, yani:
+\[
+n! \equiv 0 \pmod{15} \quad (\forall n \ge 5)
+\]
+Bu durum toplamı önemli ölçüde sadeleştirir; $5!$'den sonraki tüm terimler sıfıra denktir:
+\[
+S \equiv 1! + 2! + 3! + 4! \pmod{15}
+\]
+İlk dört terimi doğrudan hesaplayalım:
+\begin{align*}
+1! &= 1 \\
+2! &= 2 \\
+3! &= 6 \\
+4! &= 24 \equiv 9 \pmod{15}
+\end{align*}
+Değerleri toplarsak:
+\[
+S \equiv 1 + 2 + 6 + 9 = 18 \pmod{15}
+\]
+$18 \equiv 3 \pmod{15}$ olduğundan kalan $3$ çıkar.
+\end{proof}
+
+\begin{example}[Kule Üs Problemi]
+$2^{3^4}$ sayısının $7$ ile bölümünden kalanı bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Kule üslerde işlem sırası yukarıdan aşağıyadır: $2^{3^4} = 2^{(3^4)} = 2^{81}$.
+Taban $2$, modül ise $7$'dir. $2$'nin $7$ modundaki kuvvetlerini inceleyelim:
+\begin{align*}
+2^1 &\equiv 2 \pmod 7 \\
+2^2 &\equiv 4 \pmod 7 \\
+2^3 &= 8 \equiv 1 \pmod 7
+\end{align*}
+Döngü uzunluğu $3$'tür. Yani $2$'nin üssü $3$'ün katı olduğunda mod $7$'deki değer $1$ olur.
+Bu nedenle $2^k \pmod 7$ ifadesini belirleyen, $k$ üssünün $3$ modundaki değeridir:
+\[
+k = 3^4 = 81
+\]
+Üssü incelersek:
+\[
+81 = 3 \times 27 \implies 81 \equiv 0 \pmod 3
+\]
+Üs $3$'ün tam katı olduğuna göre:
+\[
+2^{81} = (2^3)^{27} \equiv 1^{27} = 1 \pmod 7
+\]
+Kalan $1$ bulunur.
+\end{proof}
+
+\begin{example}
+$n$ bir pozitif tam sayı olmak üzere, $n^5 - n$ ifadesinin her zaman $30$ ile bölündüğünü modüler aritmetik kullanarak kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+$30 = 2 \times 3 \times 5$ biçiminde asal çarpanlarına ayrılır. Çarpanlar aralarında asal olduğundan, ifadenin $30$ ile bölünmesi için $2$, $3$ ve $5$ ile ayrı ayrı bölünmesi yeterlidir.
+İfadeyi çarpanlarına ayıralım:
+\[
+n^5 - n = n(n^4 - 1) = n(n^2 - 1)(n^2 + 1) = n(n - 1)(n + 1)(n^2 + 1)
+\]
+\begin{itemize}
+    \item \textbf{Mod 2 incelemesi:} $(n - 1)n$ ardışık iki tam sayıdır, dolayısıyla biri çifttir. Böylece $2 \mid (n^5 - n)$ sağlanır.
+    \item \textbf{Mod 3 incelemesi:} $(n - 1)n(n + 1)$ ardışık üç tam sayıdır. Bölüm 11'den bildiğimiz üzere ardışık üç sayıdan en az biri $3$'ün katıdır. Buradan $3 \mid (n^5 - n)$ elde edilir.
+    \item \textbf{Mod 5 incelemesi:} $n \pmod 5$ için kalanlar $\{0, 1, 2, 3, 4\}$ kümesindedir:
+    \begin{itemize}
+        \item $n \equiv 0 \pmod 5 \implies n$ çarpanından ötürü ifade $\equiv 0$.
+        \item $n \equiv 1 \pmod 5 \implies (n - 1)$ çarpanından ötürü $\equiv 0$.
+        \item $n \equiv 4 \equiv -1 \pmod 5 \implies (n + 1)$ çarpanından ötürü $\equiv 0$.
+        \item $n \equiv 2 \pmod 5 \implies n^2 + 1 \equiv 2^2 + 1 = 5 \equiv 0 \pmod 5$.
+        \item $n \equiv 3 \equiv -2 \pmod 5 \implies n^2 + 1 \equiv (-2)^2 + 1 = 5 \equiv 0 \pmod 5$.
+    \end{itemize}
+    Her durumda ifade $5$'e tam bölünür.
+\end{itemize}
+İfade $2$, $3$ ve $5$ ile tam bölündüğünden, $\operatorname{lcm}(2, 3, 5) = 30$ ile de tam bölünür.
+\end{proof}
+
+\section*{Bölüm Özeti}
+
+\begin{itemize}
+    \item \textbf{Kongruans:} $a \equiv b \pmod m \iff m \mid (a - b)$. Tam sayılar $m$ modülüne göre $m$ tane kalan sınıfına ayrılır.
+    \item \textbf{Aritmetik Kurallar:} Toplama, çıkarma, çarpma ve pozitif tam sayı üsleri mod altında korunur:
+    \[
+    (a \pm b) \pmod m = ((a \pmod m) \pm (b \pmod m)) \pmod m
+    \]
+    \[
+    (a \cdot b) \pmod m = ((a \pmod m) \cdot (b \pmod m)) \pmod m
+    \]
+    \item \textbf{Sadeleştirme:} $ac \equiv bc \pmod m$ denkliğinde $c$ sadeleştirilirse modül $m / \gcd(c, m)$ olur. Eğer $\gcd(c, m) = 1$ ise modül değişmez.
+    \item \textbf{Hızlı Üs Alma:} $a^b \pmod m$ hesabı, $b$'nin ikili açılımı kullanılarak $O(\log b)$ adımda yapılabilir.
+\item \textbf{Döngüsellik:} $a^k \pmod m$ dizisi Bölüm 7'deki güvercin yuvası ilkesi gereği periyodiktir. Son basamaklar mod $10^k$ ile belirlenir.
+    \item \textbf{Fermat'nın Küçük Teoremi:} $p$ asal ve $p \nmid a$ ise $a^{p-1} \equiv 1 \pmod p$; eşdeğer olarak $a^p \equiv a \pmod p$. Böylece asal modülde büyük üsler $p-1$'e göre indirgenebilir.
+    \item \textbf{Tuzak:} Üssün modu doğrudan alınamaz: $a^b \pmod m \ne a^{b \pmod m} \pmod m$. Üs, kuvvetlerin döngü periyoduna göre indirgenmelidir.
+\end{itemize}

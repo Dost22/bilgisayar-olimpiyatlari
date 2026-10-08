@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+message: "Bu kitaba atıf yapacaksanız lütfen aşağıdaki bilgileri kullanın."
+title: "Bilgisayar Olimpiyatlarına Hazırlık"
+abstract: >-
+  TÜBİTAK Bilgisayar Olimpiyatı 1. Aşama sınavına hazırlanan öğrenciler için
+  kavramsal ve akıcı Türkçe bir kitap: sıfırdan temeller, sayma (kombinatorik),
+  sayılar teorisi, düşünme teknikleri (değişmezler, uç değer ilkesi), algoritmik
+  düşünce (arama, sıralama, graflar, dinamik programlama) ve C programlama.
+  Örnekler kolaydan zora sıralanır ve çözümleri adım adım yazılmıştır.
+type: book
+authors:
+  - family-names: Seferoğlu
+    given-names: Dost
+    email: dseferoglu26@ku.edu.tr
+license: CC-BY-NC-SA-4.0
+isbn: 978-625-00-5243-3
+url: "https://bilgisayar-olimpiyatlari.com"
+date-released: 2026-09-24
+language: tr
+keywords:
+  - bilgisayar olimpiyatı
+  - TÜBİTAK
+  - kombinatorik
+  - sayılar teorisi
+  - algoritma
+  - C programlama
+  - matematik olimpiyatı

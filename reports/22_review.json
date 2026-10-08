@@ -1,0 +1,15 @@
+{
+  "file": "22_siralama.tex",
+  "findings": [
+    {
+      "file": "22_siralama.tex",
+      "line_hint": 37,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "\\textbf{Açgözlü (Greedy) Stratejiler:}",
+      "issue": "Terminoloji sözleşmesine göre 'greedy' terimi İngilizce korunmalı, Türkçe karşılığı olan 'açgözlü' kesinlikle kullanılmamalıdır (Kategori A: Türkçe karşılığı KULLANILMAZ).",
+      "suggested_fix": "\\textbf{Greedy Stratejiler:}",
+      "confidence": "high"
+    }
+  ]
+}

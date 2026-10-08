@@ -1,0 +1,558 @@
+\chapter[İspat Nasıl Yapılır · \textit{Temel}]{İspat Nasıl Yapılır}
+\chaptermark{İspat Nasıl Yapılır}
+
+Bir yazılımcı yazdığı kodun doğru çalıştığını anlamak için onlarca, bazen yüzlerce test girdisi dener. Girdiler başarıyla geçtikçe programın hatasız olduğuna dair güveni artar. Ancak bilgisayar biliminin ve matematiğin kalbinde yatan teorik problemler söz konusu olduğunda, ``bin farklı değerde denedim, hepsinde çalıştı'' demek asla yeterli değildir. Çünkü incelenen evren çoğunlukla sonsuzdur ve henüz denemediğimiz bir sonraki değer bütün iddiamızı geçersiz kılabilir.
+
+İşte \textbf{ispat}, bir iddianın yalnızca denenen birkaç durumda değil, istisnasız \textbf{tüm} geçerli durumlarda doğru olduğunu şüpheye yer bırakmayacak mantıksal adımlarla güvenceye alma yöntemidir. İspat yapmak, sağlam kanıtlardan hareketle gerçeğe ulaşan bir araştırmacı gibi çalışmaktır: Başlangıçta kabul edilen tanımlardan ve aksiyomlardan yola çıkılır; Bölüm 1'de kurduğumuz mantık kuralları zinciriyle ilerlenerek hedeflenen sonuca varılır.
+
+Olimpiyat matematiğinde ve algoritmik düşüncede her iddianın arkasındaki ``neden?'' sorusunu yanıtlamak için dört temel ispat tekniğinden yararlanırız: doğrudan ispat, çelişkiyle ispat, karşı örnekle çürütme ve matematiksel tümevarım.
+
+% ============================================================
+% 2.1 DOĞRUDAN İSPAT
+% ============================================================
+\section{Doğrudan İspat}
+
+Matematiksel iddiaların en yaygın biçimi $p \Rightarrow q$ yapısındaki koşullu önermelerdir. Doğrudan ispat, bu koşulun mantığına en sade ve doğal yaklaşımdır: Hipotez olan $p$'nin doğru olduğunu kabul ederiz; ardından tanımları, bilinen cebirsel kuralları ve daha önce kanıtlanmış gerçekleri ardışık adımlarla uygulayarak hüküm olan $q$'ya ulaşırız.
+
+Doğrudan ispatın mantığını kavramak için Bölüm 11 ve 12'de bölünebilme ve asal sayıları incelerken de sıkça başvuracağımız teklik ve çiftlik tanımlarıyla başlayalım.
+
+\begin{definition}[Çift ve Tek Sayılar]
+$n$ bir tam sayı olsun ($n \in \mathbb{Z}$):
+\begin{itemize}
+  \item Eğer $n = 2k$ olacak biçimde bir $k \in \mathbb{Z}$ tam sayısı varsa, $n$'ye bir \textbf{çift sayı} denir.
+  \item Eğer $n = 2k + 1$ olacak biçimde bir $k \in \mathbb{Z}$ tam sayısı varsa, $n$'ye bir \textbf{tek sayı} denir.
+\end{itemize}
+\end{definition}
+
+Bu tanımlar yalnızca birer sınıflandırma değil, ispatlarımızda doğrudan yerlerine koyabileceğimiz cebirsel eşitliklerdir.
+
+\begin{theorem}
+İki tek sayının toplamı daima bir çift sayıdır.
+\end{theorem}
+\begin{proof}
+Adım adım doğrudan ispat zincirini kuralım:
+\begin{enumerate}
+  \item \textbf{Varsayım (Hipotez):} $x$ ve $y$ iki tek sayı olsun.
+  \item \textbf{Tanımı Uygulama:} Tek sayı tanımı gereği, öyle $a, b \in \mathbb{Z}$ tam sayıları vardır ki:
+  \[ x = 2a + 1 \quad \text{ve} \quad y = 2b + 1 \]
+  \item \textbf{Cebirsel İşlem:} Bu iki sayıyı toplayalım:
+  \[ x + y = (2a + 1) + (2b + 1) = 2a + 2b + 2 \]
+  \item \textbf{Hedef Formu Yakalama:} Elde ettiğimiz ifadeyi $2$ ortak parantezine alabiliriz:
+  \[ x + y = 2(a + b + 1) \]
+  \item \textbf{Sonuç (Hüküm):} $a$ ve $b$ tam sayı olduğundan $k = a + b + 1$ sayısı da bir tam sayıdır. O hâlde $x + y = 2k$ biçiminde yazılabilmektedir. Çift sayı tanımı gereğince $x + y$ zorunlu olarak bir çift sayıdır.
+\end{enumerate}
+İspat böylece doğrudan tamamlanmış olur.
+\end{proof}
+
+\subsection{Karşıt Pozitifle İspat}
+
+Bölüm 1'de ele aldığımız temel mantıksal denkliklerden biri, bir koşullu önermenin kendi karşıt pozitifine denk olduğuydu:
+\[ (p \Rightarrow q) \equiv (\neg q \Rightarrow \neg p) \]
+Kimi zaman $p$'den yola çıkıp $q$'ya ulaşmak cebirsel olarak güç veya dolambaçlı olabilir. Böyle durumlarda $\neg q$ ifadesini hipotez kabul edip doğrudan adımlarla $\neg p$'ye ulaşmak çok daha kolaydır. Karşıt pozitifi doğrudan ispatlamak, ana iddiayı ispatlamakla tamamen aynı güce sahiptir.
+
+\begin{theorem}
+$n$ bir tam sayı olsun. Eğer $n^2$ çift sayı ise, $n$ de çift sayıdır.
+\end{theorem}
+\begin{proof}
+Bu iddiayı doğrudan ispatlamaya çalışalım: ``$n^2$ çift ise $n^2 = 2k$'dır; buradan $n = \sqrt{2k}$ olur.'' Fakat $\sqrt{2k}$ ifadesinin neden bir tam sayı olduğunu ve neden $2$'ye bölündüğünü açıklamak köklü ifadeler nedeniyle doğrudan adımlarla kolay değildir.
+
+Bunun yerine önermemizin karşıt pozitifini kuralım:
+\begin{itemize}
+  \item $p$: ``$n^2$ çifttir'', $\quad q$: ``$n$ çifttir''.
+  \item $\neg q$: ``$n$ tektir'', $\quad \neg p$: ``$n^2$ tektir''.
+\end{itemize}
+Karşıt pozitif iddiamız şudur: \textbf{``Eğer $n$ tek sayı ise, $n^2$ de tek sayıdır.''} Şimdi bu iddiayı doğrudan ispatlayalım:
+\begin{enumerate}
+  \item $n$ bir tek sayı olsun. O hâlde bir $k \in \mathbb{Z}$ için $n = 2k + 1$'dir.
+  \item $n^2$'yi hesaplayalım:
+  \[ n^2 = (2k + 1)^2 = 4k^2 + 4k + 1 = 2(2k^2 + 2k) + 1 \]
+  \item $k$ tam sayı olduğundan $m = 2k^2 + 2k$ de bir tam sayıdır.
+  \item Dolayısıyla $n^2 = 2m + 1$ biçimindedir; bu da tanım gereği $n^2$'nin tek sayı olduğunu gösterir.
+\end{enumerate}
+Karşıt pozitif ($\neg q \Rightarrow \neg p$) doğrudan kanıtlandığı için, ana teoremimiz ($p \Rightarrow q$) de ispatlanmış olur.
+\end{proof}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Ardışık iki tam sayının çarpımının daima bir çift sayı olduğunu doğrudan ispatlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Herhangi bir $n \in \mathbb{Z}$ tam sayısı alalım. Ardışık iki sayı $n$ ve $n+1$ olur. Çarpımları $P = n(n+1)$'dir. Bir tam sayı ya çifttir ya da tektir. Bu iki durumu ayrı ayrı inceleyelim (durum analizi ile doğrudan ispat):
+\begin{itemize}
+  \item \textbf{1. Durum ($n$ çift olsun):} $n = 2k$ ($k \in \mathbb{Z}$) yazılabilir. Buradan:
+  \[ P = n(n+1) = 2k(2k+1) = 2[k(2k+1)] \]
+  $k(2k+1)$ bir tam sayı olduğundan $P$ sayısı $2$'nin tam katıdır, yani çifttir.
+  \item \textbf{2. Durum ($n$ tek olsun):} $n = 2k+1$ ($k \in \mathbb{Z}$) yazılabilir. O hâlde bir sonraki sayı:
+  \[ n+1 = (2k+1) + 1 = 2k+2 = 2(k+1) \]
+  olur. Çarpım ise:
+  \[ P = n(n+1) = (2k+1) \cdot 2(k+1) = 2[(2k+1)(k+1)] \]
+  biçimindedir. Yine $2$ ortak çarpanı elde edildiğinden $P$ çifttir.
+\end{itemize}
+Her iki durumda da $n(n+1)$ çift çıktığından iddia tüm tam sayılar için doğrudur.
+\end{proof}
+
+\begin{example}
+$x$ ve $y$ iki tek tam sayı ise, $x^2 + y^2$ toplamının çift olduğunu fakat $4$ ile bölünemediğini doğrudan ispatlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+$x$ ve $y$ tek sayı olduklarından $x = 2a + 1$ ve $y = 2b + 1$ ($a, b \in \mathbb{Z}$) yazabiliriz. Karelerini alıp toplayalım:
+\begin{align*}
+x^2 + y^2 &= (2a + 1)^2 + (2b + 1)^2 \\
+&= (4a^2 + 4a + 1) + (4b^2 + 4b + 1) \\
+&= 4a^2 + 4a + 4b^2 + 4b + 2
+\end{align*}
+Bu ifadeyi iki farklı biçimde gruplayabiliriz:
+\begin{enumerate}
+  \item $2$ ortak parantezine alırsak:
+  \[ x^2 + y^2 = 2(2a^2 + 2a + 2b^2 + 2b + 1) \]
+  Bu ifade $2$'nin katı olduğundan toplam kesinlikle bir \textbf{çift sayı}dır.
+  \item Şimdi aynı ifadeyi $4$ paranteziyle inceleyelim:
+  \[ x^2 + y^2 = 4(a^2 + a + b^2 + b) + 2 \]
+  $a^2 + a + b^2 + b$ bir tam sayıdır; buna $K$ diyelim. O hâlde $x^2 + y^2 = 4K + 2$'dir. Bir sayının $4$ ile tam bölünebilmesi için kalanın $0$ olması gerekir; oysa burada kalan daima $2$'dir.
+\end{enumerate}
+Demek ki iki tek sayının kareleri toplamı çifttir fakat asla $4$'e tam bölünemez.
+\end{proof}
+
+\begin{example}
+$n$ bir tam sayı olsun. Eğer $3n + 2$ tek sayı ise, $n$'nin tek sayı olduğunu karşıt pozitif yöntemiyle ispatlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Önermemiz şudur: ``$3n + 2$ tek $\Rightarrow$ $n$ tek''.
+Bu önermenin karşıt pozitifi:
+\[ \text{``$n$ çift sayı ise $3n + 2$ çift sayıdır.''} \]
+Bu yeni iddiayı doğrudan ispatlayalım:
+\begin{enumerate}
+  \item $n$ bir çift sayı olsun. O hâlde $n = 2k$ olacak biçimde bir $k \in \mathbb{Z}$ vardır.
+  \item $3n + 2$ ifadesinde $n$ yerine $2k$ yazalım:
+  \[ 3n + 2 = 3(2k) + 2 = 6k + 2 \]
+  \item İfadeyi $2$ parantezine alalım:
+  \[ 3n + 2 = 2(3k + 1) \]
+  \item $k$ tam sayı olduğundan $3k + 1$ de bir tam sayıdır.
+  \item Dolayısıyla $3n + 2$ bir çift sayıdır.
+\end{enumerate}
+Karşıt pozitif doğru olduğundan, ana iddia da zorunlu olarak doğrudur.
+\end{proof}
+
+
+% ============================================================
+% 2.2 ÇELİŞKİYLE İSPAT
+% ============================================================
+\section{Çelişkiyle İspat}
+
+Bazen bir sonucun neden doğru olduğunu doğrudan inşa etmek güç olabilir; buna karşılık onun \textbf{yanlış olduğunu varsaymanın} açık bir mantıksal tutarsızlık doğurduğunu göstermek çok daha pratiktir. Bu yönteme \textbf{çelişkiyle ispat} (Latince adıyla \textit{reductio ad absurdum}) denir.
+
+Çelişkiyle ispatın mantıksal adımları şöyledir:
+\begin{enumerate}
+  \item İspatlamak istediğimiz önerme $P$ olsun.
+  \item $P$'nin \textbf{yanlış} olduğunu, yani $\neg P$'nin doğru olduğunu varsayarız.
+  \item Bu varsayımdan yola çıkarak kurala uygun mantıksal çıkarımlar yaparız.
+  \item En sonunda mantıksal olarak olanaksız bir durumla karşılaşırız: Örneğin bir sayının aynı anda hem tek hem çift çıkması, $0 = 1$ eşitliği ya da bilinen bir teoremin ihlali.
+  \item Geçerli çıkarım adımları hata üretmeyeceğine göre, bu çelişkinin tek kaynağı en başta yaptığımız ``$P$ yanlıştır'' varsayımıdır.
+  \item Dolayısıyla varsayımımız geçersizdir ve $P$ önermesinin \textbf{doğru} olduğu kanıtlanmış olur.
+\end{enumerate}
+
+Matematik tarihinin en bilinen çelişkiyle ispatlarından biri, antik Yunan'da geliştirilen $\sqrt{2}$'nin irrasyonelliği teoremidir.
+
+\begin{theorem}
+$\sqrt{2}$ bir rasyonel sayı değildir (yani irrasyoneldir).
+\end{theorem}
+\begin{proof}
+İddianın tersini varsayalım: $\sqrt{2}$ bir \textbf{rasyonel sayı} olsun.
+\begin{enumerate}
+  \item Rasyonel sayı tanımı gereği, $\sqrt{2}$ sayısı aralarında asal iki pozitif tam sayının oranı olarak yazılabilir:
+  \[ \sqrt{2} = \frac{a}{b} \quad (a, b \in \mathbb{Z}^+) \]
+  Buradaki temel kabulümüz, kesrin \textbf{en sade} hâlinde olmasıdır; yani $a$ ve $b$'nin $1$'den büyük ortak böleni yoktur (özellikle ikisi birden çift sayı olamaz).
+  
+  \item Eşitliğin her iki tarafının karesini alalım:
+  \[ 2 = \frac{a^2}{b^2} \implies a^2 = 2b^2 \]
+  
+  \item $a^2 = 2b^2$ eşitliği, $a^2$'nin bir \textbf{çift sayı} olduğunu söyler. Bölüm 2.1'de kanıtladığımız teorem uyarınca, bir tam sayının karesi çift ise kendisi de çifttir. O hâlde $a$ bir çift sayıdır.
+  
+  \item $a$ çift olduğuna göre, bir $k \in \mathbb{Z}^+$ için $a = 2k$ yazabiliriz. Bunu bir önceki denklemde yerine koyalım:
+  \[ (2k)^2 = 2b^2 \implies 4k^2 = 2b^2 \implies b^2 = 2k^2 \]
+  
+  \item Şimdi bu son eşitliğe bakalım: $b^2 = 2k^2$ olduğuna göre $b^2$ de bir \textbf{çift sayı}dır. Yine aynı kuraldan ötürü $b$ de zorunlu olarak bir çift sayı olmalıdır.
+  
+  \item Elde ettiğimiz sonuçları birleştirelim:
+  Hem $a$'nın hem de $b$'nin çift olduğunu bulduk. İkisi de çift ise, her ikisi de $2$'ye tam bölünür.
+  
+  \item Bu durum, en başta yaptığımız ``$a/b$ kesri en sade hâldedir, $a$ ve $b$'nin $1$'den büyük ortak böleni yoktur'' kabulüyle \textbf{çelişir}.
+\end{enumerate}
+Bu çelişki, $\sqrt{2}$'nin rasyonel olduğu yönündeki varsayımın yanlış olduğunu kanıtlar. Demek ki $\sqrt{2}$ bir rasyonel sayı olamaz; irrasyoneldir.
+\end{proof}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Toplamları $100$ olan $5$ tam sayının en az birinin $20$'den büyük veya ona eşit olması gerektiğini çelişkiyle ispatlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Sayılarımız $x_1, x_2, x_3, x_4, x_5 \in \mathbb{Z}$ olsun ve $x_1 + x_2 + x_3 + x_4 + x_5 = 100$ verilsin.
+
+İspatlamak istediğimiz iddia: ``$\exists i \in \{1, 2, 3, 4, 5\}, x_i \ge 20$''.\\
+Bu iddianın olumsuzunu varsayalım: Sayıların hiçbiri $20$'ye eşit veya büyük olmasın. Yani her bir sayı $20$'den kesinlikle küçük olsun:
+\[ \forall i \in \{1, 2, 3, 4, 5\}, \quad x_i < 20 \implies x_i \le 19 \]
+Şimdi bu $5$ sayının toplamını üstten sınırlandıralım:
+\[ x_1 + x_2 + x_3 + x_4 + x_5 \le 19 + 19 + 19 + 19 + 19 = 95 \]
+Fakat bize verilen başlangıç koşulu toplamın tam olarak $100$ olduğuydu:
+\[ 100 \le 95 \]
+Bu durum açık bir çelişkidir. Demek ki varsayımımız yanlıştır; sayılardan en az biri $20$ veya daha büyük olmak zorundadır. (Bu akıl yürütme, Bölüm 7'de göreceğimiz Güvercin Yuvası İlkesi'nin de temelini oluşturur).
+\end{proof}
+
+\begin{example}
+$r$ bir rasyonel sayı ($r \in \mathbb{Q}$) ve $x$ bir irrasyonel sayı olsun. $r + x$ toplamının bir irrasyonel sayı olduğunu ispatlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Çelişki yöntemini uygulayalım. Toplamın irrasyonel \textbf{olmadığını}, yani bir rasyonel sayı olduğunu varsayalım:
+\[ r + x = q \quad (q \in \mathbb{Q}) \]
+Eşitlikte $x$'i yalnız bırakalım:
+\[ x = q - r \]
+$q$ ve $r$ iki rasyonel sayı olduğundan, $q = \frac{a}{b}$ ve $r = \frac{c}{d}$ ($a, c \in \mathbb{Z}$ ve $b, d \in \mathbb{Z}^+$) biçiminde yazılabilir. Farklarını alalım:
+\[ x = \frac{a}{b} - \frac{c}{d} = \frac{ad - bc}{bd} \]
+Tam sayılar kümesi çarpma ve çıkarma altında kapalı olduğundan $ad - bc$ bir tam sayıdır. Benzer biçimde $bd$ de sıfırdan farklı bir tam sayıdır. 
+
+Dolayısıyla $x$, iki tam sayının oranı biçiminde yazılabilmiştir; yani $x \in \mathbb{Q}$ (rasyonel) olmalıdır. 
+
+Fakat problemin başında $x$'in bir \textbf{irrasyonel} sayı olduğu verilmişti. Bir sayı aynı anda hem rasyonel hem irrasyonel olamaz. Bu çelişki varsayımımızı geçersiz kılar. O hâlde $r + x$ toplamı kesinlikle irrasyoneldir.
+\end{proof}
+
+\begin{example}
+Karesi bir çift sayı olan en küçük pozitif tek sayının var olmadığını çelişkiyle ispatlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+İddia şudur: Karesi çift olan hiçbir pozitif tek sayı yoktur.
+Tersini varsayalım: Karesi çift olan en az bir $n$ pozitif tek sayısı var olsun.
+\begin{enumerate}
+  \item $n$ tek olduğuna göre $n = 2k + 1$ ($k \in \mathbb{N}$) biçimindedir.
+  \item Karesini alalım:
+  \[ n^2 = (2k + 1)^2 = 4k^2 + 4k + 1 = 2(2k^2 + 2k) + 1 \]
+  \item Bu eşitlik $n^2$'nin kesinlikle bir tek sayı olduğunu gösterir.
+  \item Ancak varsayımımız $n^2$'nin bir çift sayı olduğuydu.
+  \item Bir tam sayı aynı anda hem tek hem çift olamaz.
+\end{enumerate}
+Bu çelişki varsayımı geçersiz kılar. Dolayısıyla karesi çift olan tek bir pozitif tek sayı bile bulunamaz.
+\end{proof}
+
+
+% ============================================================
+% 2.3 KARŞI ÖRNEKLE ÇÜRÜTME
+% ============================================================
+\section{Karşı Örnekle Çürütme}
+
+Matematikte genel bir kuralı doğrulamak ile çürütmek arasında belirgin bir asimetri bulunur. Bir iddianın doğruluğunu göstermek için olası tüm durumları kapsayan bir kanıt sunmak gerekirken, evrensel bir iddiayı ($\forall x, P(x)$) çürütmek için kurala uymayan \textbf{tek bir örnek} göstermek yeterlidir. Bu örneğe \textbf{karşı örnek} (counterexample) denir.
+
+Bölüm 1'de incelediğimiz mantıksal denklik bu durumu açıkça gösterir:
+\[ \neg(\forall x \in A, P(x)) \equiv \exists x \in A, \neg P(x) \]
+Yani ``her eleman koşulu sağlar'' iddiasının değili, ``koşulu sağlamayan en az bir eleman vardır'' ifadesidir.
+
+\subsection{Öğrenci Tümevarımı Tuzağı}
+
+Yarışmalara hazırlanan öğrencilerin sıkça düştüğü yanılgılardan biri, bir iddianın ilk birkaç değer için sağlandığını görünce onun genel bir kural olduğuna hükmetmektir: ``$n=1$ için doğru, $n=2$ için doğru, $n=3$ için doğru; demek ki her $n$ için geçerlidir.'' Bu çıkarım biçimi matematikte kanıt sayılmaz.
+
+Tarihte önde gelen matematikçiler dahi bu tuzağa dair çarpıcı örnekler bırakmıştır:
+\begin{itemize}
+  \item \textbf{Euler'in Asal Üreten Polinomu:} Leonhard Euler, $f(n) = n^2 + n + 41$ polinomunu incelemiştir. 
+  \begin{align*}
+  n=0 &\implies 41 \text{ (asal)} \\
+  n=1 &\implies 43 \text{ (asal)} \\
+  n=2 &\implies 47 \text{ (asal)} \\
+  &\dots \\
+  n=39 &\implies 39^2 + 39 + 41 = 1601 \text{ (asal)}
+  \end{align*}
+  Bu formül $n=0$'dan $n=39$'a kadar tam $40$ adım boyunca kesintisiz olarak asal sayı üretir. İlk $40$ denemeyi gören biri formülün daima asal ürettiğine kolayca inanabilir.
+  
+  Fakat $n = 40$ koyduğumuzda:
+  \[ f(40) = 40^2 + 40 + 41 = 40(40 + 1) + 41 = 40 \times 41 + 41 = 41 \times (40 + 1) = 41^2 \]
+  elde edilir. $41^2 = 1681$ sayısı $41$'e tam bölünür ve asal değildir. $n = 40$ tek başına bu genel iddiayı çürüten bir karşı örnektir.
+
+  \item \textbf{Fermat Sayıları:} Pierre de Fermat, $F_n = 2^{2^n} + 1$ biçimindeki sayıların her $n \ge 0$ için daima asal olduğunu öne sürmüştür. İlk birkaç değere bakalım:
+  \[ F_0 = 3, \quad F_1 = 5, \quad F_2 = 17, \quad F_3 = 257, \quad F_4 = 65537 \]
+  Bu sayıların hepsi gerçekten asaldır. Ancak yaklaşık bir asır sonra Euler, $n = 5$ için:
+  \[ F_5 = 2^{32} + 1 = 4294967297 = 641 \times 6700417 \]
+  olduğunu göstererek Fermat'nın iddiasını tek bir karşı örnekle çürütmüştür.
+\end{itemize}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Aşağıdaki iddiaların yanlış olduğunu birer karşı örnek göstererek çürütünüz:
+\begin{enumerate}
+  \item ``Bütün tek sayılar asal sayıdır.''
+  \item ``İki irrasyonel sayının toplamı daima irrasyoneldir.''
+  \item ``Herhangi $a, b, c \in \mathbb{R}$ için $a \cdot b = a \cdot c$ ise $b = c$'dir.''
+\end{enumerate}
+\end{example}
+\begin{proof}[Çözüm]
+Her iddiayı tek bir karşı örnekle geçersiz kılalım:
+\begin{enumerate}
+  \item İddia: $\forall n \in \mathbb{Z}, (n \text{ tek} \Rightarrow n \text{ asal})$.\\
+  \textbf{Karşı örnek:} $n = 9$ seçelim. $9 = 2 \times 4 + 1$ olduğundan bir tek sayıdır; ancak $9 = 3 \times 3$ olduğundan asal değildir. $n=9$ iddiayı çürütmeye yeterlidir.
+  
+  \item İddia: $x, y \notin \mathbb{Q} \Rightarrow x + y \notin \mathbb{Q}$.\\
+  \textbf{Karşı örnek:} $x = \sqrt{2}$ ve $y = -\sqrt{2}$ seçelim. Her ikisi de irrasyoneldir. Fakat toplamları:
+  \[ x + y = \sqrt{2} + (-\sqrt{2}) = 0 \]
+  olur. $0 = \frac{0}{1}$ bir rasyonel sayıdır. Dolayısıyla iddia genel olarak doğru değildir.
+
+  \item İddia: $a \cdot b = a \cdot c \Rightarrow b = c$.\\
+  \textbf{Karşı örnek:} $a = 0, b = 2, c = 5$ seçelim.
+  \[ a \cdot b = 0 \cdot 2 = 0 \quad \text{ve} \quad a \cdot c = 0 \cdot 5 = 0 \]
+  Burada $a \cdot b = a \cdot c$ eşitliği sağlanır; ancak $2 \neq 5$'tir ($b \neq c$). Sıfır çarpanı iddiayı geçersiz kılar.
+\end{enumerate}
+\end{proof}
+
+\begin{example}
+Bir öğrenci ``$n$ bir pozitif tam sayı ise $n^2 - n + 11$ sayısı daima asaldır'' iddiasında bulunmaktadır. Bu iddiayı çürüten en küçük $n$ pozitif tam sayısını bulunuz.
+\end{example}
+\begin{proof}[Çözüm]
+İfademiz $f(n) = n^2 - n + 11$'dir.
+Küçük değerleri inceleyelim:
+\begin{itemize}
+  \item $n=1 \implies 1 - 1 + 11 = 11$ (asal)
+  \item $n=2 \implies 4 - 2 + 11 = 13$ (asal)
+  \item $n=3 \implies 9 - 3 + 11 = 17$ (asal)
+  \item $n=4 \implies 16 - 4 + 11 = 23$ (asal)
+  \item $n=5 \implies 25 - 5 + 11 = 31$ (asal)
+\end{itemize}
+Denemelere devam etmek yerine ifadenin cebirsel yapısına bakalım: İfadenin $11$'in katı olmasını nasıl sağlarız? Eğer $n^2 - n$ kısmı $11$'in bir katı olursa, toplamın tamamı $11$'e bölünür ve sayı asal olmaktan çıkar:
+\[ n^2 - n = n(n - 1) \]
+Eğer $n = 11$ seçersek:
+\[ f(11) = 11^2 - 11 + 11 = 11^2 = 121 \]
+elde edilir. $121 = 11 \times 11$ olduğundan asal değildir. 
+
+Peki $11$'den daha küçük bir karşı örnek var mıdır? $n=1, \dots, 10$ değerleri için $n^2 - n + 11$ asal kalır. O hâlde iddiayı çürüten en küçük pozitif tam sayı $n = 11$'dir.
+\end{proof}
+
+
+% ============================================================
+% 2.4 TÜMEVARIM VE TOPLAM GÖSTERİMİ
+% ============================================================
+\section{Tümevarım ve Toplam Gösterimi}
+
+Doğal sayılar üzerine kurulu iddiaları ($\forall n \in \mathbb{N}^+, P(n)$) ispatlamanın en etkili ve sistematik yolu \textbf{matematiksel tümevarım} (mathematical induction) yöntemidir.
+
+Tümevarımın çalışma mantığını yan yana dizilmiş sonsuz sayıda domino taşı üzerinden düşünebiliriz:
+\begin{enumerate}
+  \item \textbf{Taban Adımı (Base Case):} İlk domino taşını devirebiliyor muyuz? Yani $P(1)$ doğru mudur?
+  \item \textbf{Tümevarım Adımı (Inductive Step):} Herhangi bir $k$. taş devrildiğinde, bir sonraki $(k+1)$. taşı da mutlaka deviriyor mu? Yani $P(k) \Rightarrow P(k+1)$ gerektirmesi genel olarak geçerli midir?
+\end{enumerate}
+Bu iki koşul sağlandığında, ilk taş devrildiğinde ikinciyi, ikinci üçüncüyü devirecek ve zincirleme bir biçimde tüm taşlar devrilecektir.
+
+\begin{theorem}[Matematiksel Tümevarım İlkesi]
+$P(n)$, pozitif tam sayılar ($n \in \mathbb{Z}^+$) üzerinde tanımlı bir açık önerme olsun. Eğer:
+\begin{enumerate}
+  \item $P(1)$ doğru ise, ve
+  \item Herhangi bir $k \ge 1$ tam sayısı için $P(k)$'nin doğruluğu $P(k+1)$'in doğruluğunu gerektiriyorsa ($P(k) \Rightarrow P(k+1)$),
+\end{enumerate}
+o hâlde her $n \in \mathbb{Z}^+$ için $P(n)$ doğrudur.
+\end{theorem}
+
+\subsection{Toplam Gösterimi ($\sum$)}
+
+Ardışık terimlerin toplamını uzun uzadıya $a_1 + a_2 + \dots + a_n$ biçiminde yazmak yerine matematikte büyük Yunan harfi Sigma ($\sum$) ile gösterilen \textbf{toplam sembolü} kullanılır:
+\[ \sum_{i=1}^n a_i = a_1 + a_2 + a_3 + \dots + a_n \]
+Burada $i$ değişkenine \textbf{toplam indisi} denir; $1$ indisin başlangıç değerini, $n$ ise bitiş değerini belirtir.
+
+Tümevarımın en bilinen uygulamalarından biri olan Gauss toplam formülünü ele alalım.
+
+\begin{theorem}[Gauss Toplam Formülü]
+İlk $n$ pozitif tam sayının toplamı:
+\[ \sum_{i=1}^n i = 1 + 2 + 3 + \dots + n = \frac{n(n+1)}{2} \]
+formülüyle verilir.
+\end{theorem}
+\begin{proof}
+Tümevarım ilkesinin iki adımını uygulayalım:
+
+\textbf{1. Taban Adımı ($n = 1$):}
+Sol taraf: Yalnızca ilk terim vardır, yani $1$.
+Sağ taraf: Formülde $n = 1$ yazalım:
+\[ \frac{1 \cdot (1 + 1)}{2} = \frac{1 \cdot 2}{2} = 1 \]
+Sol taraf ile sağ taraf birbirine eşittir ($1 = 1$). Taban adımı doğrulanmıştır.
+
+\textbf{2. Tümevarım Adımı:}
+Bir $k \ge 1$ tam sayısı için formülün doğru olduğunu varsayalım (\textbf{tümevarım hipotezi}):
+\[ 1 + 2 + \dots + k = \frac{k(k+1)}{2} \]
+Amacımız, bu hipotezi kullanarak eşitliğin $n = k+1$ için de sağlandığını, yani:
+\[ 1 + 2 + \dots + k + (k+1) = \frac{(k+1)((k+1)+1)}{2} = \frac{(k+1)(k+2)}{2} \]
+sonucuna vardığını göstermektir.
+
+$k+1$ terimli toplamın sol tarafını yazalım ve ilk $k$ terimi tümevarım hipotezimizle değiştirelim:
+\[ \underbrace{1 + 2 + \dots + k}_{= \frac{k(k+1)}{2}} + (k+1) = \frac{k(k+1)}{2} + (k+1) \]
+Ortak payda oluşturalım:
+\[ = \frac{k(k+1) + 2(k+1)}{2} \]
+Pay kısmını $(k+1)$ ortak parantezine alalım:
+\[ = \frac{(k+1)(k+2)}{2} \]
+Bu, $n = k+1$ için elde etmek istediğimiz ifadedir.
+
+Taban adımı ve tümevarım adımı sağlandığından, matematiksel tümevarım ilkesi gereğince formül tüm $n \ge 1$ tam sayıları için geçerlidir.
+\end{proof}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+İlk $n$ pozitif tek tam sayının toplamının $n^2$ olduğunu, yani:
+\[ \sum_{i=1}^n (2i - 1) = 1 + 3 + 5 + \dots + (2n - 1) = n^2 \]
+eşitliğini tümevarım yöntemiyle ispatlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+\textbf{1. Taban Adımı ($n = 1$):}
+Sol taraf: $2(1) - 1 = 1$.
+Sağ taraf: $1^2 = 1$.
+Eşitlik $n = 1$ için doğrudur.
+
+\textbf{2. Tümevarım Adımı:}
+İddianın $n = k$ için doğru olduğunu varsayalım:
+\[ 1 + 3 + 5 + \dots + (2k - 1) = k^2 \]
+$n = k+1$ durumunu inceleyelim. Bu durumda toplama bir sonraki tek sayı olan $2(k+1) - 1 = 2k + 1$ eklenir:
+\[ \underbrace{1 + 3 + 5 + \dots + (2k - 1)}_{= k^2} + (2k + 1) = k^2 + 2k + 1 \]
+Cebirsel tam kare açılımından biliyoruz ki:
+\[ k^2 + 2k + 1 = (k+1)^2 \]
+Bu da formülün $n = k+1$ için öngördüğü değerdir.
+
+Tümevarım tamamlanmıştır; ilk $n$ tek sayının toplamı daima $n^2$'dir.
+\end{proof}
+
+\begin{example}
+Her $n \ge 1$ tam sayısı için $3^{2n} - 1$ sayısının $8$ ile tam bölündüğünü tümevarımla ispatlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+\textbf{1. Taban Adımı ($n = 1$):}
+\[ 3^{2(1)} - 1 = 3^2 - 1 = 9 - 1 = 8 \]
+$8$ sayısı $8$'e tam bölünür ($8 = 8 \times 1$). Taban adımı sağlanır.
+
+\textbf{2. Tümevarım Adımı:}
+$n = k$ için ifadenin $8$'e bölündüğünü varsayalım; yani bir $m \in \mathbb{Z}$ için:
+\[ 3^{2k} - 1 = 8m \implies 3^{2k} = 8m + 1 \]
+olsun. Şimdi $n = k+1$ için ifadeyi hesaplayalım:
+\[ 3^{2(k+1)} - 1 = 3^{2k + 2} - 1 = 3^{2k} \cdot 3^2 - 1 = 9 \cdot 3^{2k} - 1 \]
+Tümevarım hipotezimiz olan $3^{2k} = 8m + 1$ değerini yerine yazalım:
+\begin{align*}
+9 \cdot (8m + 1) - 1 &= 72m + 9 - 1 \\
+&= 72m + 8 \\
+&= 8(9m + 1)
+\end{align*}
+$m$ bir tam sayı olduğundan $9m + 1$ de bir tam sayıdır. Elde edilen ifade $8$'in katı olduğundan, $n = k+1$ için de $8$ ile tam bölünür.
+
+Tümevarım ilkesi uyarınca iddia her $n \ge 1$ için doğrudur.
+\end{proof}
+
+\begin{example}
+Her $n \ge 4$ tam sayısı için $2^n \ge n^2$ eşitsizliğinin sağlandığını tümevarımla ispatlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Burada taban adımımızın $1$ değil $4$ olduğuna dikkat ediniz ($n=3$ için $2^3 = 8 < 3^2 = 9$ olurdu).
+
+\textbf{1. Taban Adımı ($n = 4$):}
+Sol taraf: $2^4 = 16$.
+Sağ taraf: $4^2 = 16$.
+$16 \ge 16$ sağlandığından taban adımı geçerlidir.
+
+\textbf{2. Tümevarım Adımı:}
+$k \ge 4$ için $2^k \ge k^2$ olduğunu varsayalım.
+$n = k+1$ için $2^{k+1} \ge (k+1)^2$ olduğunu göstermek istiyoruz.
+Sol taraftan başlayalım:
+\[ 2^{k+1} = 2 \cdot 2^k \ge 2k^2 \quad (\text{tümevarım hipotezinden}) \]
+Şimdi $2k^2 \ge (k+1)^2$ olduğunu gösterebilirsek zincir tamamlanacaktır. Farkı inceleyelim:
+\[ 2k^2 - (k+1)^2 = 2k^2 - (k^2 + 2k + 1) = k^2 - 2k - 1 = k(k - 2) - 1 \]
+$k \ge 4$ olduğunu biliyoruz. O hâlde:
+\[ k(k - 2) - 1 \ge 4(4 - 2) - 1 = 4(2) - 1 = 7 > 0 \]
+Fark pozitif olduğuna göre $2k^2 \ge (k+1)^2$'dir. Buradan:
+\[ 2^{k+1} \ge 2k^2 \ge (k+1)^2 \]
+elde edilir. İspat tamamlanmıştır.
+\end{proof}
+
+
+% ============================================================
+% 2.5 İSPATLI KÜÇÜK ÖRNEKLER
+% ============================================================
+\section{İspatlı Küçük Örnekler}
+
+Öğrendiğimiz ispat tekniklerini yarışmalarda karşılaşılan klasik problemlere ve algoritmik düşünceye uygulayalım.
+
+\subsection{Rekürsiyon ve Tümevarım Kardeşliği}
+
+Bilgisayar biliminde bir problemin çözümünü kendi alt problemlerine indirgeyerek tanımlamaya \textbf{rekürsiyon} (recursion) denir (bu kavram Bölüm 26'da ayrıntılı biçimde ele alınacaktır). Rekürsiyon ile matematiksel tümevarım birbirini doğrudan tamamlar:
+\begin{itemize}
+  \item Tümevarım çözümü tabandan yukarıya doğru inşa eder ($1 \to 2 \to 3 \dots$).
+  \item Rekürsiyon ise problemi adım adım taban duruma (\textit{base case}) indirger.
+\end{itemize}
+
+Aşağıdaki C kodunu ele alalım:
+
+\begin{lstlisting}[language=CTemel]
+// n pozitif tam sayisinin faktoriyelini hesaplar
+int faktoriyel(int n) {
+    if (n <= 1) {
+        return 1; // Taban adimi (base case)
+    }
+    return n * faktoriyel(n - 1); // Ozyinelemeli adim
+}
+\end{lstlisting}
+
+Bu fonksiyonun her $n \ge 1$ için doğru çalıştığının doğrulaması doğrudan matematiksel tümevarımla yapılır:
+\begin{enumerate}
+  \item $n=1$ için kod \texttt{if} bloğuna girer ve $1$ döndürür. $1! = 1$ olduğundan taban adımı geçerlidir.
+  \item Fonksiyonun $k$ için doğru çalıştığını varsayarsak (\texttt{faktoriyel(k)} $= k!$), $k+1$ çağrıldığında \texttt{(k+1) * faktoriyel(k)} $= (k+1) \cdot k! = (k+1)!$ değerini üretecektir. Tümevarım adımı tamamlanır.
+\end{enumerate}
+
+\subsection{Klasik Çözümlü Problemler}
+
+\begin{example}[L-Tromino ile Tahta Döşeme]
+Bir kenarı $2^n$ birim olan ($2^n \times 2^n$) kare bir satranç tahtasından rastgele \textbf{tek bir birim kare} kesilip çıkartılıyor. Geriye kalan $2^{2n} - 1$ adet birim karenin, her biri $3$ birim kareden oluşan $L$ biçimindeki taşlarla (L-tromino) boşluksuz ve taşma olmadan tamamen döşenebileceğini her $n \ge 1$ için ispatlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Bu geometri problemini matematiksel tümevarımla çözebiliriz:
+
+\textbf{1. Taban Adımı ($n = 1$):}
+Tahtamız $2^1 \times 2^1 = 2 \times 2$ boyutundadır ve toplam $4$ karesi vardır. Herhangi $1$ kare çıkarıldığında geriye tam olarak $3$ kare kalır. Bu $3$ kare kendiliğinden tam bir $L$-tromino şeklindedir. Dolayısıyla $1$ taş ile tahta döşenir. Taban adımı sağlanır.
+
+\textbf{2. Tümevarım Adımı:}
+İddianın $n = k$ için doğru olduğunu kabul edelim: $1$ karesi eksik herhangi bir $2^k \times 2^k$ tahta $L$-trominolarla döşenebilsin.
+
+Şimdi $2^{k+1} \times 2^{k+1}$ boyutundaki tahtayı ele alalım. Bu tahtayı tam ortadan yatay ve dikey çizgilerle bölerek \textbf{dört adet $2^k \times 2^k$ boyutunda çeyrek tahtaya} ayıralım.
+
+Eksik olan tek kare, bu dört çeyrekten \textbf{yalnızca birinin} içinde yer alır. 
+\begin{itemize}
+  \item Eksik kareyi barındıran çeyrek tahta, tümevarım hipotezimiz gereğince tek başına döşenebilir.
+  \item Eksik karesi olmayan diğer üç çeyrek tahtaya gelince: Büyük tahtanın tam merkezine, eksik karesi \textbf{olmayan} üç çeyreğin kesiştiği köşeleri örtecek biçimde tek bir $L$-tromino yerleştirelim.
+  \item Bu hamleyle, diğer üç çeyrek tahtanın da merkezdeki birer karesi örtülmüş olur. Artık o üç çeyrek tahta da ``birer karesi eksilmiş $2^k \times 2^k$ tahtalara'' dönüşür.
+  \item Tümevarım hipotezimize göre bu üç çeyrek de bağımsız olarak $L$-trominolarla tamamen döşenebilir.
+\end{itemize}
+Böylece $2^{k+1} \times 2^{k+1}$ tahtanın tamamı döşenmiş olur. Tümevarım ilkesi gereği iddia her $n \ge 1$ için geçerlidir.
+\end{proof}
+
+\begin{example}
+Ardışık üç tam sayının toplamının daima $3$ ile tam bölündüğünü doğrudan ispatlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Ardışık üç tam sayıyı temsil etmenin iki yolu vardır:
+\begin{itemize}
+  \item Birinci yol: $n, n+1, n+2$. Toplamları:
+  \[ n + (n+1) + (n+2) = 3n + 3 = 3(n+1) \]
+  \item İkinci (daha simetrik) yol: Ortadaki sayıya $m$ dersek sayılar $m-1, m, m+1$ olur. Toplamları:
+  \[ (m-1) + m + (m+1) = 3m \]
+\end{itemize}
+Her iki durumda da toplamın $3$ ortak çarpanına sahip olduğu görülür. Sayılar tam sayı olduğundan toplam daima $3$'ün tam katıdır.
+\end{proof}
+
+\begin{example}
+Bir çember etrafına $1, 2, 3, \dots, 6$ sayıları rastgele bir sırayla dizilmiştir. Çember üzerinde yan yana bulunan ardışık üç sayının toplamının en az $11$ olması gerektiğini çelişki yöntemiyle ispatlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Çember üzerindeki sayıları saat yönünde sırasıyla $a_1, a_2, a_3, a_4, a_5, a_6$ olarak adlandıralım. Bölüm 4'te ele alacağımız permütasyon kavramıyla ifade edersek, bu sayılar $1, 2, 3, 4, 5, 6$'nın bir dizilimidir; dolayısıyla toplamları:
+\[ \sum_{i=1}^6 a_i = 1 + 2 + 3 + 4 + 5 + 6 = 21 \]
+olur.
+
+Çemberi ardışık üçerli iki ayrık gruba ayıralım:
+\[ S_1 = a_1 + a_2 + a_3 \quad \text{ve} \quad S_2 = a_4 + a_5 + a_6 \]
+Bu iki grubun toplamı tüm sayıları kapsar:
+\[ S_1 + S_2 = (a_1 + a_2 + a_3) + (a_4 + a_5 + a_6) = 21 \]
+
+Şimdi iddiamızın tersini varsayalım: Çember üzerindeki ardışık hiçbir üç sayının toplamı $11$ veya daha fazla olmasın. Yani yan yana her üç sayının toplamı en fazla $10$ olsun:
+\[ S_1 \le 10 \quad \text{ve} \quad S_2 \le 10 \]
+Bu iki eşitsizliği taraf tarafa toplayalım:
+\[ S_1 + S_2 \le 10 + 10 = 20 \]
+Fakat biz $S_1 + S_2 = 21$ olduğunu biliyoruz:
+\[ 21 \le 20 \]
+Bu bir çelişkidir. O hâlde varsayımımız yanlıştır; çember üzerindeki ardışık üç sayının toplamı en az bir yerde $11$'e eşit veya $11$'den büyük olmak zorundadır.
+\end{proof}

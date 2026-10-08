@@ -1,0 +1,35 @@
+{
+  "file": "36_cozumler_ve_ipuclari.tex",
+  "findings": [
+    {
+      "file": "36_cozumler_ve_ipuclari.tex",
+      "line_hint": 401,
+      "type": "notation_violation",
+      "severity": "major",
+      "excerpt": "\\subsection{Kümülatif Toplamlar (Prefix Sums) ve 2 Boyutlu Aralık Sorguları}",
+      "issue": "Terminoloji sözleşmesinde 'prefix sum(s)' teriminin İngilizce korunması gerektiği, Türkçe karşılığı olan 'kümülatif toplam(lar)' ifadesinin KULLANILMAYACAĞI açıkça belirtilmiştir. Bölüm başlığında ve altındaki şekil yazısında 'Kümülatif Toplam' kullanılmıştır.",
+      "suggested_fix": "Başlığı '\\subsection{Prefix Sums ve 2 Boyutlu Aralık Sorguları}' ve şekil başlığını '\\caption{2 Boyutlu Prefix Sums ve İçerme-Dışarma}' olarak güncelleyiniz.",
+      "confidence": "high"
+    },
+    {
+      "file": "36_cozumler_ve_ipuclari.tex",
+      "line_hint": 521,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "rekürsif (rekürsif) C fonksiyonunu yazınız.",
+      "issue": "Sözleşmeye göre terim ilk geçtiğinde İngilizce karşılığı verilir ('rekürsif (recursive)' veya 'rekürsiyon (recursion)'); burada sehven parantez içine de aynı Türkçe kelime yazılarak 'rekürsif (rekürsif)' denmiştir.",
+      "suggested_fix": "'rekürsif (recursive) C fonksiyonunu yazınız.' veya doğrudan 'rekürsif C fonksiyonunu yazınız.' olarak düzeltiniz.",
+      "confidence": "high"
+    },
+    {
+      "file": "36_cozumler_ve_ipuclari.tex",
+      "line_hint": 354,
+      "type": "factual",
+      "severity": "major",
+      "excerpt": "include <stdio.h>",
+      "issue": "C kodu listing bloklarında önişlemci (preprocessor) yönergelerinin başındaki '#' karakterleri eksiktir (`include <stdio.h>` ve `define MAXN 1005`). Bu durum kodların derlenememesine ve sözdizimi hatasına yol açar.",
+      "suggested_fix": "Listing bloklarındaki `include <stdio.h>` ifadelerini `#include <stdio.h>`, `define MAXN 1005` ifadesini ise `#define MAXN 1005` olarak düzeltiniz.",
+      "confidence": "high"
+    }
+  ]
+}

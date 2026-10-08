@@ -1,0 +1,15 @@
+{
+  "file": "07_guvercin_yuvasi_ilkesi.tex",
+  "findings": [
+    {
+      "file": "07_guvercin_yuvasi_ilkesi.tex",
+      "line_hint": 315,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "mükerrer elemanları systematically hesaba katan",
+      "issue": "Türkçe metin içerisinde İngilizce 'systematically' kelimesi sehven bırakılmıştır.",
+      "suggested_fix": "'mükerrer elemanları sistematik olarak hesaba katan' şeklinde düzeltilmelidir.",
+      "confidence": "high"
+    }
+  ]
+}

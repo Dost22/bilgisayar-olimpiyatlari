@@ -1,0 +1,4 @@
+# Bu depo yalnızca kitabı derlemek, denetlemek ve siteyi üretmek için gereken
+# bağımlılıkları listeler. İçerik ÜRETEN ajan betikleri (ve onların API
+# istemcileri) depoda bulunmaz (bkz. config/KARARLAR.md → D71).
+PyMuPDF

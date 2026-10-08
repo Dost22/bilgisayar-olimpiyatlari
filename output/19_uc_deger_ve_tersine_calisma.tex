@@ -1,0 +1,340 @@
+\chapter[Uç Değer ve Tersine Çalışma · \textit{Orta}]{Uç Değer ve Tersine Çalışma}
+\chaptermark{Uç Değer ve Tersine Çalışma}
+
+Olimpiyat matematiğinde ve algoritmik düşüncede bazı problemler ilk bakışta çok karmaşık görünebilir. Ortada hareket eden onlarca nesne, sürekli değişen durumlar veya sonsuz büyüklükte kümeler varken, sistemin herhangi bir noktasına rastgele odaklanmak genellikle çözümü zorlaştırır. 
+
+Bu tür durumlarda iki temel strateji öne çıkar:
+\begin{enumerate}
+    \item \textbf{Uç Değer İlkesi (Extremal Principle):} Karmaşık bir sürecin ortalama durumlarına değil; en büyüğüne, en küçüğüne, en uzaktakine veya en kısasına odaklanmak.
+    \item \textbf{Tersine Çalışma (Working Backwards):} Başlangıçtan hedefe doğru çok sayıda kola ayrılan seçenekler arasında kaybolmak yerine, varılmak istenen sondan başlayıp geriye doğru adımlamak.
+\end{enumerate}
+
+Bu bölümde, bu iki düşünce biçiminin hem matematiksel ispatlarda hem de algoritma tasarımında karmaşık yapıları nasıl sadeleştirdiğini somut örnekler üzerinden ele alacağız.
+
+\section{Uç Değer İlkesi}
+
+Bir problemde incelenen nesnelerin tümü aynı anda karmaşık ilişkiler içinde bulunabilir. Ancak bu nesneleri ölçülebilir bir büyüklüğe (uzunluk, eleman sayısı, ağırlık, koordinat vb.) göre sıraladığımızda, kaçınılmaz olarak bir \emph{sınır}—yani bir en küçük ya da en büyük eleman—ortaya çıkar. Uç değer ilkesi şu yalın gözleme dayanır: \textbf{Ekstremum noktasında hareket alanı kısıtlıdır; bu kısıtlılık ise aradığımız çelişkiyi veya yapıyı kurmamızı sağlar.}
+
+\subsection{İyi Sıralılık ve Minimal Karşı Örnek}
+
+Doğal sayıların temel bir özelliğiyle başlayalım.
+
+\begin{definition}[İyi Sıralılık İlkesi (Well-Ordering Principle)]
+Doğal sayılar kümesinin ($\mathbb{N} = \{0, 1, 2, \dots\}$ veya $\mathbb{Z}^+ = \{1, 2, 3, \dots\}$) boş olmayan her alt kümesinin en küçük bir elemanı vardır.
+\end{definition}
+
+Bu ilke sezgisel olarak son derece açıktır; ancak Bölüm 2'de ele aldığımız çelişkiyle ispat yönteminin en etkili biçimlerinden birini oluşturur. İlkenin problem çözmedeki karşılığına \textbf{minimal karşı örnek yöntemi} (veya Fermat'nın adlandırdığı şekliyle \emph{sonsuz iniş yöntemi}) denir.
+
+Bir $P(n)$ iddiasının tüm pozitif tam sayılar için doğru olduğunu kanıtlamak istediğimizi varsayalım. Doğrudan ispat kurmak güçse, iddianın yanlış olduğunu varsayarız. O halde iddiayı sağlamayan (karşı örnek oluşturan) sayıların kümesi boştan farklıdır:
+\[
+S = \{n \in \mathbb{Z}^+ \mid P(n) \text{ yanlıştır}\}
+\]
+İyi sıralılık ilkesine göre, $S$ kümesinin \textbf{en küçük} bir elemanı olmak zorundadır. Bu elemana $m$ diyelim; yani $m$, iddiayı bozan en küçük tam sayıdır. Eğer sistemin kurallarını kullanarak $m$'den daha küçük ve yine iddiayı bozan bir $m' < m$ tam sayısı üretebilirsek, $m$'nin en küçük oluşuyla çelişiriz. Bu çelişki, $S$ kümesinin aslında boş olduğunu, dolayısıyla hiçbir karşı örneğin var olamayacağını gösterir.
+
+\begin{example}
+$\sqrt{2}$ sayısının rasyonel bir sayı olmadığını minimal karşı örnek yöntemiyle gösteriniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+İddianın aksine $\sqrt{2}$ rasyonel olsun. O halde $\sqrt{2} = a/b$ eşitliğini sağlayan $a, b \in \mathbb{Z}^+$ sayıları bulunur. Bu denklemi sağlayan tüm olası paydaları içeren
+\[
+S = \{b \in \mathbb{Z}^+ \mid \exists a \in \mathbb{Z}^+ \text{ öyle ki } a^2 = 2b^2\}
+\]
+kümesini tanımlayalım. Varsayımımıza göre $S$ boş değildir. İyi sıralılık ilkesi gereği, $S$ kümesinin en küçük bir elemanı vardır; buna $b_0$ diyelim. Karşılık gelen pay da $a_0$ olsun:
+\[
+a_0^2 = 2b_0^2
+\]
+Bu eşitlik $a_0^2$'nin çift olduğunu gösterir. Bölüm 17'de incelediğimiz parite özellikleri uyarınca, bir tam sayının karesi çift ise kendisi de çifttir. Dolayısıyla bir $k \in \mathbb{Z}^+$ için $a_0 = 2k$ yazabiliriz. Eşitlikte yerine koyarsak:
+\[
+(2k)^2 = 2b_0^2 \implies 4k^2 = 2b_0^2 \implies b_0^2 = 2k^2
+\]
+elde edilir. Aynı gerekçeyle $b_0^2$ çift olduğundan $b_0$ da çifttir. Yani bir $m \in \mathbb{Z}^+$ için $b_0 = 2m$ yazılabilir:
+\[
+(2m)^2 = 2k^2 \implies 4m^2 = 2k^2 \implies k^2 = 2m^2
+\]
+Bu eşitlik $k$ ve $m$ pozitif tam sayıları için $k/m = \sqrt{2}$ olduğunu söyler.
+
+Dolayısıyla $m \in S$ olmalıdır. Ancak $b_0 = 2m$ olduğundan $m < b_0$'dır. Bu durum, $b_0$'ın $S$ kümesindeki en küçük eleman olmasıyla çelişir. Bu çelişki baştaki kabulümüzü çürütür; $\sqrt{2}$ rasyonel olamaz.
+\end{proof}
+
+\subsection{En Büyük Asal Sayı Neden Yoktur?}
+
+Bölüm 12'de asal sayıları incelerken gördüğümüz Öklid'in asalların sonsuzluğuna dair ispatı, özünde uç değer ilkesinin doğrudan bir uygulamasıdır.
+
+\begin{theorem}
+Asal sayılar kümesi sonsuzdur; yani "en büyük asal sayı" yoktur.
+\end{theorem}
+
+\begin{proof}
+Asal sayılar kümesinin sonlu olduğunu varsayalım. Bu durumda sonlu sayıdaki tüm asalları küçükten büyüğe sıralayabiliriz:
+\[
+p_1 = 2 < p_2 = 3 < p_3 = 5 < \dots < p_k
+\]
+Burada $p_k$, en büyük asal sayıdır. 
+
+Şimdi bu uç değerden faydalanarak yeni bir sayı kuralım. Bilinen tüm asalların çarpımının 1 fazlası olan $N$ sayısını tanımlayalım:
+\[
+N = (p_1 \cdot p_2 \cdot p_3 \dotsm p_k) + 1
+\]
+Bölüm 12'de ifade ettiğimiz Aritmetiğin Temel Teoremi gereği $N > 1$ sayısı en az bir asal bölen içermelidir; bu bölen $q$ olsun.
+\begin{itemize}
+    \item Eğer $q$, listemizdeki asallardan biriyse ($q \in \{p_1, p_2, \dots, p_k\}$), o halde $q$ sayısı $p_1 \cdot p_2 \dotsm p_k$ çarpımını tam böler.
+    \item Fakat $q$ aynı zamanda $N$'yi de böldüğünden, bu iki sayının farkını da bölmek zorundadır:
+    \[
+    q \mid \Big( N - (p_1 \cdot p_2 \dotsm p_k) \Big) \implies q \mid 1
+    \]
+\end{itemize}
+1'i bölen bir asal sayı bulunmadığından bu bir çelişkidir. O halde $q$ asalı, listemizdeki $p_1, \dots, p_k$ asallarının hiçbirine eşit olamaz; yani listede yer almayan yeni bir asal sayıdır. Üstelik $q > p_k$ olmak zorundadır. 
+
+Bu durum, $p_k$'nın en büyük asal olması kabulüyle çelişir. Dolayısıyla en büyük asal sayı yoktur; asal sayılar kümesi sonsuzdur.
+\end{proof}
+
+\subsection{Kombinatorikte Maksimum ve Minimumun Gücü}
+
+Uç değer ilkesi yalnızca sayılar teorisinde değil, graf teorisinde ve sonlu kombinatorik yapılarda da önemli kolaylıklar sunar. Bir sistemde rastgele değerler yerine \textbf{maksimum} ya da \textbf{minimum} değere sahip elemanı seçtiğimizde, o elemanın komşuları veya ilişkili olduğu diğer bileşenler hakkında doğrudan eşitsizlikler elde ederiz.
+
+\begin{example}
+Bir çember etrafına $n$ tane reel sayı dizilmiştir. Her bir sayı, sağındaki ve solundaki iki komşusunun aritmetik ortalamasına eşittir. Bu sayıların hepsinin birbirine eşit olduğunu kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Sayıları $x_1, x_2, \dots, x_n$ olarak seçip denklemleri taraf tarafa toplamak yeni bir bilgi vermez. Bunun yerine kümedeki en büyük sayıya odaklanalım.
+
+Çemberdeki sayıların kümesi sonlu olduğundan, bu kümenin en az bir maksimum elemanı bulunur. Bu elemana $M$ diyelim. $M$'nin sağındaki komşusu $a$, solundaki komşusu $b$ olsun.
+
+Koşul gereği:
+\[
+M = \frac{a + b}{2} \iff 2M = a + b
+\]
+Fakat $M$ dizideki en büyük eleman olduğundan, tanım gereği $a \le M$ ve $b \le M$'dir. 
+
+Eğer $a < M$ olsaydı, $a + b < M + M = 2M$ olurdu ve eşitlik bozulurdu. Benzer şekilde $b < M$ de olamaz. Dolayısıyla tek olasılık:
+\[
+a = M \quad \text{ve} \quad b = M
+\]
+olmasıdır.
+
+Böylece maksimum bir elemanın her iki komşusunun da zorunlu olarak $M$'ye eşit olduğu görülür. Aynı akıl yürütmeyi komşuların komşularına zincirleme biçimde uyguladığımızda, çember üzerindeki tüm sayıların $M$'ye eşit olduğu anlaşılır. Sonuç olarak çemberdeki bütün sayılar birbirine eşittir.
+\end{proof}
+
+\begin{example}
+Bir satranç turnuvasında her oyuncu diğer tüm oyuncularla tam olarak bir maç yapmıştır (beraberlik yoktur; her maçta biri kazanmış, diğeri kaybetmiştir). Turnuvada öyle bir $T$ oyuncusunun var olduğunu kanıtlayınız ki; diğer her $X$ oyuncusu için ya $T$, $X$'i doğrudan yenmiş olsun ya da $T$'nin yendiği bir $Y$ oyuncusu $X$'i yenmiş olsun. (Kısacası $T$, herkese en fazla iki adımda ulaşabilmektedir.)
+\end{example}
+
+\begin{proof}[Çözüm]
+Koşulu sağlamaya en uygun adaya, yani turnuvada galibiyet sayısı maksimum olan oyuncuya odaklanalım.
+
+Turnuvada en çok maç kazanan oyuncuyu seçip $T$ olarak adlandıralım. $T$'nin doğrudan yendiği oyuncuların kümesine $W$, $T$'yi yenen oyuncuların kümesine ise $L$ diyelim.
+
+\begin{center}
+$T$'nin galibiyet sayısı $|W| = k$ olsun. Tanım gereği turnuvadaki hiçbir oyuncunun galibiyet sayısı $k$'dan fazla olamaz.
+\end{center}
+
+İspatlamak istediğimiz iddia şudur: $L$ kümesindeki her oyuncu, $W$ kümesindeki en az bir oyuncu tarafından yenilmiştir.
+
+Aksini varsayalım: $L$ kümesinde öyle bir $X$ oyuncusu bulunsun ki, $W$'deki hiç kimse $X$'i yenememiş olsun. Beraberlik olmadığına göre, bu durum $X$'in $W$'deki bütün oyuncuları yendiği anlamına gelir.
+
+Şimdi $X$'in yendiği kişi sayısını belirleyelim:
+\begin{enumerate}
+    \item $X$, $T$'yi yenmiştir ($X \in L$ olduğundan).
+    \item $X$, $W$ kümesindeki tüm oyuncuları yenmiştir (varsayım gereği $|W| = k$ kişi).
+\end{enumerate}
+Dolayısıyla $X$, en az $k + 1$ galibiyet almıştır. 
+
+Fakat bu bir çelişkidir; çünkü turnuvada en fazla galibiyet alan oyuncu $T$ idi ve yalnızca $k$ galibiyeti vardı. Bir oyuncunun $k+1$ galibiyete ulaşması olanaksızdır.
+
+Bu çelişki varsayımı çürütür. Demek ki $L$'deki her $X$ oyuncusu, $W$'deki en az bir $Y$ oyuncusu tarafından yenilmek zorundadır. Böylece $T \to Y \to X$ bağlantısı kurulur ve iddia kanıtlanmış olur.
+\end{proof}
+
+\begin{lstlisting}
+FUNCTION findTournamentLeader(winMatrix)
+    n = LENGTH(winMatrix)
+    INITIALIZE winCounts ARRAY OF SIZE n
+    
+    FOR i FROM 0 TO n - 1 DO
+        winCounts[i] = 0
+        FOR j FROM 0 TO n - 1 DO
+            winCounts[i] = winCounts[i] + winMatrix[i][j]
+        END FOR
+    END FOR
+    
+    bestPlayer = 0
+    maxWins = winCounts[0]
+    
+    FOR i FROM 1 TO n - 1 DO
+        IF winCounts[i] > maxWins THEN
+            maxWins = winCounts[i]
+            bestPlayer = i
+        END IF
+    END FOR
+    
+    RETURN bestPlayer
+END FUNCTION\end{lstlisting}
+
+\subsection*{En Sık Yapılan Hata}
+
+Uç değer ilkesini kullanırken en sık düşülen yanılgı, \textbf{sonsuz kümelerde uç değerin varlığını peşinen varsaymaktır}. 
+
+Örneğin, reel sayılarda $(0, 1)$ açık aralığında en küçük ya da en büyük eleman tanımlı değildir. Bir problemde uç değer seçilecekse, şu iki güvenceden en az biri sağlanmalıdır:
+\begin{enumerate}
+    \item Küme \textbf{sonludur} (boş olmayan her sonlu kümenin minimumu ve maksimumu mevcuttur).
+    \item Küme, \textbf{doğal sayılar} gibi aşağıdan sınırlı ve ayrık bir kümedir (İyi Sıralılık İlkesi gereği minimum elemanı vardır).
+\end{enumerate}
+
+\section{Tersine Çalışma}
+
+Bir labirentin giriş kapısından bakıldığında önünüzde onlarca koridor uzanır ve her koridor yeni yol ayrımlarına açılır. Ancak labirentin çıkış kapısından geriye doğru bakıldığında, çıkışa bağlanan yolların sayısı genellikle çok daha azdır.
+
+Algoritmik problem çözmede \textbf{tersine çalışma (working backwards)}, özellikle şu iki durumda temel bir stratejidir:
+\begin{enumerate}
+    \item Hedef durum belirgin ve kısıtlıyken, başlangıç durumunun çok fazla seçenek barındırması.
+    \item İleriye doğru yapılan işlemlerin dallanmayı hızla artırması, buna karşılık geriye doğru adımların tekil (deterministik) olması.
+\end{enumerate}
+
+\subsection{Oyun Teorisi ve Geriye Dönük Çıkarım}
+
+Tersine çalışmanın en belirgin uygulama alanlarından biri iki kişilik kombinatorik oyunlardır. Hamleleri baştan itibaren incelemek yerine, oyunun bittiği andan (terminal durum) geriye doğru durumlar sınıflandırılır:
+\begin{itemize}
+    \item \textbf{Kayıp Durum (L - Losing State):} Sırası gelen oyuncunun yaptığı her hamle rakibini bir kazanç durumuna götürüyorsa (veya geçerli hiçbir hamlesi kalmamışsa), bu bir kayıp durumudur.
+    \item \textbf{Kazanç Durum (W - Winning State):} Sırası gelen oyuncunun, rakibini bir kayıp durumuna ($L$) sokabileceği \emph{en az bir} hamlesi bulunuyorsa, bu bir kazanç durumudur.
+\end{itemize}
+
+\begin{example}
+Masanın üzerinde 21 adet taş bulunmaktadır. İki oyuncu sırayla hamle yapar. Sırası gelen oyuncu masadan 1, 2 veya 3 taş alabilir. Son taşı alan oyuncu oyunu kazanır. İlk başlayan oyuncunun kesin bir kazanma stratejisi var mıdır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Oyuna baştan başlamak yerine bitiş anından, yani masada 0 taş kaldığı durumdan geriye doğru ilerleyelim:
+
+\begin{itemize}
+    \item \textbf{0 Taş:} Hamle kalmamıştır, sırası gelen oyuncu kaybetmiştir. $\to \mathbf{L}$
+    \item \textbf{1, 2, 3 Taş:} Sırası gelen oyuncu tek hamlede 0 taşa ulaşabilir ($L$ durumuna geçebilir). Dolayısıyla bunlar kazanç durumudur. $\to \mathbf{W}$
+    \item \textbf{4 Taş:} Sırası gelen oyuncu 1, 2 veya 3 taş aldığında masada sırasıyla 3, 2 veya 1 taş bırakır. Bu durumların hepsi $W$'dir. Rakibe zorunlu olarak kazanç durumu devredildiği için 4 taş bir kayıp durumudur. $\to \mathbf{L}$
+    \item \textbf{5, 6, 7 Taş:} Sırası gelen oyuncu sırasıyla 1, 2 veya 3 taş alarak masada 4 taş ($L$) bırakabilir. Demek ki bunlar kazanç durumudur. $\to \mathbf{W}$
+    \item \textbf{8 Taş:} Yapılan her hamle masada 7, 6 veya 5 taş ($W$) bırakır. Dolayısıyla 8 bir kayıp durumudur. $\to \mathbf{L}$
+\end{itemize}
+
+Bölüm 14'te ele aldığımız modüler aritmetik diliyle ifade edersek, $4$'ün katı olan durumlar ($n \equiv 0 \pmod 4$) birer \textbf{Kayıp Durum} ($L$), diğer tüm durumlar ise \textbf{Kazanç Durum} ($W$)'dur.
+
+Başlangıçta masada 21 taş vardır ve $21 \equiv 1 \pmod 4$ olduğundan 21 bir $W$ durumudur.
+
+\textbf{Kazandıran Strateji:} İlk oyuncu ilk hamlesinde 1 taş alarak masada 20 taş bırakır ($L$ durumu). Bundan sonra rakip $k \in \{1, 2, 3\}$ taş aldığında, birinci oyuncu her defasında $4 - k$ taş alarak masadaki taş sayısını 4'ün katı tutmayı sürdürür. Son taşı birinci oyuncu alır ve oyunu kazanır.
+\end{proof}
+
+\subsection{İşlemleri Tersine Çevirmek}
+
+Bazen bir dizi aritmetik işlem uygulanıp bir hedefe ulaşılması istenir. İleriye doğru arama yapmak genişleyen bir ağaç üretirken, hedeften geriye gitmek arama uzayını önemli ölçüde daraltır.
+
+\begin{example}
+Başlangıçta elimizde $x = 1$ sayısı vardır. Her adımda sayıyı ya 2 ile çarpabiliriz ($x \to 2x$) ya da sayıya 1 ekleyebiliriz ($x \to x + 1$). $1$ sayısından $100$ sayısına en az kaç adımda ulaşabiliriz?
+\end{example}
+
+\begin{proof}[Çözüm]
+1'den başlayarak ilerlemek her adımda ikiye dallanan bir arama ağacı oluşturur. Oysa hedeften, yani 100'den geriye doğru gidersek seçenekler netleşir:
+\begin{itemize}
+    \item İleri hamleler: $(\times 2)$ ve $(+1)$.
+    \item Ters hamleler: $(\div 2)$ [yalnızca sayı çiftse] ve $(-1)$.
+\end{itemize}
+Geriye doğru adımlarken amaç sayıyı olabildiğince hızlı küçültmektir. Çift bir sayıyı 2'ye bölmek, 1 çıkarmaktan daha hızlı küçülme sağlar. Dolayısıyla sayı çift olduğu sürece 2'ye bölünmeli; tek olduğunda ise 2'ye bölünemeyeceği için mecburen 1 çıkarılmalıdır.
+
+Geriye doğru adımları uygulayalım:
+\begin{align*}
+100 &\xrightarrow{\div 2} 50 \xrightarrow{\div 2} 25 \xrightarrow{-1} 24 \xrightarrow{\div 2} 12 \\
+&\xrightarrow{\div 2} 6 \xrightarrow{\div 2} 3 \xrightarrow{-1} 2 \xrightarrow{\div 2} 1
+\end{align*}
+Geriye doğru yapılan hamle dizisi $100 \to 50 \to 25 \to 24 \to 12 \to 6 \to 3 \to 2 \to 1$ olup toplam \textbf{8 hamle} sürer.
+
+Bu yolu tersine çevirerek ileriye doğru yazalım:
+\[
+1 \xrightarrow{\times 2} 2 \xrightarrow{+1} 3 \xrightarrow{\times 2} 6 \xrightarrow{\times 2} 12 \xrightarrow{\times 2} 24 \xrightarrow{+1} 25 \xrightarrow{\times 2} 50 \xrightarrow{\times 2} 100
+\]
+Tersine çalışma sayesinde deneme yanılmaya gerek kalmadan en kısa yol doğrudan elde edilir.
+\end{proof}
+
+\subsection{Klasik Bir Problem: Yumurta Kırma Problemi}
+
+Tersine çalışma ve uç değer dengesinin bilgisayar bilimlerindeki klasik uygulamalarından biri "Yumurta Kırma" (Egg Dropping) problemidir.
+
+\begin{example}
+Elimizde birbirinin tıpatıp aynısı olan $2$ adet dayanıklı yumurta ve $100$ katlı bir bina bulunmaktadır. Yumurtalar belirli bir $K$ katından (kritik kat) veya daha yüksek bir kattan atıldığında kırılmakta, $K$'nın altındaki katlardan atıldığında ise kırılmamaktadır (kırılmayan yumurta tekrar kullanılabilir). Amacımız, en kötü senaryoda (worst-case) yapacağımız atış sayısını \textbf{en aza indirmektir}. Kritik katı kesin olarak bulabilmek için en kötü durumda en az kaç atış yapmamız gerekir?
+\end{example}
+
+\begin{proof}[Çözüm]
+İlk olarak tek bir yumurtamız olsaydı ne yapacağımızı düşünelim. Bu durumda risk alma şansımız kalmazdı; 1. kattan başlayıp $1, 2, 3, \dots, 100$ şeklinde sırayla yukarı çıkmak gerekirdi. Aksi halde yumurta örneğin doğrudan 10. katta kırılırsa, kritik katın 1 ile 9 arasındaki değerlerden hangisi olduğu belirlenemezdi. Dolayısıyla 1 yumurta ile 100 kat için en kötü senaryoda 100 atış yapılması zorunludur.
+
+Elimizde 2 yumurta varken ilk yumurtayı belirli aralıklarla (örneğin 10'ar kat atlayarak) test edebiliriz:
+\begin{itemize}
+    \item İlk yumurtayı 10, 20, 30, \dots katlarından atarız.
+    \item Diyelim ki 30. katta kırıldı. Kritik katın 21 ile 29 arasında olduğu anlaşılır.
+    \item Kalan tek yumurtayla 21'den itibaren birer birer deneriz ($21, 22, \dots, 29$).
+\end{itemize}
+Bu sabit adımlı yaklaşımda en kötü senaryo, ilk yumurtanın 100. katta kırılması (10 atış) ve ikinci yumurtanın 91'den 99'a kadar test edilmesidir (9 atış); toplam $10 + 9 = 19$ atış gerekir.
+
+Daha iyi bir sonuca ulaşmak için uç değer dengesi ve tersine düşünme birlikte kullanılır.
+
+Sabit adımlı yaklaşımda bir dengesizlik söz konusudur: İlk yumurta erken bir katta kırıldığında az, geç bir katta kırıldığında çok atış yapılır. En kötü durumu optimize edebilmek için her senaryoda \textbf{toplam atış sayısını dengede tutmak} gerekir.
+
+Hedeflenen maksimum atış sayısı $x$ olsun:
+\begin{itemize}
+    \item Birinci atış $x$. kattan yapılır. Kırılırsa, kalan $x-1$ atış hakkıyla ikinci yumurta $1, 2, \dots, x-1$ katlarında sırayla denenir. Toplam atış: $1 + (x-1) = x$.
+    \item Birinci atışta kırılmazsa, geriye en fazla $x-1$ atış hakkı kalır. Bu nedenle bir sonraki adım $x$ kadar değil, \textbf{$x-1$ kat} yukarı atılmalıdır; yani ikinci atış $x + (x-1)$ katında yapılır. Kırılırsa, aradaki $(x-2)$ kat ikinci yumurtayla taranır. Toplam atış: $2 + (x-2) = x$.
+    \item Kırılmadığı sürece bir sonraki adım $x-2$ kat yukarı taşınır.
+\end{itemize}
+
+Her adımda kalan hak 1 azaldığı için taranan kat aralığı da 1 daraltılır. Böylece $x$ hamlede test edilebilecek maksimum kat sayısı, hedeften geriye doğru ardışık toplamdır:
+\[
+x + (x-1) + (x-2) + \dots + 2 + 1 = \frac{x(x+1)}{2}
+\]
+Bu kapasitenin 100 katı kapsaması yeterlidir:
+\[
+\frac{x(x+1)}{2} \ge 100 \implies x(x+1) \ge 200
+\]
+$x$ bir tam sayı olduğuna göre:
+\begin{itemize}
+    \item $x = 13 \implies 13 \times 14 = 182 < 200$ (yetersiz)
+    \item $x = 14 \implies 14 \times 15 = 210 \ge 200$ (yeterli)
+\end{itemize}
+Demek ki en kötü durumda \textbf{en az 14 atış} yaparak kritik kat kesin olarak saptanabilir.
+
+Atış planının kat numaraları sırasıyla şöyledir:
+$14$, $\;14+13=27$, $\;27+12=39$, $\;39+11=50$, $\;60$, $\;69$, $\;77$, $\;84$, $\;90$, $\;95$, $\;99$, $\;100$.
+\end{proof}
+
+Aşağıdaki sözde kod, verilen kat sayısı için gerekli minimum deneme sayısını formülle ve adımların belirlenmesiyle hesaplar:
+
+\begin{lstlisting}
+FUNCTION minEggDrops(totalFloors)
+    x = 1
+    WHILE (x * (x + 1)) / 2 < totalFloors DO
+        x = x + 1
+    END WHILE
+    RETURN x
+END FUNCTION
+
+totalFloors = 100
+result = minEggDrops(totalFloors)
+PRINT "Minimum drops for " + totalFloors + " floors: " + result
+
+PRINT "Floors to drop from:"
+currentFloor = 0
+step = result
+
+WHILE currentFloor < totalFloors DO
+    currentFloor = currentFloor + step
+    PRINT MIN(currentFloor, totalFloors)
+    step = step - 1
+END WHILE\end{lstlisting}
+
+\subsection*{En Sık Yapılan Hata}
+
+Tersine çalışma yönteminde yapılan en yaygın hata, \textbf{tersine çevrilen işlemlerin öncelik sırasını karıştırmaktır}. 
+
+Örneğin, ileriye doğru çalışan bir dönüşüm şu olsun:
+\[
+f(x) = 2x + 3
+\]
+Bu işlemin tersi, $x$'i 2'ye bölüp ardından 3 çıkarmak değildir. İşlemlerin tersi işlem sırasının tam tersiyle uygulanır:
+\[
+f^{-1}(y) = \frac{y - 3}{2}
+\]
+Önce son uygulanan işlem geri alınır (3 çıkarılır), ardından bir önceki adıma dönülür (2'ye bölünür). İşlem sırasındaki bir hata, geriye dönük kurgunun tümünü geçersiz kılar.

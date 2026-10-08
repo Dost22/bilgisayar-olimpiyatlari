@@ -1,0 +1,15 @@
+{
+  "file": "10_cifte_sayim_ve_birebir_esleme.tex",
+  "findings": [
+    {
+      "file": "10_cifte_sayim_ve_birebir_esleme.tex",
+      "line_hint": 146,
+      "type": "bad_reference",
+      "severity": "minor",
+      "excerpt": "Bölüm 11'deki bölünebilme tanımını hatırlarsak, $j$'nin her pozitif böleni $i$ için bir kez ziyaret edilir.",
+      "issue": "Bölüm 11 henüz işlenmemiştir; dolayısıyla 'hatırlarsak' ifadesiyle geriye dönük bir atıf yapılması yanlıştır. Sözleşme gereği henüz işlenmemiş bölümlere ileriye dönük referans verilmelidir.",
+      "suggested_fix": "'Bölüm 11'de ayrıntılı göreceğimiz bölünebilme tanımı gereği, $j$'nin her pozitif böleni $i$ için...' şeklinde ileri referans olarak düzeltilmelidir.",
+      "confidence": "high"
+    }
+  ]
+}

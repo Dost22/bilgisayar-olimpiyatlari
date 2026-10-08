@@ -1,0 +1,648 @@
+\chapter{Alıştırmalar: Sayma}
+
+Kombinatorik ve sayma kuramında ustalaşmanın en etkili yolu, öğrenilen soyut ilkeleri farklı kurgularda sınamak ve problem karşısında doğru temsili (birebir eşleme, çifte sayım, tersine düşünme) kurabilmektir. Bu alıştırma setinde; Bölüm 4 ve 5'te gördüğümüz permütasyon ve kombinasyon tekniklerini, Bölüm 6'daki binom özdeşliklerini, Bölüm 7'deki güvercin yuvası ilkesini ve Bölüm 8'deki içerme--dışarma yöntemini bir araya getiren kapsamlı problemleri ele alacağız.
+
+Her alt konudaki problemler; olimpiyat müfredatına uygun olarak \textbf{[Kolay]}, \textbf{[Orta]} ve \textbf{[Zor]} düzeylerine ayrılmıştır. Çözümlerde yalnızca işlem adımları verilmemiş, her adımın ardındaki temel düşünce ve yöntemin gerekçesi de açıklanmıştır.
+
+% ==============================================================================
+\section{Permütasyon-kombinasyon alıştırmaları}
+% ==============================================================================
+
+Sayma problemlerine başlarken ilk sorulması gereken soru şudur: \emph{``Elimizdeki nesneler birbirinden ayırt edilebilir mi, yoksa özdeş mi? Sıralama sonucu değiştiriyor mu?''} Çoğu olimpiyat sorusu, bu iki temel ayrımın üzerine ek kısıtlar (örneğin yan yana gelmeme, belirli bir sırada bulunma veya alt--üst sınırlar) ekler.
+
+Bu kısıtları yönetmek için Bölüm 4 ve 5'te ele aldığımız iki temel yaklaşım öne çıkar:
+\begin{enumerate}
+    \item \textbf{Bağlama (Bloklama) Yöntemi:} Yan yana durması zorunlu olan nesneleri tek bir ``blok nesne'' kabul edip sürece dahil etmek.
+    \item \textbf{Boşluk (Ayırma) Yöntemi:} Hiçbir ikisi yan yana gelmemesi gereken nesneleri dışarıda bırakıp, serbest nesneleri dizdikten sonra aralarında oluşan boşluklara seçilen nesneleri yerleştirmek.
+\end{enumerate}
+
+Özdeş nesnelerin ayırt edilebilir kutulara dağıtımında ise Bölüm 5'te incelediğimiz ayraç (stars and bars) yöntemi kullanılır.
+
+\begin{theorem}[Ayraç Yöntemi / Stars and Bars]
+$n$ adet özdeş nesne, $k$ adet farklı kutuya:
+\begin{enumerate}
+    \item Hiçbir kısıt olmaksızın (kutular boş kalabilir) $\binom{n+k-1}{k-1}$ farklı yolla,
+    \item Her kutuda en az bir nesne bulunması koşuluyla (pozitif tam sayılarda çözüm) $\binom{n-1}{k-1}$ farklı yolla
+\end{enumerate}
+dağıtılır.
+\end{theorem}
+
+\begin{proof}[İspat Taslağı]
+$n$ özdeş nesneyi yan yana dizelim. Bu nesneleri $k$ gruba ayırmak için aralarına $k-1$ adet ayraç yerleştirmemiz gerekir. Boş kutu olabilecekse toplam $n+k-1$ konumdan $k-1$ tanesini ayraçlar için seçeriz: $\binom{n+k-1}{k-1}$. Her kutu en az bir eleman alacaksa, $n$ nesnenin arasındaki $n-1$ boşluktan $k-1$ tanesi seçilir: $\binom{n-1}{k-1}$.
+\end{proof}
+
+Şimdi kolaydan zora doğru kurgulanan çözümlü örnekleri inceleyelim.
+
+\begin{example}[Kolay: Kısıtlı Dizilim ve Boşluk Yöntemi]
+$4$ matematikçi ve $5$ bilgisayar bilimcisi düz bir sıra boyunca dizilecektir. Hiçbir iki matematikçinin yan yana gelmediği kaç farklı dizilim vardır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Hiçbir iki matematikçinin yan yana gelmemesi koşulu, aralarına en az bir bilgisayar bilimcisinin girmesini gerektirir. Bu nedenle önce serbest durumdaki bilgisayar bilimcilerini dizip, ardından matematikçileri oluşan boşluklara yerleştiririz.
+
+\textbf{1. Adım (Serbest nesnelerin dizilimi):}
+5 bilgisayar bilimcisi kendi aralarında $5! = 120$ farklı biçimde sıralanır:
+\[
+\_ \; B_1 \; \_ \; B_2 \; \_ \; B_3 \; \_ \; B_4 \; \_ \; B_5 \; \_
+\]
+\textbf{2. Adım (Boşlukların belirlenmesi):}
+Bilgisayar bilimcilerinin sağı, solu ve aralarında toplam $5 + 1 = 6$ adet boşluk oluşur.
+
+\textbf{3. Adım (Kısıtlı nesnelerin yerleştirilmesi):}
+Hiçbir iki matematikçi aynı boşluğa giremez; aksi takdirde yan yana düşerler. Dolayısıyla bu 6 boşluktan 4 tanesini seçip matematikçileri bu boşluklara sıralamalıyız. 
+6 boşluk arasından 4'ünü seçip 4 matematikçiyi yerleştirmenin yolu permütasyon ile hesaplanır:
+\[
+P(6,4) = 6 \times 5 \times 4 \times 3 = 360
+\]
+\textbf{4. Adım (Çarpma kuralı):}
+Toplam geçerli dizilim sayısı:
+\[
+5! \times P(6,4) = 120 \times 360 = 43\,200
+\]
+olarak bulunur.
+\end{proof}
+
+\begin{example}[Orta: Alt ve Üst Sınırlı Ayraç Yöntemi]
+$x_1 + x_2 + x_3 + x_4 = 20$ denkleminin, her $i \in \{1,2,3,4\}$ için $1 \le x_i \le 8$ koşulunu sağlayan kaç farklı tam sayı çözümü vardır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Alt sınır ($x_i \ge 1$), Bölüm 5'teki ayraç yöntemiyle doğrudan çözülebilir. Ancak üst sınır ($x_i \le 8$) ek bir kısıttır. Burada en elverişli yaklaşım; tüm çözümlerden, en az bir değişkenin 8'i aştığı durumları Bölüm 8'de gördüğümüz içerme--dışarma ilkesiyle çıkarmaktır.
+
+Önce değişken dönüşümü yapalım: $y_i = x_i - 1$ dersek, $0 \le y_i \le 7$ ve toplam:
+\[
+y_1 + y_2 + y_3 + y_4 = 20 - 4 = 16
+\]
+olur. Problem, $y_1 + y_2 + y_3 + y_4 = 16$ denkleminin $0 \le y_i \le 7$ aralığındaki tam sayı çözümlerini bulmaya dönüştü.
+
+\textbf{Evrensel küme ($U$):} Hiçbir üst sınır olmaksızın ($y_i \ge 0$) çözüm sayısı:
+\[
+|U| = \binom{16 + 4 - 1}{4 - 1} = \binom{19}{3} = \frac{19 \times 18 \times 17}{6} = 969
+\]
+
+\textbf{Kısıtı ihlal eden durumlar:} $A_i$ durumu, $y_i \ge 8$ olsun.
+Bir değişkenin $y_i \ge 8$ olması için $y_i' = y_i - 8 \ge 0$ tanımlanır. Yeni toplam:
+\[
+y_i' + \sum_{j \ne i} y_j = 16 - 8 = 8
+\]
+Her bir $i$ için çözüm sayısı:
+\[
+|A_i| = \binom{8 + 4 - 1}{3} = \binom{11}{3} = \frac{11 \times 10 \times 9}{6} = 165
+\]
+4 değişken olduğundan, $\sum |A_i| = 4 \times 165 = 660$.
+
+\textbf{İki değişkenin birden ihlal etmesi:} İki değişken en az 8 olursa, harcanan miktar en az $8 + 8 = 16$ olur.
+$y_i \ge 8$ ve $y_j \ge 8$ ($i \ne j$) için:
+\[
+y_i' + y_j' + \sum_{k \notin \{i,j\}} y_k = 16 - 16 = 0
+\]
+Bu durumda çözüm sayısı:
+\[
+|A_i \cap A_j| = \binom{0 + 4 - 1}{3} = \binom{3}{3} = 1
+\]
+$\binom{4}{2} = 6$ farklı çift seçilebileceğinden, $\sum |A_i \cap A_j| = 6 \times 1 = 6$.
+
+Üç değişkenin aynı anda $\ge 8$ olması imkânsızdır çünkü $8 \times 3 = 24 > 16$.
+
+İçerme--dışarma formülünden geçerli çözüm sayısı:
+\[
+N = |U| - \sum |A_i| + \sum |A_i \cap A_j| = 969 - 660 + 6 = 315
+\]
+bulunur.
+\end{proof}
+
+\begin{example}[Zor: Özdeş Elemanlar ve Döngüsel Ayrıklık]
+12 kişinin oturduğu yuvarlak bir masadan rastgele 4 kişi seçilecektir. Seçilen hiçbir iki kişinin masada yan yana oturmuyor olma olasılığı kaçtır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Düz bir sırada yan yana gelmeyen nesneleri boşluk yöntemiyle sayabiliyoruz. Masanın dairesel olması nedeniyle 1. ve 12. kişiler de komşudur. Dairesel simetriyi yönetmek adına belirli bir kişiyi (örneğin 1 numaralı sandalyedekini) referans alarak problemi iki duruma ayırırız: bu kişinin seçildiği ve seçilmediği durumlar.
+
+12 sandalyeyi saat yönünde $1, 2, \dots, 12$ olarak numaralandıralım. Toplam seçim sayısı:
+\[
+|S| = \binom{12}{4} = \frac{12 \times 11 \times 10 \times 9}{24} = 495
+\]
+Şimdi hiçbir ikisi ardışık olmayan 4 kişilik seçimleri iki ayrık duruma ayıralım:
+
+\textbf{Durum 1: 1 numaralı kişi seçilmiştir.}
+1 seçildiğine göre komşuları olan 2 ve 12 seçilemez. Geriye kalan $\{3, 4, 5, 6, 7, 8, 9, 10, 11\}$ kümesinden (ardışık 9 kişi) yan yana gelmeyen 3 kişi seçmeliyiz.
+Bu, düz bir sırada 9 kişiden yan yana gelmeyen 3 kişi seçme problemidir.
+Seçilmeyen $9 - 3 = 6$ kişi düz bir sıraya dizildiğinde $6 + 1 = 7$ boşluk oluşur:
+\[
+\binom{7}{3} = \frac{7 \times 6 \times 5}{6} = 35
+\]
+
+\textbf{Durum 2: 1 numaralı kişi seçilmemiştir.}
+Bu durumda geriye kalan $\{2, 3, 4, \dots, 12\}$ kümesinden (ardışık 11 kişi) düz bir sırada yan yana gelmeyen 4 kişi seçmeliyiz.
+Seçilmeyen $11 - 4 = 7$ kişi dizildiğinde $7 + 1 = 8$ boşluk oluşur:
+\[
+\binom{8}{4} = \frac{8 \times 7 \times 6 \times 5}{24} = 70
+\]
+
+\textbf{Toplam geçerli seçim sayısı:}
+\[
+35 + 70 = 105
+\]
+İstenen olasılık:
+\[
+P = \frac{105}{495} = \frac{7}{33}
+\]
+\end{proof}
+
+\begin{example}[Zor: Monoton Fonksiyonlar ve Ayraç Yöntemi]
+$A = \{1, 2, 3, 4, 5\}$ ve $B = \{1, 2, 3, \dots, 10\}$ olsun. Her $x < y$ için $f(x) \le f(y)$ şartını sağlayan ve kümesinde tam olarak 3 farklı değer alan (yani $|f(A)| = 3$ olan) kaç farklı $f: A \to B$ fonksiyonu vardır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Fonksiyon monoton artandır ($f(1) \le f(2) \le f(3) \le f(4) \le f(5)$) ve görüntü kümesinde tam 3 farklı eleman bulunmalıdır. Bu görüntü kümesi $\{y_1, y_2, y_3\} \subset B$ ($y_1 < y_2 < y_3$) olsun. Tanım kümesindeki 5 elemanı, artanlık sırasını bozmadan bu 3 değere paylaştırırken her değerin en az bir kez kullanılmasını sağlamalıyız.
+
+\textbf{1. Adım (Görüntü kümesinin seçimi):}
+10 elemanlı $B$ kümesinden 3 farklı değer seçmeliyiz:
+\[
+\binom{10}{3} = \frac{10 \times 9 \times 8}{6} = 120
+\]
+Seçilen bu değerleri küçükten büyüğe $y_1 < y_2 < y_3$ olarak sıralarız (sıralama tek türlüdür).
+
+\textbf{2. Adım (Girdilerin paylaştırılması):}
+$f(1), f(2), f(3), f(4), f(5)$ dizisi zayıf artan olduğundan, ilk $c_1$ tanesi $y_1$, sonraki $c_2$ tanesi $y_2$, son $c_3$ tanesi $y_3$ değerini almalıdır.
+Burada her değer en az bir kez kullanılacağından:
+\[
+c_1 + c_2 + c_3 = 5 \quad \text{ve} \quad c_1, c_2, c_3 \ge 1
+\]
+olmalıdır. Bu denklem, 5 nesnenin arasına 2 ayraç koymakla eşdeğerdir:
+\[
+\binom{5 - 1}{3 - 1} = \binom{4}{2} = 6
+\]
+\textbf{3. Adım (Bileşke):}
+Her görüntü kümesi seçimi için 6 geçerli fonksiyon yazılabildiğinden, toplam fonksiyon sayısı:
+\[
+\binom{10}{3} \times \binom{4}{2} = 120 \times 6 = 720
+\]
+olur.
+\end{proof}
+
+\begin{lstlisting}[language=CppTemel]
+#include <iostream>
+#include <algorithm>
+#include <string>
+using namespace std;
+
+long long faktoriyel(int n) {
+    long long sonuc = 1;
+    for (int i = 2; i <= n; i++) sonuc *= i;
+    return sonuc;
+}
+
+bool gecerli_mi(const string& s) {
+    for (int i = 0; i < (int)s.size() - 1; i++)
+        if (s[i] == 'M' && s[i + 1] == 'M') return false;   // iki M yan yana
+    return true;
+}
+
+int main() {
+    string nesneler = "BBBBBMMMM";
+    sort(nesneler.begin(), nesneler.end());   // kucukten buyuge ilk dizilim
+    int gecerli = 0;
+    do {
+        if (gecerli_mi(nesneler)) gecerli++;
+    } while (next_permutation(nesneler.begin(), nesneler.end()));
+
+    long long toplam = gecerli * faktoriyel(4) * faktoriyel(5);
+    cout << "Toplam gecerli dizilim: " << toplam << "\n";
+    return 0;
+}\end{lstlisting}
+
+\paragraph{En sık yapılan hata:}
+Boşluk yönteminde, boşluk sayısını serbest nesne sayısına eşit almak yaygın bir dikkatsizliktir. $k$ nesne düz bir sıraya dizildiğinde her zaman $k+1$ adet boşluk oluşturur. Dairesel dizilimde ise boşluk sayısı tam olarak $k$ adettir.
+
+% ==============================================================================
+\section{Binom ve güvercin yuvası alıştırmaları}
+% ==============================================================================
+
+Bölüm 6'da gördüğümüz binom teoremi ve kombinatorik özdeşlikler cebirsel ifadelerin katsayılarını sayma argümanlarıyla çözmeyi sağlarken; Bölüm 7'de işlediğimiz Güvercin Yuvası İlkesi (GYİ), belirli bir büyüklüğe ulaşan veri kümelerinde aranan bir yapının ya da çakışmanın kaçınılmaz olarak var olduğunu garanti eder.
+
+\begin{definition}[Güvercin Yuvası İlkesi / Pigeonhole Principle]
+$n$ ve $k$ pozitif tam sayılar olsun. $n$ adet nesne $k$ adet yuvaya dağıtıldığında, en az bir yuvada en az $\lceil n/k \rceil$ nesne bulunur. Benzer biçimde, en az bir yuvada en fazla $\lfloor n/k \rfloor$ nesne yer alır.
+\end{definition}
+
+Olimpiyatlarda güvercin yuvası ilkesini uygularken en kritik aşama şudur: \textbf{Güvercinler nedir, yuvalar nedir?} Yuvalar genellikle modüler sınıflar (Bölüm 14), geometrik bölgeler veya toplamları/farkları sabit olan sayı çiftleri olarak tasarlanır.
+
+\begin{theorem}[Vandermonde Özdeşliği]
+$m, n, r \in \mathbb{N}$ ve $r \le m+n$ olmak üzere:
+\[
+\sum_{k=0}^r \binom{m}{k} \binom{n}{r-k} = \binom{m+n}{r}
+\]
+\end{theorem}
+
+\begin{proof}[İspat Taslağı]
+$m$ erkek ve $n$ kadından oluşan $m+n$ kişilik bir gruptan $r$ kişilik bir kurul seçilecektir. Toplam seçim sayısı $\binom{m+n}{r}$'dir. Kuruldaki erkek sayısını $k$ ($0 \le k \le r$) olarak sabitlersek, $m$ erkekten $k$, $n$ kadından $r-k$ kişi seçilir. Toplama kuralı gereği iki taraf birbirine eşittir.
+\end{proof}
+
+\begin{example}[Kolay: Bölünebilirlik ve Güvercin Yuvası]
+Rastgele seçilen 6 tam sayı arasından, farkları 5 ile tam bölünen en az iki sayının mutlaka bulunacağını gösteriniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölüm 11 ve 14'te gördüğümüz üzere iki sayının farkının 5 ile tam bölünmesi, bu iki sayının 5 ile bölümünden kalanlarının eşit olması anlamına gelir. Olası kalan sayısı sınırlı olduğundan, seçilen sayı adedi kalan türlerinin sayısını aştığında en az iki sayının aynı kalanı vermesi zorunludur.
+
+\textbf{1. Adım (Yuvaların tanımı):}
+Bir tam sayının 5 ile bölümünden kalanlar $\{0, 1, 2, 3, 4\}$ kümesinin elemanlarıdır. Dolayısıyla $k = 5$ farklı yuva mevcuttur.
+
+\textbf{2. Adım (Güvercinlerin dağıtımı):}
+Seçilen 6 tam sayıyı güvercin olarak alalım ($n = 6$).
+Her sayıyı, 5 ile bölümünden kalanın temsil ettiği yuvaya yerleştirelim.
+
+\textbf{3. Adım (GYİ uygulanması):}
+$n = 6 > k = 5$ olduğundan, Güvercin Yuvası İlkesi gereği en az bir yuvaya en az 2 sayı düşer.
+Bu iki sayı $a$ ve $b$ olsun. $a \equiv b \pmod 5$ olduğundan, $a - b \equiv 0 \pmod 5$, yani $5 \mid (a - b)$ elde edilir.
+\end{proof}
+
+\begin{example}[Orta: Çifte Sayım ile Binom Toplamı]
+$n \ge 1$ için aşağıdaki eşitliği kombinatorik bir hikâye kurarak (çift sayma yöntemiyle) ispatlayınız:
+\[
+\sum_{k=1}^n k \binom{n}{k}^2 = n \binom{2n-1}{n-1}
+\]
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölüm 10'da incelediğimiz çifte sayım yöntemini uygulayalım. Sol tarafta $k \binom{n}{k}^2 = k \binom{n}{k}\binom{n}{n-k}$ ifadesi yer alır. Buradaki $k$ çarpanı gruptan bir başkan seçildiğine, $\binom{n}{k}\binom{n}{n-k}$ çarpımı ise toplam $2n$ kişiden $n$ kişilik bir kurul oluşturulduğuna işaret eder.
+
+Hikâyemizi kuralım: $n$ erkek ve $n$ kadından oluşan toplam $2n$ kişilik bir topluluk olsun. Bu topluluktan $n$ kişilik bir komite ve bu komitenin içinden bir \emph{kadın başkan} seçeceğiz.
+
+\textbf{1. Yöntem (Önce komiteyi, sonra başkanı seçmek):}
+Komitedeki kadın sayısını $k$ ($1 \le k \le n$) olarak belirleyelim.
+\begin{itemize}
+    \item $n$ kadın arasından $k$ kadın: $\binom{n}{k}$ yolla,
+    \item Kalan $n - k$ kişi erkeklerden: $\binom{n}{n-k} = \binom{n}{k}$ yolla,
+    \item Seçilen $k$ kadın arasından başkan: $k$ yolla seçilir.
+\end{itemize}
+Tüm $k$ değerleri üzerinden toplarsak:
+\[
+\sum_{k=1}^n k \binom{n}{k}^2
+\]
+
+\textbf{2. Yöntem (Önce başkanı, sonra komitenin geri kalanını seçmek):}
+\begin{itemize}
+    \item Önce $n$ kadın arasından başkan olacak 1 kişiyi seçelim: $n$ farklı seçenek vardır.
+    \item Başkan belirlendikten sonra, komiteye $n-1$ kişi daha seçilmelidir.
+    \item Geriye kalan adaylar: $n-1$ kadın ve $n$ erkek olmak üzere toplam $2n - 1$ kişidir.
+    \item Bu $2n - 1$ kişi arasından geriye kalan $n-1$ komite üyesi seçilir: $\binom{2n-1}{n-1}$ yolla.
+\end{itemize}
+Çarpma kuralı gereği toplam durum sayısı:
+\[
+n \binom{2n-1}{n-1}
+\]
+Her iki sayım da aynı nesneleri (başkanı kadın olan $n$ kişilik komiteleri) saydığından eşitlik ispatlanmıştır.
+\end{proof}
+
+\begin{example}[Zor: Erdős Bölünebilirlik Teoremi ve Güvercin Yuvası]
+$\{1, 2, 3, \dots, 2n\}$ kümesinden seçilen herhangi $n+1$ elemanlı bir altkümede, biri diğerini bölen en az iki sayının mutlaka bulunacağını ispatlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölüm 11 ve 12'de gördüğümüz üzere bölünebilirlik ($a \mid b$), sayıların çarpan yapısıyla doğrudan ilişkilidir. Pozitif her tam sayı, 2'nin bir kuvveti ile bir tek sayının çarpımı olarak tek türlü yazılabilir: $x = 2^k \cdot m$ ($m$ tek sayı). Eğer seçilen sayılardan ikisinin tek kısmı ($m$) aynı olursa, büyük sayı küçük sayının 2'nin bir kuvveti kadar katı olacağından biri diğerini mutlaka böler.
+
+\textbf{1. Adım (Tek kısımları yuva yapmak):}
+Her $x \in \{1, 2, \dots, 2n\}$ sayısını $x = 2^k \cdot m$ biçiminde yazalım; burada $k \ge 0$ bir tam sayı ve $m \in \{1, 3, 5, \dots, 2n-1\}$ bir tek sayıdır.
+
+\textbf{2. Adım (Yuvaları saymak):}
+$1$'den $2n$'ye kadar olan sayılar arasında tam olarak $n$ adet tek sayı vardır:
+\[
+1, 3, 5, \dots, 2n-1
+\]
+Her tek sayı bir yuvayı temsil etsin. Toplam yuva sayısı $n$'dir.
+
+\textbf{3. Adım (Güvercinleri yerleştirmek):}
+Kümemizden $n+1$ adet sayı seçilmiştir. Her sayıyı kendi tek kısmı olan $m$ yuvasına atayalım.
+Güvercin sayısı $n+1$, yuva sayısı $n$'dir.
+
+\textbf{4. Adım (Sonuç):}
+Güvercin Yuvası İlkesi gereği, en az bir yuvada birden fazla (en az iki) sayı bulunmalıdır.
+Bu sayılar $x$ ve $y$ olsun ($x < y$).
+Tek kısımları aynı olduğundan:
+\[
+x = 2^a \cdot m \quad \text{ve} \quad y = 2^b \cdot m
+\]
+Burada $x < y$ olduğundan $a < b$ olmalıdır. Dolayısıyla:
+\[
+\frac{y}{x} = \frac{2^b \cdot m}{2^a \cdot m} = 2^{b-a} \in \mathbb{Z}^+
+\]
+Yani $x \mid y$ sağlanır.
+\end{proof}
+
+\begin{example}[Zor: Düzlemde Kafes Noktaları ve Orta Nokta]
+İki boyutlu Kartezyen düzlemde koordinatları tam sayı olan noktalara \emph{kafes noktası} denir. Düzlemde seçilen herhangi 5 kafes noktası arasında, birleştiren doğru parçasının orta noktası da bir kafes noktası olan en az iki noktanın mutlaka bulunduğunu gösteriniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+$A(x_1, y_1)$ ve $B(x_2, y_2)$ noktalarının orta noktası:
+\[
+M = \left( \frac{x_1 + x_2}{2}, \frac{y_1 + y_2}{2} \right)
+\]
+koordinatlarına sahiptir. $M$'nin bir kafes noktası olması için $x_1 + x_2$ ve $y_1 + y_2$ toplamlarının çift olması gerekir. Bölüm 17'de ele aldığımız parite ilkesi uyarınca, iki tam sayının toplamı ancak ve ancak teklik--çiftlik durumları aynı olduğunda çifttir.
+
+\textbf{1. Adım (Parite sınıfları):}
+Bir tam sayının paritesi 2 farklı değer alabilir: Tek (T) veya Çift (Ç).
+Bir noktanın koordinat ikilisi $(x, y)$ için 4 olası parite sınıfı vardır:
+\[
+(\text{Ç}, \text{Ç}), \quad (\text{Ç}, \text{T}), \quad (\text{T}, \text{Ç}), \quad (\text{T}, \text{T})
+\]
+Bu 4 sınıf bizim yuvalarımızdır ($k = 4$).
+
+\textbf{2. Adım (Güvercinler):}
+Düzlemden $n = 5$ kafes noktası seçilmiştir.
+
+\textbf{3. Adım (GYİ):}
+$5 > 4$ olduğundan, Güvercin Yuvası İlkesi gereği en az 2 nokta aynı parite sınıfına ait olmalıdır.
+Bu iki nokta $P_1(x_1, y_1)$ ve $P_2(x_2, y_2)$ olsun.
+$x_1 \equiv x_2 \pmod 2 \implies x_1 + x_2 \equiv 0 \pmod 2 \implies \frac{x_1 + x_2}{2} \in \mathbb{Z}$,
+$y_1 \equiv y_2 \pmod 2 \implies y_1 + y_2 \equiv 0 \pmod 2 \implies \frac{y_1 + y_2}{2} \in \mathbb{Z}$.
+
+Böylece $P_1$ ve $P_2$'nin orta noktası kesinlikle bir kafes noktasıdır.
+\end{proof}
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int get_odd_part(int x) {
+    while (x % 2 == 0) {
+        x /= 2;
+    }
+    return x;
+}
+
+int main(void) {
+    int sample_set[] = {2, 3, 5, 7, 9, 11, 13, 15, 17, 19, 12};
+    int size = sizeof(sample_set) / sizeof(sample_set[0]);
+    int slots[100] = {0};
+
+    for (int i = 0; i < size; i++) {
+        int number = sample_set[i];
+        int m = get_odd_part(number);
+
+        if (slots[m] != 0) {
+            printf("Çakışma bulundu: %d ve %d (Tek kısım: %d)\n", slots[m], number, m);
+            int min_val = (slots[m] < number) ? slots[m] : number;
+            int max_val = (slots[m] > number) ? slots[m] : number;
+            printf("%d böler %d: %s\n", min_val, max_val, (max_val % min_val == 0) ? "True" : "False");
+            break;
+        }
+        slots[m] = number;
+    }
+
+    return 0;
+}\end{lstlisting}
+
+\paragraph{En sık yapılan hata:}
+Güvercin yuvası kurgulanırken yuva sayısını gereğinden büyük seçmek ilkeyi çalışmaz hale getirir. Örneğin kafes noktası probleminde koordinatların mod 3 veya mod 4 değerlerine bakılsaydı yuva sayısı çok büyük çıkacak ve 5 nokta için çakışma garanti edilemeyecekti. En kaba (en küçük) ortak özellik paritedir (mod 2).
+
+% ==============================================================================
+\section{İçerme-dışarma ve ızgara yolları alıştırmaları}
+% ==============================================================================
+
+Bölüm 9'da incelediğimiz ızgara yolları, iki temel hareketin ($S$: Sağa, $Y$: Yukarı) dizilimleriyle ifade edilir. $(0,0)$ noktasından $(m,n)$ noktasına gitmek, $m$ tane $S$ ve $n$ tane $Y$ adımından oluşan $m+n$ uzunluğundaki bir tekrarlı permütasyon sayısına eşittir: $\binom{m+n}{m}$.
+
+Yol üzerinde engeller (yasaklı noktalar) bulunduğunda ya da sınır çizgilerinin ($y = x$ köşegeni gibi) aşılmaması istendiğinde şu iki yöntem devreye girer:
+\begin{enumerate}
+    \item \textbf{İçerme--Dışarma İlkesi (Bölüm 8):} Birden fazla engelin bulunduğu durumlarda yasaklı noktalardan geçen yolları sistematik olarak ayıklamak.
+    \item \textbf{André Yansıma İlkesi:} Sınır çizgisini aşan yolları, simetrik bir bitiş noktasına giden yollarla birebir eşlemek (Bölüm 10).
+\end{enumerate}
+
+\begin{theorem}[İçerme--Dışarma İlkesi / Inclusion--Exclusion]
+Sonlu $A_1, A_2, \dots, A_k$ kümeleri için birleşim kümesinin eleman sayısı:
+\begin{multline*}
+\left| \bigcup_{i=1}^k A_i \right| = \sum_{i=1}^k |A_i| - \sum_{1 \le i < j \le k} |A_i \cap A_j| \\
++ \sum_{1 \le i < j < l \le k} |A_i \cap A_j \cap A_l| - \dots + (-1)^{k-1} |A_1 \cap \dots \cap A_k|
+\end{multline*}
+\end{theorem}
+
+\begin{example}[Kolay: Tek Engelli Izgara Yolu]
+Bir robot $(0,0)$ noktasından $(6,5)$ noktasına her adımda yalnızca 1 birim sağa ($+x$) ya da 1 birim yukarı ($+y$) giderek ulaşacaktır. Robotun $(3,2)$ noktasından \textbf{geçmeden} $(6,5)$'e ulaşabileceği kaç farklı yol vardır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Yasaklı noktadan geçmeyen yolları doğrudan saymak yerine, tüm yolların sayısından bu noktaya uğrayan yolların sayısını çıkarmak (tümleyen sayma) işlemi belirgin biçimde kolaylaştırır.
+
+\textbf{1. Adım (Tüm yollar):}
+$(0,0)$'dan $(6,5)$'e toplam $6 + 5 = 11$ adım atılmalıdır; bunların 6'sı sağa, 5'i yukarıdır:
+\[
+|T| = \binom{11}{5} = \frac{11 \times 10 \times 9 \times 8 \times 7}{120} = 462
+\]
+\textbf{2. Adım ($(3,2)$ noktasından geçen yollar):}
+Bir yolun $(3,2)$ noktasından geçmesi, hareketin iki bağımsız etaba bölünmesi demektir:
+\begin{itemize}
+    \item $(0,0)$'dan $(3,2)$'ye: $3$ sağ, $2$ yukarı $\implies \binom{3+2}{2} = \binom{5}{2} = 10$.
+    \item $(3,2)$'den $(6,5)$'e: Kalan mesafe $6-3 = 3$ sağ, $5-2 = 3$ yukarı $\implies \binom{3+3}{3} = \binom{6}{3} = 20$.
+\end{itemize}
+Çarpma kuralı gereği $(3,2)$'den geçen yol sayısı:
+\[
+|A| = \binom{5}{2} \times \binom{6}{3} = 10 \times 20 = 200
+\]
+\textbf{3. Adım (Tümleyen kuralı):}
+$(3,2)$'ye hiç uğramayan yol sayısı:
+\[
+|T| - |A| = 462 - 200 = 262
+\]
+bulunur.
+\end{proof}
+
+\begin{example}[Orta: İki Engelli Izgara ve İçerme--Dışarma]
+$(0,0)$ noktasından $(7,6)$ noktasına yalnızca sağa ve yukarı adımlarla gidecek olan bir hareketli, $P(2,2)$ ve $Q(4,4)$ noktalarının \textbf{hiçbirinden geçmemek} şartıyla bu hedefe kaç farklı yolla varabilir?
+\end{example}
+
+\begin{proof}[Çözüm]
+İki ayrı yasaklı nokta ($P$ ve $Q$) bulunmaktadır. $P$'den geçen yollar kümesini $A$, $Q$'dan geçenleri $B$ ile gösterirsek, aranan değer $|(A \cup B)^c| = |T| - |A \cup B|$ olur. Her iki noktaya birden uğrayan yollar ($A \cap B$) iki kez çıkarılacağından, Bölüm 8'deki içerme--dışarma ilkesi gereği bir kez eklenmelidir.
+
+\textbf{1. Adım (Tüm yollar $T$):}
+$(0,0) \to (7,6)$: Toplam 13 adım (7 sağ, 6 yukarı):
+\[
+|T| = \binom{13}{6} = \frac{13 \times 12 \times 11 \times 10 \times 9 \times 8}{720} = 1716
+\]
+\textbf{2. Adım ($P(2,2)$'den geçenler, $A$):}
+\[
+|A| = \binom{2+2}{2} \times \binom{(7-2)+(6-2)}{6-2} = \binom{4}{2} \times \binom{9}{4} = 6 \times 126 = 756
+\]
+\textbf{3. Adım ($Q(4,4)$'ten geçenler, $B$):}
+\[
+|B| = \binom{4+4}{4} \times \binom{(7-4)+(6-4)}{6-4} = \binom{8}{4} \times \binom{5}{2} = 70 \times 10 = 700
+\]
+\textbf{4. Adım (Hem $P$'den hem $Q$'dan geçenler, $A \cap B$):}
+$(0,0) \to (2,2) \to (4,4) \to (7,6)$:
+\begin{itemize}
+    \item $(0,0) \to (2,2)$: $\binom{4}{2} = 6$,
+    \item $(2,2) \to (4,4)$: $4-2 = 2$ sağ, $4-2 = 2$ yukarı $\implies \binom{4}{2} = 6$,
+    \item $(4,4) \to (7,6)$: $7-4 = 3$ sağ, $6-4 = 2$ yukarı $\implies \binom{5}{2} = 10$.
+\end{itemize}
+\[
+|A \cap B| = 6 \times 6 \times 10 = 360
+\]
+\textbf{5. Adım (Birleşim ve sonuç):}
+İçerme--dışarma ilkesinden en az bir engele çarpan yol sayısı:
+\[
+|A \cup B| = |A| + |B| - |A \cap B| = 756 + 700 - 360 = 1096
+\]
+Hiçbir engele çarpmayan geçerli yolların sayısı:
+\[
+|T| - |A \cup B| = 1716 - 1096 = 620
+\]
+olarak elde edilir.
+\end{proof}
+
+\begin{example}[Zor: André Yansıma İlkesi ve Köşegeni Aşmama]
+Bir parçacık $(0,0)$ noktasından $(n,n)$ noktasına sağa ve yukarı birim adımlarla ilerlemektedir. Parçacığın $y = x$ doğrusunun \textbf{kesinlikle üzerine çıkmadığı} (yani her adımda $y \le x$ kaldığı) kaç farklı yol vardır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Bu kurgu, klasik Dyck yolu ve Catalan sayıları problemidir. İstenen koşul her adımda $y \le x$ kalmaktır. Kuralı ihlal eden bir yol, en az bir noktada $y = x + 1$ doğrusuna temas eder. André'nin yansıma ilkesi; bu ilk temas noktasından sonraki yol parçasını $y = x + 1$ doğrusuna göre simetriğine dönüştürerek Bölüm 10'daki birebir eşleme fikrini kullanır.
+
+\textbf{1. Adım (Tüm yollar):}
+$(0,0)$'dan $(n,n)$'ye kısıtsız tüm yolların sayısı:
+\[
+|T| = \binom{2n}{n}
+\]
+\textbf{2. Adım (Yasaklı doğrunun belirlenmesi):}
+Yolun $y \le x$ bölgesinden çıkması demek, en az bir noktada $y = x + 1$ doğrusuna temas etmesi demektir.
+Yasaklı doğru: $L: y = x + 1$.
+
+\textbf{3. Adım (Yansıma bijeksiyonu):}
+$L$ doğrusuna en az bir kez dokunan bir yol ele alalım. Bu yolun $L$ doğrusuna \emph{ilk dokunduğu} noktayı $K(x_k, y_k)$ olarak işaretleyelim. Burada $y_k = x_k + 1$'dir.
+Yolun $K$'dan bitiş noktası $B(n,n)$'ye kadar olan kısmını $L$ doğrusuna göre yansıtalım.
+$B(n,n)$ noktasının $y = x + 1$ doğrusuna göre simetriği nedir?
+Doğru denklemi $y - x = 1$'dir. $(n, n)$ noktasının bu doğruya göre yansıması $B'(n-1, n+1)$ noktasıdır.
+
+\textbf{4. Adım (Eşlemenin geçerliliği):}
+$(0,0)$'dan başlayıp $L$'ye değen her yol, yansıtıldıktan sonra $(0,0)$'dan $B'(n-1, n+1)$ noktasına giden bir yola dönüşür.
+Tersine, $B'(n-1, n+1)$ noktasına giden \emph{her} yol, başlangıçta $y \le x$ tarafında başlayıp sonunda $y > x$ tarafına geçtiği için $y = x + 1$ doğrusunu kesmek zorundadır.
+Dolayısıyla $L$'ye değen kötü yollar ile $(0,0) \to (n-1, n+1)$ yolları arasında birebir eşleme (bijeksiyon) vardır!
+
+\textbf{5. Adım (Kötü yolların sayısı ve çıkarma):}
+$(0,0)$'dan $(n-1, n+1)$'e giden yolların sayısı:
+\[
+|K\ddot{o}t\ddot{u}| = \binom{(n-1) + (n+1)}{n-1} = \binom{2n}{n-1}
+\]
+Geçerli yolların sayısı:
+\[
+C_n = |T| - |K\ddot{o}t\ddot{u}| = \binom{2n}{n} - \binom{2n}{n-1}
+\]
+Bu ifadeyi açarsak:
+\[
+\binom{2n}{n} - \frac{n}{n+1}\binom{2n}{n} = \left(1 - \frac{n}{n+1}\right)\binom{2n}{n} = \frac{1}{n+1}\binom{2n}{n}
+\]
+Bu sayılar matematikte \emph{Catalan sayıları} ($C_n$) olarak bilinir.
+\end{proof}
+
+\begin{example}[Zor: Kısıtlı Sayı Dizilimlerinde İçerme--Dışarma]
+$\{1, 2, 3, 4, 5, 6\}$ kümesinin elemanlarıyla yazılabilecek 6 basamaklı rakamları farklı sayılardan kaç tanesinde:
+\begin{itemize}
+    \item ``1'' rakamı hemen ``2''nin ardından gelmez (yani ``21'' alt dizisi bulunmaz),
+    \item ``3'' rakamı hemen ``4''ün ardından gelmez (yani ``43'' alt dizisi bulunmaz),
+    \item ``5'' rakamı hemen ``6''nın ardından gelmez (yani ``65'' alt dizisi bulunmaz)?
+\end{itemize}
+\end{example}
+
+\begin{proof}[Çözüm]
+Soruda üç ayrı yasaklı durum tanımlanmıştır: $B_1 = \texttt{21}$, $B_2 = \texttt{43}$ ve $B_3 = \texttt{65}$ blokları. Bu blokların hiçbirinin yer almadığı durumları bulmak için Bölüm 8'deki içerme--dışarma ilkesini uygularız. Blokları bağlama yöntemiyle tek bir nesne kabul ederek kesişim kümelerinin eleman sayılarını hesaplayabiliriz.
+
+\textbf{Evrensel Küme ($U$):} 6 farklı rakamın dizilimleri:
+\[
+|U| = 6! = 720
+\]
+$A_1$: ``21'' bloğunun bulunduğu dizilimler,
+$A_2$: ``43'' bloğunun bulunduğu dizilimler,
+$A_3$: ``65'' bloğunun bulunduğu dizilimler.
+
+\textbf{1. Derece Kesişimler ($\sum |A_i|$):}
+$A_1$ için $\{ (21), 3, 4, 5, 6 \}$ olmak üzere 5 nesne vardır:
+\[
+|A_1| = |A_2| = |A_3| = 5! = 120
+\]
+\[
+\sum |A_i| = 3 \times 120 = 360
+\]
+\textbf{2. Derece Kesişimler ($\sum |A_i \cap A_j|$):}
+Örneğin $A_1 \cap A_2$ için $\{ (21), (43), 5, 6 \}$ olmak üzere 4 nesne vardır:
+\[
+|A_1 \cap A_2| = |A_1 \cap A_3| = |A_2 \cap A_3| = 4! = 24
+\]
+$\binom{3}{2} = 3$ çift olduğundan:
+\[
+\sum |A_i \cap A_j| = 3 \times 24 = 72
+\]
+\textbf{3. Derece Kesişim ($|A_1 \cap A_2 \cap A_3|$):}
+Üç blok da mevcuttur: $\{ (21), (43), (65) \}$. Toplam 3 nesne vardır:
+\[
+|A_1 \cap A_2 \cap A_3| = 3! = 6
+\]
+\textbf{İçerme--Dışarma Formülü:}
+İstenen koşulları sağlayan permütasyon sayısı:
+\[
+N = |U| - \sum |A_i| + \sum |A_i \cap A_j| - |A_1 \cap A_2 \cap A_3|
+\]
+\[
+N = 720 - 360 + 72 - 6 = 426
+\]
+bulunur.
+\end{proof}
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+#include <stdbool.h>
+
+typedef struct {
+    int x;
+    int y;
+} Point;
+
+long long count_paths_with_obstacles(int width, int height, const Point obstacles[], int obstacle_count) {
+    long long dp[width + 1][height + 1];
+    bool blocked[width + 1][height + 1];
+
+    for (int x = 0; x <= width; x++) {
+        for (int y = 0; y <= height; y++) {
+            dp[x][y] = 0;
+            blocked[x][y] = false;
+        }
+    }
+
+    for (int i = 0; i < obstacle_count; i++) {
+        int ox = obstacles[i].x;
+        int oy = obstacles[i].y;
+        if (ox >= 0 && ox <= width && oy >= 0 && oy <= height) {
+            blocked[ox][oy] = true;
+        }
+    }
+
+    dp[0][0] = 1;
+
+    for (int x = 0; x <= width; x++) {
+        for (int y = 0; y <= height; y++) {
+            if (blocked[x][y]) {
+                dp[x][y] = 0;
+                continue;
+            }
+            if (x > 0) {
+                dp[x][y] += dp[x - 1][y];
+            }
+            if (y > 0) {
+                dp[x][y] += dp[x][y - 1];
+            }
+        }
+    }
+
+    return dp[width][height];
+}
+
+int main(void) {
+    int width = 7;
+    int height = 6;
+    Point obstacles[] = {{2, 2}, {4, 4}};
+    int obstacle_count = sizeof(obstacles) / sizeof(obstacles[0]);
+
+    long long result = count_paths_with_obstacles(width, height, obstacles, obstacle_count);
+    printf("Engellere çarpmayan yol sayısı: %lld\n", result);
+
+    return 0;
+}\end{lstlisting}
+
+\paragraph{En sık yapılan hata:}
+Izgara üzerinde birden fazla engel varken, engeller arasındaki yolları çarparken göreli koordinatları almak yerine mutlak koordinatları almak en yaygın hatadır. $(x_1, y_1)$ noktasından $(x_2, y_2)$ noktasına giderken adım sayısı $x_2 + y_2$ değil, $(x_2 - x_1) + (y_2 - y_1)$'dir ve kombinasyon $\binom{(x_2 - x_1) + (y_2 - y_1)}{x_2 - x_1}$ biçiminde yazılmalıdır. Ayrıca $x_2 < x_1$ veya $y_2 < y_1$ ise o iki engel arasında hiç yol bulunamaz (yol sayısı 0'dır).

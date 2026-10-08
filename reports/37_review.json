@@ -1,0 +1,45 @@
+{
+  "file": "37_ekler.tex",
+  "findings": [
+    {
+      "file": "37_ekler.tex",
+      "line_hint": 118,
+      "type": "bad_reference",
+      "severity": "major",
+      "excerpt": "\\item \\textbf{Bézout Özdeşliği ve Genişletilmiş Öklid (Bölüm 13 ve 16):}",
+      "issue": "Bézout Özdeşliği için Bölüm 16'ya atıf yapılmıştır. Bölüm 16 'Parite ve Simetri' konusunu işlemekte olup Bézout özdeşliği veya Genişletilmiş Öklid ile ilgisi yoktur; bu konu Bölüm 13 (EBOB ve EKOK) ve Bölüm 33'te ele alınmaktadır.",
+      "suggested_fix": "'(Bölüm 13 ve 16)' ifadesi '(Bölüm 13)' veya '(Bölüm 13 ve 33)' olarak düzeltilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "37_ekler.tex",
+      "line_hint": 167,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "\\item \\textbf{Düzlemsel Graflar için Euler Formülü:}",
+      "issue": "Bölüm girişinde (satır 7) 'Bu eklerde yalnızca kitapta anlatılan kavramlara yer verilmiştir' denmesine karşın, düzlemsel graflar (planar graphs) ve Euler formülü ($V - E + F = 2$) kitabın Bölüm 27 dahil hiçbir bölümünde tanımlanmamış ve işlenmemiştir.",
+      "suggested_fix": "Düzlemsel graflar kitap kapsamına dahil edilmeyecekse bu madde formül listesinden çıkarılmalı veya kitapta açıklandığı bir bölüme referans verilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "37_ekler.tex",
+      "line_hint": 206,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "derinlik öncelikli arama & depth-first search (DFS) \\\\",
+      "issue": "Terminoloji sözleşmesi Kategori A uyarınca 'derin öncelikli arama' Türkçe karşılık olarak tek başına kullanılmaz; doğru standart kullanım 'DFS (derinlik öncelikli arama)' veya doğrudan 'DFS'tir. Benzer şekilde satır 213'teki 'genişlik öncelikli arama' yerine 'BFS (genişlik öncelikli arama)' esastır.",
+      "suggested_fix": "Türkçe Terim sütunundaki ilgili satırlar sözleşmedeki standart olan 'DFS (derinlik öncelikli arama)' ve 'BFS (genişlik öncelikli arama)' biçimine getirilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "37_ekler.tex",
+      "line_hint": 249,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "Kitapta anlatılmayan yapılar (binary search tree, bipartite graph, LCA, monoton kuyruk, segment tree, bit manipulation, brute-force, divide and conquer, combinatorial proof, Euler totient, in-degree/out-degree, time/space complexity gibi ayrı başlıklar) bu tabloya alınmamıştır.",
+      "issue": "Parantez içinde 'kitapta anlatılmayan yapılar' olarak listelenen kavramlardan bipartite graph (Bölüm 27'de 'İki Kümeli Graf / Bipartite'), divide and conquer (Bölüm 22'de 'Böl-ve-Fethet') ve combinatorial proof (Bölüm 6 ve 10'da 'Kombinatorik İspat') kitapta doğrudan işlenmiştir. Bu kavramların anlatılmadığının iddia edilmesi olgusal hatadır.",
+      "suggested_fix": "'bipartite graph', 'divide and conquer' ve 'combinatorial proof' terimleri kitapta anlatılmayanlar listesinden çıkarılmalıdır.",
+      "confidence": "high"
+    }
+  ]
+}

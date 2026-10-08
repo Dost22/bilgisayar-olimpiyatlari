@@ -1,0 +1,65 @@
+{
+  "file": "35_karma_cozumlu_problemler.tex",
+  "findings": [
+    {
+      "file": "35_karma_cozumlu_problemler.tex",
+      "line_hint": 0,
+      "type": "math_error",
+      "severity": "major",
+      "excerpt": "N(\\text{hiçbiri}) = \\sum_{k=0}^{2n-1} (-1)^k \\cdot r_k \\cdot (n - k)!",
+      "issue": "Toplamın üst sınırı $2n-1$ olarak yazılmıştır; ancak $k > n$ olduğunda $(n-k)!$ ifadesi negatif bir tam sayının faktöriyeli olacağından tanımsızdır. $n \\times n$'lik bir tahtada aynı satır ve sütunda bulunmayan en fazla $n$ adet yasaklı kare seçilebilir ($k > n$ için $r_k = 0$). Dolayısıyla toplamın üst sınırı $n$ olmalıdır (nitekim altındaki çözümde üst sınır doğru olarak $n$ alınmıştır).",
+      "suggested_fix": "Formüldeki toplamın üst sınırı $n$ yapılmalıdır: $N(\\text{hiçbiri}) = \\sum_{k=0}^n (-1)^k \\cdot r_k \\cdot (n - k)!$.",
+      "confidence": "high"
+    },
+    {
+      "file": "35_karma_cozumlu_problemler.tex",
+      "line_hint": 0,
+      "type": "notation_violation",
+      "severity": "major",
+      "excerpt": "\\subsection{Problem 3: Kümülatif Toplamlar ve Güvercin Yuvası: Bölünebilir Alt Diziler}",
+      "issue": "Terminoloji sözleşmesine göre 'kümülatif toplam(lar)' ifadesi kesinlikle kullanılmamalıdır; bunun yerine 'prefix sum(s)' terimi korunmalıdır. Ayrıca metin içindeki '(a) Kümülatif toplamları sıralayalım:' ve 'Kümülatif toplam dizisiyle çalışırken...' kullanımları da bu kuralı ihlal etmektedir.",
+      "suggested_fix": "Başlık '\\subsection{Problem 3: Prefix Sums ve Güvercin Yuvası: Bölünebilir Alt Diziler}' olarak güncellenmeli; metin içindeki 'Kümülatif toplamları' ve 'Kümülatif toplam dizisiyle' ifadeleri 'Prefix sums dizisini' ve 'Prefix sums dizisiyle' şeklinde düzeltilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "35_karma_cozumlu_problemler.tex",
+      "line_hint": 0,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "Mod $n$'de aynı değere sahip iki farklı prefix sumın varlığı garanti midir?",
+      "issue": "Terminoloji sözleşmesine göre İngilizce teknik terimlere Türkçe ekler yapıştırılmamalı, apostrofla bağlanmalıdır ('prefix sums'ın'). Metindeki 'prefix sumın' ve birkaç satır sonraki 'prefix sumı' kullanımları apostrof kuralına aykırıdır.",
+      "suggested_fix": "'prefix sumın' yerine 'prefix sums'ın' (veya 'prefix sum'ın'), 'prefix sumı' yerine 'prefix sums'ı' yazılmalıdır.",
+      "confidence": "high"
+    },
+    {
+      "file": "35_karma_cozumlu_problemler.tex",
+      "line_hint": 0,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "\\emph{deranjman} (düzensiz permütasyon)",
+      "issue": "Terminoloji sözleşmesi Tablo B'de bu kavram 'düzensiz dizilim (derangement)' olarak tekleştirilmiştir. 'deranjman (düzensiz permütasyon)' kullanımı sözleşmeye uygun değildir.",
+      "suggested_fix": "'düzensiz dizilim (derangement)' terimi kullanılmalıdır.",
+      "confidence": "high"
+    },
+    {
+      "file": "35_karma_cozumlu_problemler.tex",
+      "line_hint": 0,
+      "type": "logic_gap",
+      "severity": "minor",
+      "excerpt": "Aranan medyan eleman, $f(X) \\ge \\frac{N^2 + 1}{2}$ koşulunu sağlayan en küçük $X$'tir.",
+      "issue": "Problem 7'nin girişinde medyan, 'kendisinden küçük veya eşit eleman sayısı en az $\\lceil N^2 / 2 \\rceil$ olan en küçük değer' olarak tanımlanmıştır. $N$ çift olduğunda $\\frac{N^2+1}{2}$ bir tam sayı değildir (örneğin $N=4$ için $8.5$). Tavan/taban fonksiyonu kullanılmadan kesirli ifade bırakılması tanımsal tutarsızlığa yol açmaktadır.",
+      "suggested_fix": "İfade, problem girişindeki tanım ve C kodundaki tam sayı bölmesiyle (`(N * N + 1) / 2`) uyumlu olarak $f(X) \\ge \\lceil N^2 / 2 \\rceil$ veya $f(X) \\ge \\lfloor \\frac{N^2 + 1}{2} \\rfloor$ şeklinde yazılmalıdır.",
+      "confidence": "medium"
+    },
+    {
+      "file": "35_karma_cozumlu_problemler.tex",
+      "line_hint": 0,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "include <stdio.h>",
+      "issue": "Problem 2, Problem 3, Problem 5 ve Problem 7'de yer alan C kod bloklarında preprocessor direktiflerinin başındaki '#' karakteri eksiktir ('include <stdio.h>', 'define INF ...'). Bu durum kodun C standartlarına göre derlenmesini engeller.",
+      "suggested_fix": "Tüm 'include <stdio.h>' satırları '#include <stdio.h>', 'include <stdlib.h>' satırları '#include <stdlib.h>' ve 'define INF ...' satırı '#define INF ...' olarak düzeltilmelidir.",
+      "confidence": "high"
+    }
+  ]
+}

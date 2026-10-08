@@ -1,0 +1,55 @@
+{
+  "file": "31_bitwise_ve_struct.tex",
+  "findings": [
+    {
+      "file": "31_bitwise_ve_struct.tex",
+      "line_hint": 81,
+      "type": "factual",
+      "severity": "major",
+      "excerpt": "\\lstinline|n = n | (1 << k)|",
+      "issue": "\\lstinline sınırlandırıcısı olarak '|' seçilmiştir; ancak kod parçası içinde bitwise VEYA ('|') operatörü yer aldığından listings paketi kodu ilk '|' karakterinde kapatmakta ve geri kalan kısmı (' (1 << k)|') metin modunda hatalı/bozuk karakterlerle dizmektedir.",
+      "suggested_fix": "Sınırlandırıcı olarak '/' veya '+' kullanılmalıdır: \\lstinline/n = n | (1 << k)/",
+      "confidence": "high"
+    },
+    {
+      "file": "31_bitwise_ve_struct.tex",
+      "line_hint": 147,
+      "type": "factual",
+      "severity": "major",
+      "excerpt": "\\lstinline|maskA | maskB|",
+      "issue": "\\lstinline sınırlandırıcısı olarak '|' seçilmiştir; ancak kod içinde bitwise VEYA ('|') operatörü bulunduğu için listings kodu erken kapatmakta ve ' maskB|' kısmı metin modunda bozuk basılmaktadır.",
+      "suggested_fix": "Sınırlandırıcı olarak '/' kullanılmalıdır: \\lstinline/maskA | maskB/",
+      "confidence": "high"
+    },
+    {
+      "file": "31_bitwise_ve_struct.tex",
+      "line_hint": 218,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "include <math.h>",
+      "issue": "C önişlemci yönergesi olan '#include' ifadesindeki '#' karakteri eksiktir; doğrudan 'include <math.h>' yazılmıştır.",
+      "suggested_fix": "#include <math.h> olarak düzeltilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "31_bitwise_ve_struct.tex",
+      "line_hint": 253,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "include <stdio.h>",
+      "issue": "C önişlemci yönergesi olan '#include' ifadesindeki '#' karakteri eksiktir; doğrudan 'include <stdio.h>' yazılmıştır.",
+      "suggested_fix": "#include <stdio.h> olarak düzeltilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "31_bitwise_ve_struct.tex",
+      "line_hint": 293,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "include <stdio.h>",
+      "issue": "C önişlemci yönergesi olan '#include' ifadesindeki '#' karakteri eksiktir; doğrudan 'include <stdio.h>' yazılmıştır.",
+      "suggested_fix": "#include <stdio.h> olarak düzeltilmelidir.",
+      "confidence": "high"
+    }
+  ]
+}

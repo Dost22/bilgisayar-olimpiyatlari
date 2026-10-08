@@ -1,0 +1,450 @@
+\chapter[C'ye Giriş ve Kontrol Akışı · \textit{Temel}]{C'ye Giriş ve Kontrol Akışı}
+\chaptermark{C'ye Giriş ve Kontrol Akışı}
+
+Bölüm 20'de algoritmik fikirleri sözde kod düzeyinde tasarlamayı ele almıştık. Ancak bu fikirleri donanımın anlayacağı, sınır durumları hatasız işleyen ve zaman kısıtına uyan bir koda dönüştürmek sürecin tamamlayıcı adımıdır. C dili, donanım kaynaklarına doğrudan erişim sağlaması, bellek modelini açık biçimde sunması ve minimum çalışma zamanı (runtime) ek yükü getirmesi nedeniyle TÜBİTAK 1. Aşama sınavının ve yarışma programlamasının temel araçlarındandır.
+
+Bu doğrultuda C programlama dilinin temel yapı taşlarını oluşturan veri tipleri, değişkenlerin bellekteki temsili, standart girdi/çıktı işlemleri ve program akışını belirleyen koşullu dallanma mekanizmaları aşağıda adım adım açıklanmıştır.
+
+\section{Değişkenler, Tipler, printf/scanf}
+
+Bir algoritmanın çalışabilmesi için veriyi bellekte saklaması, dönüştürmesi ve girdi/çıktı kanallarıyla etkileşime girmesi gerekir. C dilinde her verinin donanım seviyesinde karşılık gelen bir boyutu, yorumlanma biçimi (tipi) ve bellekte belirli bir adresi bulunur.
+
+\subsection{İlk Program ve Bellek Sezgisi}
+
+Temel bir programla başlayarak işletim sistemi ile kod arasındaki çalışma ilişkisini görelim:
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int main(void) {
+    printf("Tubitak Bilgisayar Olimpiyati\n");
+    return 0;
+}
+\end{lstlisting}
+
+Bu program derlenip çalıştırıldığında işletim sistemi \texttt{main} fonksiyonunu çağırır. \texttt{\#include <stdio.h>} yönergesi, standart girdi/çıktı (standard input/output) fonksiyonlarının bildirimlerini içeren başlık dosyasını koda dahil eder. \texttt{return 0;} ifadesi ise işletim sistemine programın başarıyla sonlandığını bildiren bir çıkış kodudur (exit status). Değerlendirme sistemlerinde \texttt{return 0;} haricinde sıfır olmayan bir değerle çıkmak veya programın çökmesi, \textit{Runtime Error} (Çalışma Zamanı Hatası) olarak kaydedilir.
+
+\subsection{Temel Veri Tipleri ve Temsil Sınırları}
+
+Bilgisayar belleği bayt dizilerinden oluşur. Bir değişken tanımlandığında derleyici, bu değişkene tipi kadar baytlık ardışık bellek alanı ayırır.
+
+\begin{definition}[Temel Tam Sayı Tipleri]
+C dilinde tam sayı değerlerini saklamak için kullanılan temel tipler ve 64-bit mimarilerdeki yaygın boyutları şunlardır:
+\begin{itemize}
+    \item \texttt{char}: 1 bayt (8 bit). Genellikle karakterleri saklar; sayısal olarak $[-128, 127]$ veya $[0, 255]$ aralığında bir tam sayıdır.
+    \item \texttt{int}: Genellikle 4 bayt (32 bit). $[-2^{31}, 2^{31}-1]$ aralığındaki tam sayıları temsil eder. Sayısal karşılığı $[-2\,147\,483\,648, 2\,147\,483\,647]$ aralığıdır ($\approx \pm 2 \cdot 10^9$).
+    \item \texttt{long long}: En az 8 bayt (64 bit). $[-2^{63}, 2^{63}-1]$ aralığındaki tam sayıları saklar ($\approx \pm 9.22 \cdot 10^{18}$).
+    \item \texttt{unsigned}: İşaretsiz belirteci, en soldaki işaret bitini de büyüklük hesabına katarak aralığı $[0, 2^k - 1]$ yapar (örneğin \texttt{unsigned int} için $[0, 2^{32}-1] \approx [0, 4.29 \cdot 10^9]$).
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Kayan Noktalı Tipler]
+Gerçel sayıları IEEE 754 standardına göre temsil eden tiplerdir:
+\begin{itemize}
+    \item \texttt{float}: Tek duyarlıklı (single precision), 4 bayt. Yaklaşık 7 anlamlı basamak hassasiyetine sahiptir.
+    \item \texttt{double}: Çift duyarlıklı (double precision), 8 bayt. Yaklaşık 15--17 anlamlı basamak hassasiyetine sahiptir. Hassasiyet kaybı riskini azaltmak adına gerçel sayılarda genellikle \texttt{double} tercih edilir.
+\end{itemize}
+\end{definition}
+
+\begin{theorem}[Tam Sayı Taşması ve Tanımsız Davranış]
+C standartlarına göre, işaretli tam sayılarda (\texttt{signed int}, \texttt{signed long long}) değerin temsil sınırlarını aşması \textbf{tanımsız davranıştır} (undefined behavior, kısaca UB). İşaretsiz tam sayılarda (\texttt{unsigned}) ise taşma tanımsız değildir; Bölüm 14'te ele aldığımız modüler aritmetik kurallarına uygun biçimde hesaplama doğal olarak $2^k$ modülünde yürür:
+\[
+a + b \pmod{2^k}
+\]
+burada $k$ değişkenin bit genişliğidir.
+\end{theorem}
+
+\begin{proof}[Açıklama ve İspat Taslağı]
+Derleyiciler optimizasyon adımlarında işaretli tam sayı taşmasının hiç gerçekleşmeyeceğini varsayar. Örneğin işaretli bir $x$ için \texttt{x + 1 > x} ifadesi doğrudan \texttt{1} (doğru) olarak sadeleştirilebilir; oysa $x = 2^{31}-1$ iken taşma olursa değer $-2^{31}$ olur. Derleyici bu taşma ihtimalini hesaba katmak zorunda olmadığından, kod optimize edilirken beklenmeyen mantıksal hatalar doğabilir. İşaretsiz türlerde ise taşma davranışı standart tarafından $2^k$ modülüyle güvence altına alınmıştır.
+\end{proof}
+
+\subsection{Biçimlendirilmiş Girdi ve Çıktı: printf ve scanf}
+
+\texttt{printf} ve \texttt{scanf}, C dilinde giriş ve çıkış işlemlerinin merkezinde yer alır. Her iki fonksiyon da biçim dizgileri (format strings) ve yer tutucular üzerinden çalışır.
+
+\begin{definition}[Sık Kullanılan Biçim Yer Tutucuları]
+Temel tiplerin \texttt{printf} ve \texttt{scanf} ile okunup yazdırılmasında kullanılan belirteçler:
+\begin{itemize}
+    \item \texttt{\textbackslash\{\}\%d} veya \texttt{\textbackslash\{\}\%i}: İşaretli 32-bit tam sayı (\texttt{int}).
+    \item \texttt{\textbackslash\{\}\%u}: İşaretsiz 32-bit tam sayı (\texttt{unsigned int}).
+    \item \texttt{\textbackslash\{\}\%lld}: İşaretli 64-bit tam sayı (\texttt{long long}).
+    \item \texttt{\textbackslash\{\}\%llu}: İşaretsiz 64-bit tam sayı (\texttt{unsigned long long}).
+    \item \texttt{\textbackslash\{\}\%f}: \texttt{printf} içinde \texttt{float} veya \texttt{double}, \texttt{scanf} içinde yalnızca \texttt{float}.
+    \item \texttt{\textbackslash\{\}\%lf}: \texttt{scanf} içinde \texttt{double} okumak için zorunludur. \texttt{printf} içinde \texttt{double} için hem \texttt{\textbackslash\{\}\%f} hem de \texttt{\textbackslash\{\}\%lf} geçerlidir.
+    \item \texttt{\textbackslash\{\}\%c}: Tek bir karakter (\texttt{char}).
+    \item \texttt{\textbackslash\{\}\%s}: Boşluk karakteriyle sonlanan karakter dizisi (string).
+\end{itemize}
+\end{definition}
+
+\texttt{scanf} fonksiyonuna argüman aktarırken temel kural şudur: Değişkenin doğrudan değeri değil, bellekteki adresi iletilmelidir. Bu işlem adres operatörü olan \texttt{\&} (ampersand) ile yapılır:
+\begin{lstlisting}[language=CTemel]
+int x;
+scanf("%d", &x); // x'in bellek adresine girilen sayiyi yazar
+\end{lstlisting}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Klavyeden girilen iki adet $32$-bit tam sayıyı okuyup toplamlarını ekrana yazdıran, ancak toplam $32$-bit sınırını aştığında dahi doğru sonucu veren bir C programı yazınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Girdiler $a$ ve $b$ olsun. Problemde $a, b \in [-2\cdot 10^9, 2\cdot 10^9]$ aralığında değerler alabilir. Bu durumda toplam uç noktalarda yaklaşık $\pm 4\cdot 10^9$ seviyesine ulaşır ve $32$-bit işaretli \texttt{int} türünün $[-2^{31}, 2^{31}-1]$ sınırını aşar.
+
+Bu nedenle toplama işlemi yapılmadan önce değerlerden en az biri \texttt{long long} türüne dönüştürülmelidir. Aksi halde \texttt{int c = a + b;} ifadesinde toplama işlemi önce \texttt{int} genişliğinde yapılır, taşma gerçekleşir (UB) ve sonuç hatalı olur.
+
+Program şu şekilde yazılabilir:
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int main(void) {
+    int a, b;
+    if (scanf("%d %d", &a, &b) != 2) {
+        return 0;
+    }
+    long long toplam = (long long)a + b;
+    printf("%lld\n", toplam);
+    return 0;
+}
+\end{lstlisting}
+Burada \texttt{(long long)a} ifadesi açık tip dönüşümü (type casting) gerçekleştirir. C'nin tür dönüşüm kurallarına göre bir terim \texttt{long long} olduğunda, diğer terim $b$ de otomatik olarak bu türe yükseltilir ve toplama işlemi 64-bit genişliğinde taşmasız tamamlanır.
+\end{proof}
+
+\begin{example}
+Aşağıdaki C kod parçası çalıştırıldığında çıktısı ne olur? Nedenini Bölüm 15'te gördüğümüz ikiye tümleyen (two's complement) gösterimi üzerinden açıklayınız.
+
+\begin{lstlisting}[language=CTemel]
+unsigned int u = 0;
+u = u - 1;
+printf("%u\n", u);
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+İşaretsiz 32-bit tam sayı türündeki bir değişken $0$ değerindeyken bellekteki 32 bitin tamamı sıfırdır:
+\[
+(00000000\ 00000000\ 00000000\ 00000000)_2
+\]
+Bu değerden $1$ çıkarıldığında işaretsiz taşma kuralı devreye girer. Aritmetik $2^{32}$ modülünde çalıştığından:
+\[
+0 - 1 \equiv -1 \equiv 2^{32} - 1 \pmod{2^{32}}
+\]
+elde edilir. Ortaya çıkan bit dizilimi $32$ adet $1$ içerir:
+\[
+(11111111\ 11111111\ 11111111\ 11111111)_2 = 2^{32} - 1 = 4\,294\,967\,295
+\]
+Böylece ekrana \texttt{4294967295} yazdırılır.
+\end{proof}
+
+\begin{example}
+Aşağıdaki kod parçasının ekrana ne yazdıracağını belirleyiniz:
+\begin{lstlisting}[language=CTemel]
+int a = 7, b = 2;
+double d1 = a / b;
+double d2 = (double)a / b;
+double d3 = (double)(a / b);
+printf("%.2f %.2f %.2f\n", d1, d2, d3);
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+İfadeler adım adım incelendiğinde:
+\begin{enumerate}
+    \item \texttt{a / b}: İki değişken de \texttt{int} türündedir. C'de tam sayı bölmesinde kesirli kısım doğrudan atılır; dolayısıyla $7 / 2 = 3$ elde edilir. Bu $3$ değeri \texttt{double} türündeki \texttt{d1} değişkenine aktarılırken $3.0$ olur.
+    \item \texttt{(double)a / b}: Tür dönüşümünün işlem önceliği yüksektir. \texttt{(double)a} ifadesi $7.0$ gerçel sayısını üretir. İşlem $7.0 / 2$ haline gelir; C'nin örtük tür yükseltme kuralı gereği $2$ de $2.0$ değerine çevrilir ve kayan noktalı bölme ile $3.5$ bulunur. \texttt{d2} değişkeni $3.5$ değerini alır.
+    \item \texttt{(double)(a / b)}: Parantez içindeki \texttt{a / b} bölmesi önce yapılır ve tam sayı bölmesiyle $3$ sonucunu verir. Ardından bu değer \texttt{(double)} ile dönüştürülerek \texttt{d3} değişkenine $3.0$ olarak atanır.
+\end{enumerate}
+\texttt{\textbackslash\{\}\%.2f} belirteci virgülden sonra $2$ basamak yazdırdığı için çıktı:
+\[
+3.00\ 3.50\ 3.00
+\]
+olur.
+\end{proof}
+
+\begin{example}
+\texttt{scanf} ile ardışık bir tam sayı ve bir karakter okunurken ortaya çıkan boşluk/satır sonu karakteri sorununu ve çözümünü gösteriniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Şu kod parçasını ele alalım:
+\begin{lstlisting}[language=CTemel]
+int sayi;
+char harf;
+scanf("%d", &sayi);
+scanf("%c", &harf);
+\end{lstlisting}
+Kullanıcı konsola \texttt{42} yazıp enter tuşuna bastığında, girdi akışına (stdin) sırasıyla \texttt{'4'}, \texttt{'2'} ve satır sonu belirten \texttt{'\textbackslash\{\}n'} karakteri eklenir. 
+\begin{itemize}
+    \item İlk \texttt{scanf("\textbackslash\{\}\%d", \&sayi)} çağrısı sayısal karakterleri okuyup \texttt{sayi = 42} yapar, ancak \texttt{'\textbackslash\{\}n'} karakterini akışta bırakır.
+    \item İkinci \texttt{scanf("\textbackslash\{\}\%c", \&harf)} çağrısı ise \texttt{\textbackslash\{\}\%c} belirtecinin boşluk veya satır sonu karakterlerini otomatik atlamaması nedeniyle doğrudan akışta bekleyen \texttt{'\textbackslash\{\}n'} karakterini okur ve değişkene yazar. Program yeni bir karakter beklemeden akışı tamamlar.
+\end{itemize}
+
+Bu durumu önlemek için biçim dizesinde \texttt{\textbackslash\{\}\%c} önüne bir boşluk eklenir:
+\begin{lstlisting}[language=CTemel]
+scanf(" %c", &harf);
+\end{lstlisting}
+Baştaki bu boşluk karakteri, \texttt{scanf}'in girdi akışındaki tüm ardışık boşluk, sekme (\texttt{\textbackslash\{\}t}) ve yeni satır (\texttt{\textbackslash\{\}n}) karakterlerini tüketmesini sağlar.
+\end{proof}
+
+\subsection{En Sık Yapılan Hatalar}
+\begin{itemize}
+    \item \textbf{\texttt{scanf} içinde \texttt{\&} işaretini unutmak:} \texttt{scanf("\textbackslash\{\}\%d", x);} yazıldığında derleyici uyarı verebilse de kod derlenebilir. Program çalışma anında $x$'in mevcut değerini bir bellek adresi olarak kullanmaya kalkışır ve bellek erişim ihlali (\textit{Segmentation Fault}) ile sonlanır.
+    \item \textbf{\texttt{double} okurken \texttt{\textbackslash\{\}\%f} kullanmak:} \texttt{printf} fonksiyonunda \texttt{double} için \texttt{\textbackslash\{\}\%f} yeterlidir; ancak \texttt{scanf} ile \texttt{double} okunurken mutlaka \texttt{\textbackslash\{\}\%lf} (long float) kullanılmalıdır. \texttt{\textbackslash\{\}\%f} kullanıldığında belleğe yalnızca 4 bayt yazılacağından veri bozulur.
+    \item \textbf{İşaretli tam sayı taşmasını gözden kaçırmak:} Örneğin $10^5 \times 10^5 = 10^{10}$ işlemi ara adımda $32$-bit sınırını aşar. \texttt{long long res = a * b;} yazıldığında $a$ ve $b$ türü \texttt{int} ise çarpım önce $32$-bit olarak hesaplanır (ve taşar), ardından taşmış değer \texttt{res} içine atanır. Güvenli yaklaşım \texttt{(long long)a * b} biçiminde dönüşüm yapmaktır.
+\end{itemize}
+
+\newpage
+
+\section{if-else ve switch}
+
+Algoritmalar yalnızca ardışık adımlardan ibaret değildir; verinin durumuna göre farklı hesaplama yollarını seçmek gerekir. C dilinde bu karar mekanizmaları \texttt{if-else} blokları ve \texttt{switch} çoklu dallanma yapılarıyla kurulur.
+
+\subsection{Mantıksal Doğruluk Sezgisi ve Karşılaştırma Operatörleri}
+
+Bölüm 1'de mantıksal önermeleri ve doğruluk değerlerini görmüştük. C dilinin ilk standartlarında yerleşik bir boole (\texttt{bool}) tipi yer almıyordu; doğruluk mantığı doğrudan tam sayılar üzerinden tanımlanmıştır:
+\begin{itemize}
+    \item $0$ değeri \textbf{YANLIŞ} (false) kabul edilir.
+    \item Sıfır dışındaki \textbf{bütün tam sayılar} (negatif sayılar dahil: $-1, 5, 100$) \textbf{DOĞRU} (true) kabul edilir.
+\end{itemize}
+Daha sonraki standartlarda \texttt{<stdbool.h>} başlığıyla \texttt{bool}, \texttt{true} ($1$) ve \texttt{false} ($0$) tanımlanmış olsa da arka plandaki sayısal kural değişmemiştir.
+
+\begin{definition}[İlişkisel ve Mantıksal Operatörler]
+C dilindeki temel karşılaştırma araçları:
+\begin{itemize}
+    \item İlişkisel: \texttt{==} (eşit mi), \texttt{!=} (farklı mı), \texttt{<}, \texttt{>}, \texttt{<=}, \texttt{>=}.
+    \item Mantıksal: \texttt{\&\&} (mantıksal VE), \texttt{||} (mantıksal VEYA), \texttt{!} (mantıksal DEĞİL).
+\end{itemize}
+Bu operatörler, koşul sağlandığında tamsayı olarak \texttt{1}, sağlanmadığında \texttt{0} değeri üretir.
+\end{definition}
+
+\begin{theorem}[Kısa Devre Değerlendirmesi / Short-Circuit Evaluation]
+Mantıksal ifadeler soldan sağa doğru incelenir. İfadenin genel sonucu kesinleştiği anda kalan kısım \textbf{çalıştırılmaz}:
+\begin{enumerate}
+    \item \texttt{A \&\& B} ifadesinde $A$ yanlış ($0$) ise, $B$'nin sonucuna bakılmaksızın ifadenin tamamı yanlıştır; dolayısıyla $B$ hiç hesaplanmaz.
+    \item \texttt{A || B} ifadesinde $A$ doğru (sıfır dışı) ise, $B$'nin sonucuna bakılmaksızın ifade doğrudur; dolayısıyla $B$ hiç hesaplanmaz.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}[Açıklama ve İspat Taslağı]
+Kısa devre davranışı, derleyici tarafından örtük koşullu atlama komutlarına dönüştürülür:
+{\small\[
+\text{\texttt{if (A \textbackslash\{\}\&\textbackslash\{\}\& B)}} \iff \text{\texttt{if (A) \textbackslash\{\}\{ if (B) \textbackslash\{\}\{ ... \textbackslash\{\}\} \textbackslash\{\}\}}}
+\]}
+Bu mekanizma tanımsız durumlara ve program çökmelerine karşı önemli bir güvencedir. Örneğin \texttt{b != 0 \&\& a / b > 2} kontrolünde $b=0$ olduğunda sağ taraftaki \texttt{a / b} bölmesi işletilmez; böylece sıfıra bölme hatası önlenir.
+\end{proof}
+
+\subsection{if-else Yapısı ve Asılı Else (Dangling Else) Problemi}
+
+Temel koşullu dallanma kalıbı şu şekildedir:
+\begin{lstlisting}[language=CTemel]
+if (kosul1) {
+    // kosul1 dogruysa calisir
+} else if (kosul2) {
+    // kosul1 yanlis ve kosul2 dogruysa calisir
+} else {
+    // hicbiri saglanmazsa calisir
+}
+\end{lstlisting}
+
+Süslü parantez kullanılmadığında derleyici yalnızca ilk komutu blok kapsamına alır. Bu durum klasik \textit{Asılı Else} sorununu doğurabilir:
+\begin{lstlisting}[language=CTemel]
+if (x > 0)
+    if (y > 0)
+        printf("1");
+else
+    printf("2");
+\end{lstlisting}
+Buradaki girintileme yanıltıcıdır. C dilinin sözdizimi kuralına göre: \textbf{Bir \texttt{else}, kendisinden önce gelen ve henüz eşleşmemiş olan en yakın \texttt{if} bloğuna bağlanır.} Dolayısıyla kodun gerçek işleyişi şöyledir:
+\begin{lstlisting}[language=CTemel]
+if (x > 0) {
+    if (y > 0) {
+        printf("1");
+    } else {
+        printf("2");
+    }
+}
+\end{lstlisting}
+$x \le 0$ durumunda dış koşul sağlanmadığından ekrana herhangi bir çıktı verilmez.
+
+\subsection{switch-case Yapısı ve Düşme (Fall-Through) Özelliği}
+
+Bir tamsayı değişkenin çok sayıda sabit değere göre dallanması gerektiğinde \texttt{switch} yapısı tercih edilir:
+
+\begin{lstlisting}[language=CTemel]
+switch (ifade) {
+    case sabit1:
+        // ifade == sabit1 ise buradan itibaren calisir
+        break;
+    case sabit2:
+        // ifade == sabit2 ise buradan itibaren calisir
+        break;
+    default:
+        // hicbir case tutmazsa calisir
+        break;
+}
+\end{lstlisting}
+
+\begin{definition}[Düşme (Fall-Through)]
+Bir \texttt{case} bloğunun sonuna \texttt{break;} konulmadığında, program sonraki \texttt{case} etiketinin koşulunu denetlemeden alt satırları yürütmeye devam eder. Bu duruma \textit{düşme (fall-through)} adı verilir. Genellikle unutulan bir \texttt{break} nedeniyle hata kaynağı olsa da kimi zaman bilinçli olarak kullanılır.
+\end{definition}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Verilen bir yılın artık yıl (leap year) olup olmadığını belirleyen mantıksal ifadeyi ve C kodunu oluşturunuz. (Kural: Bir yıl 4 ile tam bölünüyorsa artık yıldır; ancak 100 ile tam bölünen yıllardan yalnızca 400 ile tam bölünenler artık yıldır).
+\end{example}
+
+\begin{proof}[Çözüm]
+Girdi yılı $Y$ olsun. Şartları inceleyelim:
+\begin{itemize}
+    \item Durum 1: Yıl $400$'e bölünüyorsa koşulsuz artık yıldır ($Y \pmod{400} == 0$).
+    \item Durum 2: Yıl $4$'e bölünüp aynı zamanda $100$'e bölünmüyorsa artık yıldır ($Y \pmod 4 == 0 \text{ ve } Y \pmod{100} \ne 0$).
+\end{itemize}
+Bu iki durum mantıksal VEYA (\texttt{||}) ile birleştirilebilir:
+\[
+(Y \pmod{400} == 0) \lor (Y \pmod 4 == 0 \land Y \pmod{100} \ne 0)
+\]
+Kısa devre kuralından yararlanmak için, yılların büyük bölümü 4'e bölünmediğinden \texttt{yil \% 4 == 0} kontrolünü en başa almak kontrol sürecini hızlandırır:
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int main(void) {
+    int yil;
+    if (scanf("%d", &yil) != 1) return 0;
+
+    if ((yil % 4 == 0 && yil % 100 != 0) || (yil % 400 == 0)) {
+        printf("%d artik yildir.\n", yil);
+    } else {
+        printf("%d artik yil degildir.\n", yil);
+    }
+    return 0;
+}
+\end{lstlisting}
+Operatör önceliğinde \texttt{\&\&} operatörü \texttt{||} operatöründen önce gelse de açık parantez kullanımı kodun doğruluğunu ve okunabilirliğini korur.
+\end{proof}
+
+\begin{example}
+Aşağıdaki C programı çalıştırıldığında ekrana ne basar?
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int main(void) {
+    int x = 2;
+    switch (x) {
+        case 1:
+            printf("A");
+        case 2:
+            printf("B");
+        case 3:
+            printf("C");
+            break;
+        case 4:
+            printf("D");
+            break;
+        default:
+            printf("E");
+    }
+    printf("\n");
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Program akışını adım adım takip edelim:
+\begin{enumerate}
+    \item \texttt{x} değişkeninin değeri $2$'dir.
+    \item \texttt{switch} ifadesi doğrudan eşleşen \texttt{case 2:} etiketine dallanır.
+    \item \texttt{printf("B");} çalışır ve ekrana \texttt{B} yazdırılır.
+    \item \texttt{case 2:} bloğunun sonunda \texttt{break;} bulunmadığından akış bir sonraki satıra düşer (fall-through).
+    \item \texttt{case 3:} etiketi denetlenmeksizin altındaki kod işletilir: \texttt{printf("C");} çalışır ve ekrana \texttt{C} eklenir.
+    \item \texttt{case 3:} bloğunun sonundaki \texttt{break;} ifadesi \texttt{switch} gövdesini sonlandırır.
+\end{enumerate}
+Böylece ekrana basılan metin:
+\[
+\text{BC}
+\]
+olur.
+\end{proof}
+
+\begin{example}
+Aşağıdaki kod parçasının çıktısını belirleyiniz:
+\begin{lstlisting}[language=CTemel]
+int a = 0, b = 5;
+if (a++ && ++b) {
+    printf("Dogru: %d %d\n", a, b);
+} else {
+    printf("Yanlis: %d %d\n", a, b);
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Bu soru kısa devre değerlendirmesi ile artırma operatörlerinin etkileşimini sınar:
+\begin{enumerate}
+    \item \texttt{a++ \&\& ++b} ifadesinde önce sol taraf değerlendirilir: \texttt{a++}.
+    \item \texttt{a++} ifadesinin o anki değeri $a$'nın başlangıçtaki değeri olan $0$'dır. İfade değerlendirildikten hemen sonra yan etki (side-effect) olarak $a$ bir artırılarak $1$ olur.
+    \item Mantıksal VE (\texttt{\&\&}) işleminin sol tarafı $0$ (yanlış) değerini aldığından kısa devre kuralı devreye girer.
+    \item Sağ taraftaki \texttt{++b} ifadesi hiç çalıştırılmaz; dolayısıyla $b$ değişkeni $5$ olarak kalır.
+    \item Koşul sağlanmadığı için \texttt{else} bloğuna geçilir.
+\end{enumerate}
+Sonuç olarak ekrana basılan çıktı:
+\[
+\text{Yanlis: 1 5}
+\]
+şeklindedir.
+\end{proof}
+
+\begin{example}
+Üç kenar uzunluğu verilen bir üçgenin geçerli olup olmadığını, geçerliyse eşkenar, ikizkenar veya çeşitkenar olduğunu belirleyen kodu yazınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Kenar uzunlukları $a, b, c > 0$ olsun. Üçgen eşitsizliği gereği üçgenin çizilebilmesi için her kenar diğer iki kenarın toplamından kesinlikle küçük olmalıdır:
+\[
+a < b + c \quad \text{ve} \quad b < a + c \quad \text{ve} \quad c < a + b
+\]
+Eğer bu koşullar sağlanıyorsa üçgen geçerlidir ve türü belirlenebilir:
+\begin{itemize}
+    \item $a = b = c$ ise eşkenardır.
+    \item Yalnızca iki kenar eşitse ikizkenardır: $(a = b) \lor (b = c) \lor (a = c)$.
+    \item Aksi halde çeşitkenardır.
+\end{itemize}
+
+Program şu biçimde kurulabilir:
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int main(void) {
+    long long a, b, c;
+    if (scanf("%lld %lld %lld", &a, &b, &c) != 3) return 0;
+
+    // Ucgen esitsizligi kontrolu
+    if (a + b <= c || a + c <= b || b + c <= a) {
+        printf("Gecersiz Ucgen\n");
+    } else if (a == b && b == c) {
+        printf("Eskenar\n");
+    } else if (a == b || b == c || a == c) {
+        printf("Ikizkenar\n");
+    } else {
+        printf("Cesitkenar\n");
+    }
+
+    return 0;
+}
+\end{lstlisting}
+Kenar uzunluklarının büyük tam sayılar girilebileceği göz önüne alınarak \texttt{a + b} toplamında taşmayı önlemek amacıyla değişkenler \texttt{long long} tipinde tanımlanmıştır.
+\end{proof}
+
+\subsection{En Sık Yapılan Hatalar}
+\begin{itemize}
+    \item \textbf{Eşitlik operatörü \texttt{==} yerine atama operatörü \texttt{=} yazmak:}
+    \texttt{if (x = 5)} yazıldığında $x$ değişkenine $5$ atanır. Atanan değer sıfırdan farklı olduğu için koşul her zaman doğru kabul edilir.
+    \item \textbf{Matematiksel zincirleme karşılaştırmaları doğrudan C sözdizimine aktarmak:}
+    Matematikteki $1 < x < 10$ ifadesi C dilinde \texttt{1 < x < 10} biçiminde yazılırsa sözdizimi hatası vermez ancak mantıksal olarak yanlış çalışır. C bu ifadeyi soldan sağa \texttt{(1 < x) < 10} şeklinde hesaplar. \texttt{1 < x} alt ifadesi duruma göre \texttt{0} veya \texttt{1} sonucunu üretir; bu değerler de her halükarda $10$'dan küçük olduğundan koşul $x$'ten bağımsız olarak daima doğru çıkar. Doğru yazım \texttt{1 < x \&\& x < 10} şeklindedir.
+    \item \textbf{\texttt{switch} yapısında \texttt{break} komutunu unutmak:}
+    İstenmeyen bir fall-through davranışı sonraki tüm durumların sırayla çalışmasına neden olur.
+    \item \textbf{Koşul satırının sonuna noktalı virgül koymak:}
+    \texttt{if (x > 0);} şeklinde bir noktalı virgül yerleştirildiğinde koşulun gövdesi boş sayılır; ardından gelen blok koşuldan bağımsız biçimde daima işletilir.
+\end{itemize}

@@ -1,0 +1,327 @@
+\chapter[Greedy Yaklaşımı · \textit{Orta}]{Greedy Yaklaşımı}
+\chaptermark{Greedy Yaklaşımı}
+
+Günlük hayatta bir karar alırken çoğu zaman uzun vadeli, karmaşık olasılık ağaçlarını hesaplamak yerine o an için en avantajlı görünen seçeneğe yöneliriz. Markette en kısa kuyruğu seçmek, trafikte anlık olarak daha hızlı ilerleyen şeride geçmek veya bir açık büfede tabağa ilk olarak en lezzetli görünen yemekleri doldurmak bu yaklaşımın tipik örnekleridir. Bilgisayar biliminde ve matematikte bu felsefeye \textbf{greedy yaklaşım} (\textit{greedy approach}) adı verilir.
+
+Greedy yaklaşımı, çok adımlı bir optimizasyon probleminde her aşamada genel durumu hesaba katmaksızın, o anki koşullarda en karlı ya da "yerel olarak en iyi" (\textit{locally optimal}) görünen adımı atma ilkesine dayanır. Ancak bu refleks her zaman doğru sonuca ulaştırmaz. Şerit değiştirdikten hemen sonra o şeridin tıkanması gibi, anlık yerel kararlar kimi zaman genel çözümün başarısız olmasına yol açabilir.
+
+Bu bölümde, greedy yaklaşımının ne zaman kesin çözüme ulaştırdığını, ne zaman yanıltıcı olabileceğini inceleyecek; algoritmanın doğruluğunu kanıtlama yöntemlerini ve olimpiyatlarda sıkça kullanılan temel problem kalıplarını ele alacağız.
+
+\section{Greedy Kavramı}
+
+Greedy algoritmalarının temel vaadi basitlik ve hızdır. Bölüm 26'da ele aldığımız dinamik programlama veya tam arama (\textit{brute force}) gibi yöntemler tüm durum uzayını adım adım değerlendirirken, greedy algoritması geriye dönüp bakmaz; verdiği kararları sonradan değiştirmez (\textit{irrevocable decisions}).
+
+\subsection{Yerel En İyi Her Zaman Doğru mu?}
+
+Bir dağcının yoğun sis altında zirveye tırmanmak istediğini varsayalım. Dağcı etrafını göremediği için şöyle bir kural uygular: "Her adımda ayağımın altındaki eğimin en dik yukarı gittiği yöne doğru bir adım atacağım." Bu strateji, dağcının hızla yükselmesini sağlar. Ancak dağ tek bir zirveden ibaret değilse, dağcı kendini ana zirve yerine küçük bir tepenin (yerel maksimum) doruğunda bulabilir; oradan ana zirveye ulaşmak için önce vadiye inmesi gerekir, fakat izlediği kural inişe izin vermez.
+
+\begin{example}
+Elimizde $1$, $3$ ve $4$ TL değerinde madeni paralar bulunmaktadır. Toplam $6$ TL tutarındaki bir ödemeyi \textbf{en az sayıda} madeni para kullanarak yapmak istiyoruz.
+\end{example}
+
+\begin{proof}[Çözüm ve Analiz]
+\textbf{Greedy Stratejisi:} Her adımda ödenmesi gereken tutarı aşmayan en büyük değerli parayı seçelim.
+\begin{enumerate}
+    \item $6$ TL için seçilebilecek en büyük para $4$ TL'dir. Kalan borç: $6 - 4 = 2$ TL.
+    \item $2$ TL için $4$ veya $3$ seçilemez, mecburen $1$ TL seçilir. Kalan: $2 - 1 = 1$ TL.
+    \item $1$ TL için yine $1$ TL seçilir. Kalan: $0$ TL.
+\end{enumerate}
+Greedy algoritması $\{4, 1, 1\}$ olmak üzere \textbf{3 adet} para kullandı.
+
+\textbf{Küresel En İyi (Optimal) Çözüm:}
+Bunun yerine iki adet $3$ TL seçilirse, $3 + 3 = 6$ TL elde edilir ve yalnızca \textbf{2 adet} para yeterli olur!
+
+Görüldüğü üzere greedy yaklaşım bu problemde başarısız olmuştur. İlk adımda en büyük parayı seçmek yerel olarak borcu en çok azaltan hamleydi; fakat sistemi öyle bir alt probleme ($2$ TL) kilitledi ki, o alt problemin çözümü genel verimliliği düşürdü.
+\end{proof}
+
+Bir başka klasik başarısızlık örneği ise $0$-$1$ Sırt Çantası (\textit{0-1 Knapsack}) problemidir.
+
+\begin{example}
+Taşıma kapasitesi $W = 50\text{ kg}$ olan bir çantamız ve aşağıdaki üç eşyamız olsun:
+\begin{itemize}
+    \item Eşya 1: $10\text{ kg}$, Değeri: $60\text{ TL}$ (Birim değer: $6\text{ TL/kg}$)
+    \item Eşya 2: $20\text{ kg}$, Değeri: $100\text{ TL}$ (Birim değer: $5\text{ TL/kg}$)
+    \item Eşya 3: $30\text{ kg}$, Değeri: $120\text{ TL}$ (Birim değer: $4\text{ TL/kg}$)
+\end{itemize}
+Her eşyadan en fazla bir adet alabiliriz (bölünemez). Çantaya sığacak eşyaların toplam değerini maksimize etmek istiyoruz.
+\end{example}
+
+\begin{proof}[Çözüm ve Analiz]
+Eğer "birim ağırlık başına değeri en yüksek olan eşyayı önce al" şeklinde sezgisel bir greedy kuralı uygularsak:
+\begin{enumerate}
+    \item İlk olarak Eşya 1 seçilir ($10\text{ kg}$, $60\text{ TL}$). Kalan kapasite: $40\text{ kg}$.
+    \item Sonraki en değerli birim Eşya 2 seçilir ($20\text{ kg}$, $100\text{ TL}$). Kalan kapasite: $20\text{ kg}$.
+    \item Kalan $20\text{ kg}$ kapasiteye Eşya 3 ($30\text{ kg}$) sığmaz.
+\end{enumerate}
+Toplam elde edilen değer: $60 + 100 = 160\text{ TL}$ (toplam ağırlık $30\text{ kg}$, $20\text{ kg}$ boş kaldı).
+
+Oysa Eşya 2 ve Eşya 3'ü seçseydik:
+Ağırlık: $20 + 30 = 50\text{ kg}$ (çanta tam doldu), toplam değer: $100 + 120 = 220\text{ TL}$ olacaktı. Birim değeri en yüksek olan Eşya 1'i almak, geride kalan kapasiteyi verimsiz parçalara bölerek en iyi sonuca ulaşmamızı engelledi.
+\end{proof}
+
+\subsection{Bir Greedy Algoritmasının Anatomisi}
+
+Bir problemin greedy yöntemle kesin ve optimal biçimde çözülebilmesi için iki temel matematiksel özelliğe sahip olması gerekir:
+
+\begin{definition}[Greedy Seçim Özelliği / Greedy Choice Property]
+Bir problemin küresel optimal çözümüne, yerel olarak en iyi görünen seçimler adım adım yapılarak ulaşılabilmesidir. Yani geçmişteki durumları yeniden değerlendirmeye veya gelecekteki adımların tüm kombinasyonlarını dallandırmaya gerek yoktur.
+\end{definition}
+
+\begin{definition}[Optimal Alt Yapı / Optimal Substructure]
+Problemin optimal çözümü, kendi içinde barındırdığı alt problemlerin de optimal çözümlerini içerir. Yani ilk greedy seçimi yaptıktan sonra geriye kalan alt problem çözüldüğünde, bu iki çözümün birleşimi orijinal problemin kesin çözümünü verir.
+\end{definition}
+
+\subsection{Greedy Doğruluğunu İspatlama Teknikleri}
+
+Olimpiyatlarda bir probleme greedy bir sezgiyle yaklaşmak işin sadece başlangıcıdır. Esas kritik aşama, algoritmanın doğruluğundan emin olmaktır. "Örnek girdilerde çalışıyor" düşüncesi en yaygın yanılgılardan biridir. Bir greedy algoritmanın kesinliğini kanıtlamak için genellikle iki temel yöntemden yararlanılır:
+
+\subsubsection{1. Değiş-Tokuş Argümanı (\textit{Exchange Argument})}
+Bu yöntem, greedy ispatlarının en temel ve etkili aracıdır.
+Mantık şöyledir:
+\begin{enumerate}
+    \item Algoritmamızın ürettiği çözüme $G$ diyelim.
+    \item Algoritmamızın doğru olmadığını varsayalım. O halde $G$'den farklı, gerçek bir optimal çözüm $O$ var olsun.
+    \item $O$ çözümü ile $G$ arasındaki ilk farkı (ayrışılan ilk kararı) buluruz.
+    \item $O$ çözümündeki bu farklı elemanı çıkarıp yerine $G$'deki ilgili elemanı koyarız (değiş-tokuş yaparız).
+    \item Gösteririz ki yeni elde edilen çözüm $O'$, $O$'dan daha kötü değildir (değer azalmıyor veya maliyet artmıyor) ve geçerliliğini korumaktadır.
+    \item Bu değiş-tokuş adımı sonlu kez tekrarlanarak $O$ çözümü adım adım $G$'ye dönüştürülebilir. Hiçbir adımda çözüm kötüleşmediğine göre $G$ de en az $O$ kadar iyidir, yani $G$ bir optimal çözümdür.
+\end{enumerate}
+
+\subsubsection{2. Greedy Önde Gider (\textit{Greedy Stays Ahead})}
+Bu yöntemde, çözümün her adımında ölçülebilen bir parametre (örneğin tamamlanan iş sayısı, harcanan minimum süre vb.) belirlenir. Bölüm 2'de gördüğümüz tümevarım (\textit{induction}) ilkesi kullanılarak, her $k$. adımda greedy algoritmanın ulaştığı durumun, varsayımsal herhangi bir optimal çözümün $k$. adımındaki durumundan "daha geride olmadığı" ispatlanır.
+
+\begin{quote}
+\textbf{Uyarı:} Bir greedy kural tasarlayıp doğruluğunu ispatlamadan kodlamaya geçmek ciddi bir risk taşır. Karşılaşılan problemlerin birçoğunda ilk akla gelen greedy sezgisi yanıltıcıdır ve gizli bir karşı örnek (\textit{counterexample}) barındırır. İspatı net biçimde kurulmamış bir greedy kuralına güvenilmemelidir.
+\end{quote}
+
+\section{Tipik Örnekler}
+
+Greedy yaklaşımının doğru sonuç verdiği temel problem sınıflarını ve bu problemlere ait ispatları adım adım inceleyelim.
+
+\subsection{Aralık Seçimi Problemi (\textit{Interval Scheduling})}
+
+Bu problem, zamanlama ve kaynak yönetimi algoritmalarının temel taşlarından biridir.
+
+\begin{definition}[Aralık Seçimi Problemi]
+Bize tek bir salon ve bu salonda yapılmak istenen $n$ adet etkinlik veriliyor. Her etkinliğin bir başlangıç zamanı $s_i$ ve bir bitiş zamanı $e_i$ vardır; yani etkinlik $[s_i, e_i)$ yarı açık aralığında salonu kullanacaktır. İki etkinlik zaman bakımından çakışmıyorsa (biri bittiğinde diğeri başlıyor veya daha sonra başlıyorsa) aynı salonda peş peşe gerçekleştirilebilir. Amaç, salonda gerçekleştirilebilecek \textbf{maksimum sayıda} etkinliği seçmektir.
+\end{definition}
+
+Doğru bir greedy kuralı oluşturmak için hangi ölçüte göre sıralama yapılması gerektiğine bakalım:
+\begin{itemize}
+    \item \textbf{Fikir 1: En erken başlayan etkinliği seçmek.}
+    Basit bir karşı örnek: Çok erken başlayan ama tüm günü kaplayan bir etkinlik $[0, 100)$ olsun. Diğer etkinlikler $[1, 2), [2, 3), [3, 4)$ olsun. En erken başlayanı seçersek sadece 1 etkinlik yapabiliriz, oysa diğerlerini seçerek 3 etkinlik yapmak mümkündür. Bu fikir \textbf{yanlış}.
+    \item \textbf{Fikir 2: En kısa süren ($e_i - s_i$ en küçük) etkinliği seçmek.}
+    Karşı örnek: Etkinlikler $[0, 5), [4, 6), [5, 10)$ olsun. En kısa süren $[4, 6)$ aralığıdır ($2$ birim). Onu seçersek diğer iki etkinlikle de çakışır ve toplam $1$ etkinlik yapılmış olur. Oysa $[0, 5)$ ve $[5, 10)$ seçilerek $2$ etkinlik yapılabilirdi. Bu fikir de \textbf{yanlış}.
+    \item \textbf{Fikir 3: Diğerleriyle en az çakışan etkinliği seçmek.}
+    Makul görünse de karmaşık çizelgelerde bu kuralı da bozan karşı örnekler kurulabilir.
+    \item \textbf{Fikir 4: En erken biten etkinliği seçmek.}
+    Gerekçe: Bir etkinliği ne kadar erken bitirirsek, salonda geriye kalan etkinlikler için gelecekte o kadar çok serbest zaman kalır. Sonraki adımlara en geniş hareket alanını bırakan seçim budur.
+\end{itemize}
+
+Şimdi Fikir 4'ün doğruluğunu değiş-tokuş argümanıyla kanıtlayalım.
+
+\begin{theorem}
+Aralık Seçimi Problemi'nde, mevcut uyumlu etkinlikler arasından daima bitiş zamanı $e_i$ en küçük olan etkinliği seçen greedy strateji optimal sonucu verir.
+\end{theorem}
+
+\begin{proof}
+Greedy algoritmamızın seçtiği etkinlik kümesi $G = \{g_1, g_2, \dots, g_k\}$ olsun. Bu etkinlikler bitiş zamanlarına göre sıralıdır; dolayısıyla $e(g_1) \le e(g_2) \le \dots \le e(g_k)$ geçerlidir.
+
+Varsayalım ki $G$ optimal olmasın. O halde $G$'den kesinlikle daha fazla sayıda etkinlik içeren bir optimal çözüm $O = \{o_1, o_2, \dots, o_m\}$ vardır ($m > k$). $O$'daki etkinlikler de başlangıç/bitiş sıralarına göre dizilmiş olsun.
+
+$G$ ve $O$ kümelerini baştan itibaren karşılaştıralım. Diyelim ki ilk $r-1$ etkinlik aynı olsun, yani $g_1 = o_1, \dots, g_{r-1} = o_{r-1}$, fakat $r$. etkinlikte ayrılsınlar ($g_r \ne o_r$).
+
+Algoritmamızın tanımı gereği, $g_{r-1}$ bittikten sonra başlayabilecek tüm geçerli etkinlikler arasında bitiş zamanı en küçük olan $g_r$ olarak seçilmiştir. Dolayısıyla:
+\[
+e(g_r) \le e(o_r)
+\]
+olmak zorundadır.
+
+Şimdi $O$ kümesinden $o_r$'yi çıkarıp yerine $g_r$'yi yerleştirelim. Yeni kümemiz $O' = (O \setminus \{o_r\}) \cup \{g_r\}$ olsun.
+\begin{itemize}
+    \item $g_r$, $g_{r-1} = o_{r-1}$ bittikten sonra başladığı için kendinden öncekilerle çakışmaz.
+    \item Kendinden sonraki etkinlik olan $o_{r+1}$, $o_r$ bittikten sonra başlıyordu ($s(o_{r+1}) \ge e(o_r)$). Eşitsizlikten biliyoruz ki $e(g_r) \le e(o_r)$, dolayısıyla $s(o_{r+1}) \ge e(g_r)$ de sağlanır. Yani $g_r$, $o_{r+1}$ ile de çakışmaz.
+\end{itemize}
+Böylece $O'$ kümesi de geçerli ve çakışmasız bir çözümdür. Üstelik eleman sayısı $|O'| = |O| = m$'dir; hiçbir kayıp yaşanmamıştır.
+
+Bu değiş-tokuş işlemini her farklılık için tekrarlarsak, $O$ çözümünü adım adım $G$'ye dönüştürebiliriz. $k$ adımdan sonra $O$ kümesinin ilk $k$ elemanı $G$ ile tamamen aynı olur. Eğer $m > k$ olsaydı, $O$ kümesinde $g_k$'den sonra başlayan bir $o_{k+1}$ etkinliği kalmış olurdu. Fakat algoritmamız $g_k$'den sonra seçilebilecek hiçbir etkinlik kalmadığında durmuştu; bu bir çelişkidir. Dolayısıyla $m > k$ olamaz, $k = m$ olmalıdır. $G$ kümesi optimaldir.
+\end{proof}
+
+\begin{lstlisting}
+function intervalScheduling(activities)
+    sort activities in ascending order by end time
+    
+    selectedActivities = empty list
+    lastEndTime = -infinity
+    
+    for each (start, end) in activities do
+        if start >= lastEndTime then
+            append (start, end) to selectedActivities
+            lastEndTime = end
+        end if
+    end for
+    
+    return selectedActivities
+end function
+
+activities = [(1, 4), (3, 5), (0, 6), (5, 7), (3, 8), (5, 9), (6, 10), (8, 11), (8, 12), (2, 13), (12, 14)]
+result = intervalScheduling(activities)
+print "Maximum number of selected activities: " + length of result\end{lstlisting}
+
+Bu algoritmanın zaman karmaşıklığı diziyi sıralamaktan dolayı $O(n \log n)$, aralıkları tek geçişte taramaktan dolayı $O(n)$'dir; toplamda $O(n \log n)$ zaman alır.
+
+\subsection{Bozuk Para Değişimi (\textit{Coin Change}) ve Kanonik Sistemler}
+
+Bölümün başında $1, 3, 4$ para sisteminde greedy yaklaşımın hatalı sonuç verdiğini gördük. Peki günlük hayatta kullandığımız Türk Lirası ($1, 5, 10, 25, 50\text{ Kuruş}$ ve $1\text{ TL}$) veya ABD Doları ($1, 5, 10, 25\text{ Cent}$) sistemlerinde para üstü verirken greedy yaklaşım neden her zaman en az sayıda para kullanır?
+
+\begin{definition}[Kanonik Para Sistemi]
+Bir madeni para kümesinde, her $V$ tamsayı değeri için greedy algoritmanın ürettiği madeni para sayısı, teorik olarak mümkün olan minimum madeni para sayısına eşit oluyorsa, bu sisteme \textbf{kanonik para sistemi} (\textit{canonical coin system}) denir.
+\end{definition}
+
+Bir para sisteminin kanonik olmasını sağlayan temel yeter koşullardan biri, Bölüm 11'de gördüğümüz bölünebilme ilişkisinin ardışık elemanlar arasında sağlanması, yani paraların birbirinin tam katı olmasıdır.
+
+\begin{theorem}
+Para değerleri $c_1 < c_2 < \dots < c_k$ olsun; her $1 \le i < k$ için $c_i \mid c_{i+1}$ (her para birimi bir öncekinin tam katı) ve $c_1 = 1$ sağlansın. Bu durumda greedy algoritması her $V$ değeri için daima optimaldir.
+\end{theorem}
+
+\begin{proof}
+İspatı bir çelişki ve Bölüm 18'de ele aldığımız değişmez (invaryant) mantığıyla kuralım.
+Herhangi bir optimal çözümde, $c_i$ değerindeki madeni paradan en fazla kaç adet bulunabilir?
+$c_{i+1}$, $c_i$'nin tam katı olduğuna göre $q_i = c_{i+1} / c_i \ge 2$ bir tamsayıdır.
+Eğer optimal çözümde $q_i$ veya daha fazla sayıda $c_i$ parası kullanılmış olsaydı, bu $q_i$ adet $c_i$ parasını sistemden çıkarıp yerine sadece \textbf{1 adet} $c_{i+1}$ koyabilirdik ($q_i \cdot c_i = c_{i+1}$). Bu hamle toplam değeri değiştirmez, fakat kullanılan para sayısını $q_i - 1 \ge 1$ adet azaltarak çözümü daha iyi hale getirirdi. Bu durum çözümün optimal olmasıyla çelişir.
+
+Dolayısıyla herhangi bir optimal çözümde $c_i$ parasının adedi $a_i$ olmak üzere:
+\[
+a_i \le q_i - 1 = \frac{c_{i+1}}{c_i} - 1
+\]
+olmalıdır.
+Bu koşul altında paraların toplam değeri:
+\[
+\sum_{j=1}^{i} a_j c_j \le \sum_{j=1}^{i} \left(\frac{c_{j+1}}{c_j} - 1\right) c_j
+\]
+Bu toplam sadeleştirildiğinde:
+\[
+(c_2 - c_1) + (c_3 - c_2) + \dots + (c_{i+1} - c_i) = c_{i+1} - c_1 < c_{i+1}
+\]
+elde edilir.
+
+Bu eşitsizlik şunu gösterir: $c_{i+1}$'den küçük olan tüm paraların mümkün olan en fazlası bir araya getirilse bile, toplamları bir sonraki para birimi olan $c_{i+1}$ değerine ulaşamaz.
+Dolayısıyla ödenmesi gereken tutar $V \ge c_{i+1}$ olduğunda, $c_{i+1}$ kullanılmadan sadece daha küçük paralarla ödeme yapılırsa kesinlikle daha fazla sayıda madeni para harcanır. Bu nedenle $V$'yi aşmayan en büyük parayı ($c_{i+1}$) seçmek zorunludur; bu da tam olarak greedy algoritmanın izlediği kuraldır.
+\end{proof}
+
+\begin{example}
+Bir bilgisayar sisteminde dosya boyutları için $\{1, 2, 4, 8, 16, 32\}$ baytlık bloklar kullanılmaktadır. $59$ baytlık bir veri en az kaç blokta depolanabilir?
+\end{example}
+
+\begin{proof}[Çözüm]
+Blok boyutları $2$'nin kuvvetleridir ve her biri bir sonrakini böler ($2^k \mid 2^{k+1}$). Yukarıdaki teorem gereği greedy yaklaşım optimaldir.
+En büyükten başlayarak:
+\begin{align*}
+59 &= 1 \times 32 + 27 \\
+27 &= 1 \times 16 + 11 \\
+11 &= 1 \times 8 + 3 \\
+3 &= 1 \times 2 + 1 \\
+1 &= 1 \times 1 + 0
+\end{align*}
+Toplamda $5$ blok kullanılır ($32 + 16 + 8 + 2 + 1 = 59$). Bu işlem, Bölüm 15'te gördüğümüz taban dönüşümüyle $59$ sayısının ikili tabandaki karşılığı olan $(111011)_2$ gösterimindeki $1$'lerin sayısına (Hamming ağırlığı) doğrudan karşılık gelir.
+\end{proof}
+
+\subsection{Kesirli Sırt Çantası (\textit{Fractional Knapsack})}
+
+$0$-$1$ Sırt Çantası probleminde eşyalar bölünemediği için greedy yaklaşımın yetersiz kaldığını gördük. Eşyaların istenilen oranda bölünebildiği (\textit{fractional}) durumda ise greedy strateji doğrudan optimal çözümü verir.
+
+\begin{theorem}
+Kesirli Sırt Çantası probleminde, birim değer oranı $v_i / w_i$ en yüksek olan eşyadan başlanarak çantanın alabildiği kadarını alma kuralı daima optimal çözümü verir.
+\end{theorem}
+
+\begin{proof}
+Değiş-tokuş argümanı ile ispatlayalım. Eşyaları birim değerlerine göre azalan sırada dizelim:
+\[
+\frac{v_1}{w_1} \ge \frac{v_2}{w_2} \ge \dots \ge \frac{v_n}{w_n}
+\]
+Greedy algoritmamız $G$, çantayı sırasıyla $1, 2, \dots$ numaralı eşyalarla doldurur. Kalan son boşluğa gerekirse bir eşyanın kesirli bir kısmını yerleştirir.
+
+Farklı bir optimal çözüm $O$ olduğunu varsayalım. Bu durumda $O$ çözümü, $G$'nin çantaya koyduğu yüksek birim değerli bir eşyadan (örneğin $i$ numaralı eşya) daha az miktarda almış ve onun yerine daha düşük birim değerli bir başka eşyadan (örneğin $j$ numaralı eşya, $j > i$) $\Delta w$ ağırlığında fazladan koymuştur.
+
+O halde $O$ çantasından $j$ eşyasına ait $\Delta w$ kadar ağırlığı çıkarıp, yerine henüz tamamen tükenmemiş olan $i$ eşyasından $\Delta w$ kadar ekleyelim. Çantanın toplam ağırlığı değişmez. Toplam değerdeki değişim ise:
+\[
+\Delta V = \Delta w \cdot \left( \frac{v_i}{w_i} - \frac{v_j}{w_j} \right)
+\]
+olur. Sıralamadan dolayı $v_i / w_i \ge v_j / w_j$ olduğundan $\Delta V \ge 0$'dır. Yani çantadaki toplam değer azalmaz, bilakis artabilir. Bu değiş-tokuş adımıyla $O$ çözümü $G$'ye dönüştürülebilir. Buradan, greedy yaklaşımın kesirli sırt çantası için kesinlikle optimal olduğu görülür.
+\end{proof}
+
+\subsection{MST (Minimum Spanning Tree) ve Kesit Özelliği}
+
+Greedy algoritmalarının graf teorisindeki en önemli uygulamalarından biri, Bölüm 28'de ayrıntılı biçimde işlenecek olan graflar üzerindeki \textbf{MST (minimum spanning tree)} problemidir.
+
+Ağırlıklı, yönsüz ve bağlı bir $G = (V, E)$ grafında, tüm düğümleri birbirine bağlayan ve toplam kenar ağırlığı en küçük olan ağaca MST denir. Kruskal ve Prim algoritmaları bu problemi çözen iki temel greedy yaklaşımdır:
+\begin{itemize}
+    \item \textbf{Kruskal Algoritması:} Grafın tüm kenarlarını ağırlıklarına göre küçükten büyüğe sıralar. Çevrim (\textit{cycle}) oluşturmayan en hafif kenarı her adımda kümeye ekler.
+    \item \textbf{Prim Algoritması:} Tek bir düğümle başlar. Her adımda mevcut ağaç düğümlerini ağaçta olmayan düğümlere bağlayan kenarların en hafif olanını seçerek ağacı büyütür.
+\end{itemize}
+
+Her iki algoritmanın doğruluğu, graf teorisindeki \textbf{Kesit Özelliği}'ne (\textit{Cut Property}) dayanır.
+
+\begin{definition}[Graf Kesiti]
+Bir $G = (V, E)$ grafının düğüm kümesi $V$'nin, $S$ ve $V \setminus S$ şeklinde boş olmayan iki ayrık alt kümeye bölünmesine bir \textbf{kesit} (\textit{cut}) denir. Bir ucu $S$'de, diğer ucu $V \setminus S$'de olan kenarlara bu kesiti \textbf{kesen kenarlar} denir.
+\end{definition}
+
+\begin{theorem}[Kesit Özelliği / Cut Property]
+Bir graftaki herhangi bir $(S, V \setminus S)$ kesitini ele alalım. Bu kesiti kesen kenarlar arasında ağırlığı kesin olarak en küçük olan $e = (u, v)$ kenarı, grafın \textbf{tüm} minimum kapsayan ağaçlarında yer almak zorundadır.
+\end{theorem}
+
+\begin{proof}
+Değiş-tokuş argümanını burada da uygulayabiliriz.
+Varsayalım ki $T$, bu en hafif $e$ kenarını içermeyen bir MST olsun.
+\begin{enumerate}
+    \item $T$ bir kapsayan ağaç olduğu için $u$ ile $v$ arasında $T$ üzerinde tek bir basit yol vardır.
+    \item $u \in S$ ve $v \in V \setminus S$ olduğundan, bu yol $S$ kümesinden çıkıp $V \setminus S$ kümesine geçmek zorundadır. Dolayısıyla bu yol üzerinde kesiti kesen en az bir başka $e' = (u', v')$ kenarı bulunmalıdır ($e' \ne e$).
+    \item Şimdi $T$ ağacına $e$ kenarını ekleyelim. Ağaçta bir çevrim oluşur. Bu çevrim hem $e$ hem de $e'$ kenarlarını içerir.
+\item Çevrimden $e'$ kenarını çıkarıp yeni bir $T' = (T \setminus \{e'\}) \cup \{e\}$ grafı elde edelim.
+    \item $T'$ hâlâ tüm düğümleri birbirine bağlar ve $|V|-1$ kenara sahiptir, yani geçerli bir kapsayan ağaçtır.
+    \item Toplam ağırlıktaki değişim:
+    \[
+    w(T') = w(T) - w(e') + w(e)
+    \]
+    Teoremde $e$, kesiti kesen kenarlar arasında ağırlığı \textbf{kesin olarak} en küçük kenar olarak seçilmişti. $e'$ de kesiti kesen bir kenar ve $e' \ne e$ olduğundan $w(e) < w(e')$'dir. Dolayısıyla
+    \[
+    w(T') = w(T) - w(e') + w(e) < w(T)
+    \]
+    olur.
+    \item Bu ise $T$'nin minimum ağırlıklı olmasıyla \textbf{çelişir}; çünkü $T$'den daha küçük ağırlıklı bir kapsayan ağaç ($T'$) elde ettik. Demek ki varsayım yanlıştır: $e$ kenarını içermeyen bir minimum kapsayan ağaç yoktur, yani $e$ \textbf{her} minimum kapsayan ağaçta yer alır.
+\end{enumerate}
+Bu teorem, Kruskal ve Prim algoritmalarının her adımda yaptığı yerel seçimlerin (kesiti kesen en hafif kenarı seçmenin) küresel bir MST inşa edeceğini garanti eder.
+\end{proof}
+
+\subsection{Kapsamlı Bir Problem: Huffman Kodlaması Sezgisi}
+
+Veri sıkıştırmada kullanılan Huffman algoritması, greedy mantığının bir diğer başarılı uygulama alanıdır. Metinde sık geçen karakterlere kısa kodlar, seyrek geçen karakterlere ise daha uzun kodlar atanarak toplam bit maliyeti azaltılır.
+
+\begin{example}
+Bir metinde 4 farklı karakter şu frekanslarla geçmektedir: $A: 40$, $B: 25$, $C: 20$, $D: 15$. Bu karakterleri ikili ağaç yapısında kodlayarak ağırlıklı ortalama bit uzunluğunu minimize ediniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+\textbf{Greedy Kuralı:} Her adımda frekansı en küçük olan iki düğümü birleştirip tek bir yeni düğüm oluşturulur (bu iki düğüm ağacın en derininde, yani en uzun koda sahip kardeş yapraklar olacaktır).
+\begin{enumerate}
+    \item En küçük iki frekans $C(20)$ ve $D(15)$'tir. Bunlar birleştirilir: Yeni düğüm $CD(35)$. Kalan frekanslar: $A(40), B(25), CD(35)$.
+    \item Şimdi en küçük iki frekans $B(25)$ ve $CD(35)$'tir. Birleştirildiğinde: $BCD(60)$. Kalanlar: $A(40), BCD(60)$.
+    \item Son iki düğüm birleştirilir: $ABCD(100)$ (Kök düğüm).
+\end{enumerate}
+Kod uzunlukları:
+\begin{itemize}
+    \item $A$ kökün doğrudan çocuğu: derinlik $1$ bit.
+    \item $B$, $BCD$'nin çocuğu: derinlik $2$ bit.
+    \item $C$ ve $D$, $CD$'nin çocukları: derinlik $3$ bit.
+\end{itemize}
+Toplam harcanan bit: $40 \times 1 + 25 \times 2 + 20 \times 3 + 15 \times 3 = 40 + 50 + 60 + 45 = 195$ bit.
+Eğer her karaktere sabit 2 bit verilseydi toplam $100 \times 2 = 200$ bit harcanacaktı. Greedy seçim, frekansı düşük olanları ağacın daha derin dallarına yerleştirerek toplam maliyeti en aza indirmiştir.
+\end{proof}
+
+\section*{Bölüm Özeti}
+\begin{itemize}
+    \item \textbf{Greedy Yaklaşımı:} Her adımda o an en avantajlı görünen seçimi yapar; geri dönüş (backtracking) yapmaz. Hızlıdır fakat her problemde optimal sonuca ulaştırmaz.
+    \item \textbf{Doğruluk Şartları:} Bir problemin greedy ile çözülebilmesi için \textit{greedy seçim özelliği} ve \textit{optimal alt yapı} şartlarının sağlanması gerekir.
+    \item \textbf{İspat Yöntemi:} Bir greedy fikri uygulamadan önce \textbf{Değiş-Tokuş Argümanı} ile test edilmelidir. Varsayımsal optimal bir çözümün değer kaybetmeksizin adım adım greedy çözüme dönüştürülebildiği gösterilmelidir.
+    \item \textbf{Tipik Alanlar:} Aralık seçimi (bitiş zamanına göre sıralama), kanonik para sistemleri, kesirli sırt çantası ve minimum kapsayan ağaçlar (Kruskal/Prim) greedy yaklaşımının kesin sonuç verdiği başlıca alanlardır.
+\end{itemize}

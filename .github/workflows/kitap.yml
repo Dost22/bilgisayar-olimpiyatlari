@@ -1,0 +1,92 @@
+name: Kitap
+
+# Kitap her gönderimde derlenir ve denetlenir: kırılmaz kısıt, derlemenin
+# YEŞİL (exit 0) kalmasıdır. Kapılar:
+#   compile_book.py  → PDF üretilir
+#   check_secrets.py → depoda sır (API anahtarı/token) yok  ← önce koşar
+#   audit_log.py     → derleme kaydında kritik iz yok (eksik karakter, taşma...)
+#   audit_book.py    → içerik sözleşmeleri (müfredat, atıf, terim) tutuyor
+#   check_site.py    → yayımlanan `site/` güncel ve tutarlı
+# Tectonic sürümü BİLİNÇLİ olarak sabitlendi: PDF çıktısı sürüme duyarlıdır,
+# yereldeki derlemeyle birebir aynı hükmü vermesi için sürüm eşitlenir.
+# Güncelleme: buradaki sürüm ile config/KARARLAR.md kaydını birlikte değiştirin.
+# Site denetimi `--ci` modunda çalışır: PDF'in ikili (md5) karşılaştırması
+# makineye bağlı olduğu için atlanır, sayfa sayısı karşılaştırması yapılır.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kitap-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  derle:
+    name: Derle ve denetle
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Depoyu al
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Tectonic kur
+        uses: wtfjoke/setup-tectonic@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          tectonic-version: 0.17.0
+
+      # Tectonic paketleri ilk koşuda indirir (~1-2 dk). Kaynak dosyalar
+      # değişmedikçe bu önbellek devreye girer.
+      - name: Tectonic paket önbelleği
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/Tectonic
+          key: tectonic-${{ runner.os }}-${{ hashFiles('templates/main.tex', 'output/*.tex', 'frontmatter/*.tex') }}
+          restore-keys: tectonic-${{ runner.os }}-
+
+      - name: Site araçlarının bağımlılığı (PDF okuma)
+        run: pip install PyMuPDF
+
+      - name: Sır (API anahtarı / token) taraması
+        run: python3 scripts/check_secrets.py --brief
+
+      - name: Kitabı derle
+        run: python3 scripts/compile_book.py --compiler tectonic
+
+      - name: Derleme kaydını denetle
+        run: python3 scripts/audit_log.py --brief
+
+      - name: Kitap içeriğini denetle
+        run: python3 scripts/audit_book.py --brief
+
+      - name: Yayımlanan siteyi denetle
+        run: python3 scripts/check_site.py --ci
+
+      - name: Derlenen PDF'i yükle (inceleme için)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kitap-pdf
+          path: book_build.pdf
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Derleme kaydını yükle (hata ayıklama için)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: derleme-kaydi
+          path: book_build.log
+          if-no-files-found: ignore
+          retention-days: 14

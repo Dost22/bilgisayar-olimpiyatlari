@@ -1,0 +1,25 @@
+{
+  "file": "34_alistirmalar_algoritma_c.tex",
+  "findings": [
+    {
+      "file": "34_alistirmalar_algoritma_c.tex",
+      "line_hint": 216,
+      "type": "notation_violation",
+      "severity": "major",
+      "excerpt": "Özyineleme yığınından geri dönüşleri izleyelim.",
+      "issue": "Terminoloji sözleşmesinde 'özyineleme' terimi açıkça yasaklanmış ve 'rekürsiyon' teriminin standardize edildiği belirtilmiştir. Ayrıca 'stack' yerine tek başına 'yığın' kullanımı da A grubu yasaklı terimler arasındadır.",
+      "suggested_fix": "'Rekürsiyon yığınından (call stack) geri dönüşleri izleyelim.' veya 'Çağrı yığınından geri dönüşleri izleyelim.' şeklinde düzeltilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "34_alistirmalar_algoritma_c.tex",
+      "line_hint": 401,
+      "type": "notation_violation",
+      "severity": "major",
+      "excerpt": "\\subsection{İki İşaretçi (Two Pointers) Tekniği: Sıralı Dizide Toplam}",
+      "issue": "Terminoloji sözleşmesi A Kategorisi gereğince 'two pointers' terimi İngilizce olarak korunmalı, Türkçe karşılığı ('iki işaretçi') kullanılmamalıdır.",
+      "suggested_fix": "Başlık '\\subsection{Two Pointers Tekniği: Sıralı Dizide Toplam}' olarak güncellenmelidir.",
+      "confidence": "high"
+    }
+  ]
+}

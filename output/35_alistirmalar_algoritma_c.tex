@@ -1,0 +1,715 @@
+\chapter{Alıştırmalar: Algoritma ve C}
+
+TÜBİTAK 1.~Aşama Bilgisayar Olimpiyatı sınavında soruların önemli bir bölümü, algoritma analizi ve C dilinin derinliklerine dair doğrudan kod okuma becerisini ölçer. Bu sınavlarda derleyici ya da hata ayıklayıcı (debugger) bulunmaz; zihniniz hem bir C derleyicisi hem de bir işlemci gibi çalışmak zorundadır. Karmaşıklık analizinde gizli kalan adımları sezmek, işaretçilerin bellekteki hareketini bir bellek haritası üzerinde hatasız izlemek ve verilen soyut bir matematiksel problemi birkaç satırlık sade bir koda dönüştürebilmek, olimpiyat başarısının temel taşlarıdır.
+
+Önceki bölümlerde ele aldığımız asimptotik analiz (Bölüm 21), C dilinin bellek modeli, işaretçi aritmetiği (Bölüm 31) ve temel algoritma kalıplarını bu alıştırmalarda çözümlü örneklerle pekiştireceğiz. Her soruda önce problemin çözümünde izlenecek yaklaşımı ele alacak, ardından adım adım çözüme geçeceğiz.
+
+% ==============================================================================
+% 1. BÖLÜM: KARMAŞIKLIK OKUMA ALIŞTIRMALARI
+% ==============================================================================
+\section{Karmaşıklık Okuma Alıştırmaları}
+
+Algoritma analizinde en sık düşülen tuzak, iç içe geçmiş döngülerin sayısını sayıp doğrudan $O(n^2)$ veya $O(n^3)$ hükmüne varmaktır. Oysa döngü değişkenlerinin birbirine bağımlı olduğu, adım büyüklüklerinin sabit kalmadığı veya döngü gövdesinin her adımda farklı maliyetle çalıştığı durumlarda bu kaba yaklaşım geçerliliğini yitirir. Karmaşıklığı doğru okumak; algoritmik süreci matematiksel bir toplama ($\sum$) dönüştürme ve bu toplamın asimptotik büyüme hızını doğru belirleme becerisidir.
+
+\begin{definition}[Baskın Terim ve Asimptotik Denk Büyüklük]
+Pozitif reel diziler $f(n)$ ve $g(n)$ için, $\lim_{n \to \infty} \frac{f(n)}{g(n)} = c$ ($0 < c < \infty$) ise $f(n) = \Theta(g(n))$ denir. Eğer $\lim_{n \to \infty} \frac{f(n)}{g(n)} = 0$ ise $f(n) = o(g(n))$ olur ve asimptotik olarak $g(n)$ fonksiyonunun $f(n)$'ye baskın olduğu söylenir.
+\end{definition}
+
+Karmaşıklık analizi yaparken şu üç temel araçtan sıklıkla yararlanırız:
+\begin{enumerate}
+    \item \textbf{Harmonik Toplam:} $\sum_{i=1}^n \frac{1}{i} = \ln n + \gamma + O(1/n) = \Theta(\log n)$.
+    \item \textbf{Geometrik Toplam:} $r > 1$ için $\sum_{i=0}^k r^i = \Theta(r^k)$; $r < 1$ için $\sum_{i=0}^\infty r^i = \Theta(1)$.
+    \item \textbf{İntegral ile Yaklaşım:} Monoton artan veya azalan $f(x)$ fonksiyonları için $\sum_{i=a}^b f(i) = \Theta\left(\int_a^b f(x)\,dx\right)$.
+\end{enumerate}
+
+\begin{example}
+Aşağıda verilen C kod parçacığının zaman karmaşıklığını Big $O$ cinsinden belirleyiniz:
+
+\begin{lstlisting}[language=CTemel]
+int sayac = 0;
+for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= n; j += i) {
+        sayac++;
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Dış döngü $i = 1, 2, \dots, n$ değerlerini alır. İç döngü ise $1$'den $n$'ye kadar sabit bir adımla değil, $i$'şer $i$'şer artarak ilerler. Dolayısıyla iç döngü her çalıştığında adım sayısı $n$ değil, doğrudan $i$'ye bağlıdır. İç döngünün kaç kez döndüğünü $i$ cinsinden ifade edip tüm $i$ değerleri üzerinden toplamalıyız.
+
+İç döngü değişkeni $j$; $1, 1+i, 1+2i, \dots$ değerlerini alır ve $j \le n$ olduğu sürece çalışır. Bu döngüdeki adım sayısı:
+\[
+\left\lceil \frac{n}{i} \right\rceil
+\]
+kadardır. O halde toplam işlem sayısı $T(n)$:
+\[
+T(n) = \sum_{i=1}^n \left\lceil \frac{n}{i} \right\rceil
+\]
+Burada tavan fonksiyonunu açarsak:
+\[
+\sum_{i=1}^n \frac{n}{i} \le T(n) < \sum_{i=1}^n \left( \frac{n}{i} + 1 \right) = n \sum_{i=1}^n \frac{1}{i} + n
+\]
+Harmonik seri toplamının $\sum_{i=1}^n \frac{1}{i} = \ln n + \Theta(1)$ olduğunu bildiğimize göre:
+\[
+T(n) = n \cdot (\ln n + \Theta(1)) + O(n) = n \ln n + O(n) = \Theta(n \log n)
+\]
+Kod parçasının zaman karmaşıklığı $O(n \log n)$ olur.
+\end{proof}
+
+\begin{example}
+Aşağıdaki fonksiyonun $T(n)$ zaman karmaşıklığını bulunuz:
+
+\begin{lstlisting}[language=CTemel]
+void gizemli(int n) {
+    int i = 1;
+    while (i <= n) {
+        for (int j = 1; j <= i; j++) {
+            // O(1) maliyetli islem
+        }
+        i = i * 2;
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+İç döngü $i$ adım çalışmaktadır. Ancak $i$ her adımda $1$ artmaz; $2$ ile çarpılarak katlanır. Bu durum bir geometrik dizi oluşturur. Dış döngünün kaç kez çalışacağını bulup geometrik serinin toplamını hesaplayalım.
+
+Dış döngüde $i$ değişkeninin aldığı değerler kümesi:
+\[
+\{1, 2, 4, 8, \dots, 2^k\}
+\]
+burada $2^k \le n < 2^{k+1}$, yani $k = \lfloor \log_2 n \rfloor$'dir.
+
+Her bir $i = 2^m$ ($m = 0, 1, \dots, k$) değeri için içteki döngü tam olarak $i = 2^m$ kez çalışır. Toplam işlem sayısı:
+\[
+T(n) = \sum_{m=0}^k 2^m = 2^0 + 2^1 + 2^2 + \dots + 2^k = 2^{k+1} - 1
+\]
+$k = \lfloor \log_2 n \rfloor$ olduğuna göre:
+\[
+2^{k+1} = 2 \cdot 2^{\lfloor \log_2 n \rfloor} \le 2n
+\]
+ve $2^{k+1} > n$'dir. Dolayısıyla $T(n) = \Theta(n)$ bulunur.
+
+Dış döngü $\log n$ adım, iç döngü ise en fazla $n$ adım çalıştığı için kaba bir üst sınırla $O(n \log n)$ denebilirdi; fakat geometrik seri toplamı en büyük terimin mertebesinde kaldığından gerçek asimptotik karmaşıklık $\Theta(n)$'dir.
+\end{proof}
+
+\begin{example}
+Aşağıda verilen rekürsif (rekürsif) fonksiyonun zaman karmaşıklığını belirleyiniz:
+\[
+T(n) = 3 T(n/4) + n \log_2 n
+\]
+\end{example}
+
+\begin{proof}[Çözüm]
+Bu bağıntı $T(n) = a T(n/b) + f(n)$ biçimindedir; dolayısıyla Master Teoremi'ni doğrudan uygulayabiliriz. Parametreler: $a = 3$, $b = 4$ ve $f(n) = n \log_2 n$.
+
+Kritik üssü hesaplayalım:
+\[
+c_{\text{kritik}} = \log_b a = \log_4 3 \approx 0{,}793
+\]
+Şimdi $f(n)$ fonksiyonunu $n^{\log_b a} = n^{\log_4 3}$ ile kıyaslayalım. $f(n) = n \log_2 n$ fonksiyonu, $n^1$'den hızlı büyümektedir. $1 > \log_4 3$ olduğundan $\epsilon = 1 - \log_4 3 > 0$ seçilebilir. Bu durumda:
+\[
+f(n) = \Omega\left(n^{\log_4 3 + \epsilon}\right)
+\]
+koşulu sağlanır. Master Teoremi'nin 3.~durumunun geçerli olabilmesi için düzenlilik (regularity) koşulunu da kontrol etmeliyiz: Yeterince büyük $n$ değerleri ve bir $c < 1$ sabiti için $a f(n/b) \le c f(n)$ olmalıdır:
+\[
+a f(n/b) = 3 \cdot \left(\frac{n}{4} \log_2\left(\frac{n}{4}\right)\right) = \frac{3}{4} n (\log_2 n - 2) \le \frac{3}{4} n \log_2 n = \frac{3}{4} f(n)
+\]
+$c = 3/4 < 1$ seçildiğinde düzenlilik koşulu tüm $n \ge 4$ için sağlanır.
+
+Master Teoremi'nin 3.~durumu gereğince toplam maliyeti baskın terim olan $f(n)$ belirler:
+\[
+T(n) = \Theta(f(n)) = \Theta(n \log n)
+\]
+\end{proof}
+
+\begin{example}
+Aşağıdaki fonksiyonların asimptotik büyüme hızlarını küçükten büyüğe sıralayınız:
+\[
+f_1(n) = n^{\log_2 \log_2 n}, \quad f_2(n) = (\log_2 n)^{\log_2 n}, \quad f_3(n) = 2^{\sqrt{\log_2 n}}, \quad f_4(n) = n!
+\]
+\end{example}
+
+\begin{proof}[Çözüm]
+Farklı taban ve üslere sahip fonksiyonları karşılaştırmanın en güvenli yolu, her birinin $2$ tabanında logaritmasını alarak büyüme hızlarını incelemektir:
+
+\begin{enumerate}
+    \item $f_1(n) = n^{\log_2 \log_2 n} \implies \log_2 f_1(n) = (\log_2 \log_2 n) \cdot (\log_2 n)$.
+    \item $f_2(n) = (\log_2 n)^{\log_2 n} \implies \log_2 f_2(n) = (\log_2 n) \cdot \log_2(\log_2 n)$.
+    Görüldüğü üzere $\log_2 f_1(n) = \log_2 f_2(n)$, dolayısıyla $f_1(n) = f_2(n)$'dir.
+    \item $f_3(n) = 2^{\sqrt{\log_2 n}} \implies \log_2 f_3(n) = \sqrt{\log_2 n}$.
+    \item $f_4(n) = n! \implies \text{Stirling yaklaşımı ile } \log_2(n!) = \Theta(n \log_2 n)$.
+\end{enumerate}
+
+Şimdi bu logaritmaların büyüme hızlarını kıyaslayalım:
+$\sqrt{\log_2 n}$ değeri, $(\log_2 n)(\log_2 \log_2 n)$'den çok daha yavaş büyür. Bu ikinci ifade ise $n \log_2 n$'den çok daha yavaş büyür ($n$ terimi $\log_2 \log_2 n$'e baskındır).
+
+O halde asimptotik büyüme sıralaması:
+\[
+f_3(n) \prec f_1(n) = f_2(n) \prec f_4(n)
+\]
+şeklinde elde edilir.
+\end{proof}
+
+\begin{definition}[Sık Yapılan Hata: Logaritma Tabanları ve Üstel İfadeler]
+$O(\log_2 n) = O(\log_{10} n)$ eşitliği doğrudur çünkü taban değişimi sabit bir çarpan getirir ($\log_a n = \frac{\log_b n}{\log_b a}$). Ancak üstel fonksiyonlarda taban ihmal \textbf{edilemez}:
+\[
+2^n \ne O(3^n) \quad \text{ve} \quad 2^{2n} = 4^n \ne O(2^n)
+\]
+Benzer biçimde $O(n)$ süren bir işlemi $O(\log n)$ kez çağırmak $O(n \log n)$ maliyet üretir; fakat iç döngünün değişken adımları toplamı her zaman döngü derinliklerinin çarpımı anlamına gelmez.
+\end{definition}
+
+% ==============================================================================
+% 2. BÖLÜM: İZ SÜRME VE ÇIKTI BULMA ALIŞTIRMALARI
+% ==============================================================================
+\section{İz Sürme ve Çıktı Bulma Alıştırmaları}
+
+TÜBİTAK 1.~Aşama sınavında en sık karşılaşılan soru tiplerinden biri, kısa bir C programının ekran çıktısını belirlemektir. Bu sorular işlem önceliği, yan etkiler (side effects), işaretçi-dizi ilişkisi, statik değişkenlerin ömrü ve rekürsiyon çağrı yığını (call stack) mekanizmalarını sınamak üzere kurgulanır.
+
+Bu tür sorularda tahmin yürütmek yerine kâğıt üzerinde bir \textbf{iz sürme çizelgesi} (trace table) ve \textbf{rekürsiyon ağacı} oluşturmak hata payını ortadan kaldırır.
+
+\begin{example}
+Aşağıdaki C programı çalıştırıldığında ekrana ne yazar?
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int f(int *p, int n) {
+    if (n <= 0) return 0;
+    return *p + f(p + 1, n - 2);
+}
+
+int main() {
+    int a[] = {3, 7, 2, 9, 5, 1, 8};
+    printf("%d\n", f(a, 7));
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Fonksiyon bir işaretçi (\texttt{int *p}) ve bir tamsayı (\texttt{n}) almaktadır (Bölüm 31'de incelediğimiz işaretçi aritmetiğini anımsayınız). Her rekürsif çağrıda işaretçi $1$ birim ileri kaydırılmakta (\texttt{p + 1}), fakat $n$ parametresi $2$ azaltılmaktadır (\texttt{n - 2}). Fonksiyonun her adımda hangi dizi elemanına baktığını ve durma koşulunu listeleyelim.
+
+Dizinin elemanları ve indeksleri:
+\[
+a[0]=3, \quad a[1]=7, \quad a[2]=2, \quad a[3]=9, \quad a[4]=5, \quad a[5]=1, \quad a[6]=8
+\]
+Başlangıç çağrısı: $f(\&a[0], 7)$
+\begin{enumerate}
+    \item $f(\&a[0], 7)$: $n = 7 > 0$. Döndürülen: $*a[0] + f(\&a[1], 5) = 3 + f(\&a[1], 5)$.
+    \item $f(\&a[1], 5)$: $n = 5 > 0$. Döndürülen: $*a[1] + f(\&a[2], 3) = 7 + f(\&a[2], 3)$.
+    \item $f(\&a[2], 3)$: $n = 3 > 0$. Döndürülen: $*a[2] + f(\&a[3], 1) = 2 + f(\&a[3], 1)$.
+    \item $f(\&a[3], 1)$: $n = 1 > 0$. Döndürülen: $*a[3] + f(\&a[4], -1) = 9 + f(\&a[4], -1)$.
+    \item $f(\&a[4], -1)$: $n = -1 \le 0$. Taban durumu devreye girer ve $0$ döndürür.
+\end{enumerate}
+
+Değerleri geriye doğru toplayalım:
+\[
+\text{Toplam} = 3 + 7 + 2 + 9 + 0 = 21
+\]
+Program ekrana \textbf{21} yazar.
+\end{proof}
+
+\begin{example}
+Statik değişken içeren aşağıdaki programın çıktısını bulunuz:
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int gizem(int n) {
+    static int x = 1;
+    if (n <= 1) return x;
+    x = x + n;
+    return gizem(n - 1) + x;
+}
+
+int main() {
+    printf("%d\n", gizem(4));
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+\texttt{static int x = 1;} tanımı yalnızca program başladığında bir defaya mahsus işletilir. Sonraki tüm çağrılarda $x$ değişkeni bellekteki aynı adresi korur; bir çağrıda $x$'e yapılan değişiklik diğer çağrıları da bağlar. İfade \texttt{gizem(n - 1) + x} biçimindedir.
+
+Çağrı adımlarını sıra ile takip edelim:
+\begin{itemize}
+    \item $n = 4$: $x = 1 + 4 = 5$ olur. Hesaplanan ifade: $E_4 = \text{gizem}(3) + x$.
+    \item $n = 3$: $x = 5 + 3 = 8$ olur. Hesaplanan ifade: $E_3 = \text{gizem}(2) + x$.
+    \item $n = 2$: $x = 8 + 2 = 10$ olur. Hesaplanan ifade: $E_2 = \text{gizem}(1) + x$.
+    \item $n = 1$: $n \le 1$ sağlandığından taban durumu çalışır ve o anki $x$ değeri döndürülür. Şu an $x = 10$'dur; dolayısıyla $\text{gizem}(1) = 10$ döner.
+\end{itemize}
+
+Rekürsiyon yığınından geri dönüşleri izleyelim. $x$ statik bir değişken olduğundan değeri çağrılar tamamlanırken değişmez, hep $10$ kalır:
+\begin{align*}
+\text{gizem}(2) &= \text{gizem}(1) + x = 10 + 10 = 20 \\
+\text{gizem}(3) &= \text{gizem}(2) + x = 20 + 10 = 30 \\
+\text{gizem}(4) &= \text{gizem}(3) + x = 30 + 10 = 40
+\end{align*}
+Program ekrana \textbf{40} yazar.
+\end{proof}
+
+\begin{example}
+Aşağıdaki işaretçi ve dizi aritmetiği içeren programın çıktısını belirleyiniz:
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int main() {
+    int dizi[] = {10, 20, 30, 40, 50, 60};
+    int *p = dizi;
+    
+    int a = *p++;
+    int b = *++p;
+    int c = ++*p;
+    
+    printf("%d %d %d %d\n", a, b, c, *p);
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Burada C dilinin operatör önceliği ve birleşme yönü (associativity) kuralları sınanmaktadır:
+\begin{itemize}
+    \item \texttt{*p++}: \texttt{++} soneki \texttt{*} işaretçi operatöründen daha yüksek önceliğe sahiptir; fakat sonek artırma, ifadenin değeri okunduktan \emph{sonra} gerçekleşir. Dolayısıyla ifadenin değeri \texttt{*p} olur, ardından \texttt{p} sonraki elemana geçer.
+    \item \texttt{*++p}: Önek \texttt{++} ile \texttt{*} aynı önceliktedir ve sağdan sola birleşirler. Önce \texttt{p} bir ileri kaydırılır, ardından ulaşılan adresteki değer okunur.
+    \item \texttt{++*p}: Sağdan sola birleşir. Önce \texttt{*p} okunur, ardından o adresteki değer $1$ artırılır.
+\end{itemize}
+
+Adım adım izleyelim:
+\begin{enumerate}
+    \item Başlangıçta $p$ dizinin başına işaret eder: $p \to \&\text{dizi}[0]$ (değeri 10).
+    \item \texttt{int a = *p++;}: İfade değeri $p$'nin gösterdiği yerdeki değerdir, yani $a = 10$. Ardından $p$ bir eleman ilerler: $p \to \&\text{dizi}[1]$ (değeri 20).
+    \item \texttt{int b = *++p;}: Önce $p$ ilerletilir: $p \to \&\text{dizi}[2]$ (değeri 30). Ardından işaretçi çözülür: $b = 30$.
+    \item \texttt{int c = ++*p;}: $p$ hâlâ $\&\text{dizi}[2]$ adresindedir ve oradaki değer $30$'dur. Bu değer $1$ artırılır, $\text{dizi}[2]$ elemanı $31$ olur ve $c = 31$ değerini alır.
+    \item Son olarak $*p$ değeri okunur; $p$ hâlâ $\&\text{dizi}[2]$ adresinde olduğundan $*p = 31$'dir.
+\end{enumerate}
+
+Ekrana yazılan çıktı: \textbf{10 30 31 31} olur.
+\end{proof}
+
+\begin{example}
+Aşağıdaki bitwise (bitwise) işlem yapan fonksiyonun çıktısını bulunuz:
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int islem(int n) {
+    int c = 0;
+    while (n > 0) {
+        c++;
+        n = n & (n - 1);
+    }
+    return c;
+}
+
+int main() {
+    printf("%d\n", islem(157));
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+\texttt{n \& (n - 1)} ifadesi bilgisayar bilimlerinde Brian Kernighan algoritması olarak bilinen temel bir kalıptır (Bölüm 32'de incelediğimiz bit işlemlerini hatırlayınız). Bir sayının ikili (binary) açılımındaki en sağdaki (en düşük basamaklı) $1$ bitini sıfırlar. Fonksiyon, sayı $0$ olana kadar kaç defa $1$ bitinin temizlendiğini sayarak ikili açılımdaki $1$'lerin toplam adedini (popcount) bulur.
+
+$157$ sayısını Bölüm 15'teki taban dönüştürme yöntemiyle ikili tabana çevirelim:
+\[
+157 = 128 + 16 + 8 + 4 + 1 = 2^7 + 2^4 + 2^3 + 2^2 + 2^0
+\]
+İkili gösterimi:
+\[
+(157)_{10} = (10011101)_2
+\]
+Bu sayıda tam $5$ adet $1$ biti bulunmaktadır.
+
+Döngü adımları şöyle ilerler:
+\begin{enumerate}
+    \item $157 = (10011101)_2 \implies n \ \& \ (n-1) = (10011100)_2 = 156$, $c = 1$.
+    \item $156 = (10011100)_2 \implies n \ \& \ (n-1) = (10011000)_2 = 152$, $c = 2$.
+    \item $152 = (10011000)_2 \implies n \ \& \ (n-1) = (10010000)_2 = 144$, $c = 3$.
+    \item $144 = (10010000)_2 \implies n \ \& \ (n-1) = (10000000)_2 = 128$, $c = 4$.
+    \item $128 = (10000000)_2 \implies n \ \& \ (n-1) = (00000000)_2 = 0$, $c = 5$.
+\end{enumerate}
+Döngü sonlanır ve $c = 5$ değeri döndürülür. Programın çıktısı \textbf{5}'tir.
+\end{proof}
+
+\begin{definition}[Sık Yapılan Hata: Kısa Devre Değerlendirmesi (Short-Circuit)]
+Mantıksal \texttt{\&\&} ve \texttt{||} operatörlerinde C dili kısa devre değerlendirmesi yapar:
+\begin{itemize}
+    \item \texttt{A \&\& B} ifadesinde eğer $A$ yanlış ($0$) ise, $B$ ifadesi \textbf{asla çalıştırılmaz}.
+    \item \texttt{A || B} ifadesinde eğer $A$ doğru (sıfırdan farklı) ise, $B$ ifadesi \textbf{asla çalıştırılmaz}.
+\end{itemize}
+Örneğin \texttt{(x == 0) || (y++ > 0)} ifadesinde \texttt{x == 0} doğruysa \texttt{y++} yan etkisi gerçekleşmez ve \texttt{y} artmaz. Kod izleme sorularında bu kurala özellikle dikkat edilmelidir.
+\end{definition}
+
+% ==============================================================================
+% 3. BÖLÜM: KÜÇÜK C/PYTHON KODU ALIŞTIRMALARI
+% ==============================================================================
+\section{Küçük C Kodu Alıştırmaları}
+
+Olimpiyatta algoritma tasarlarken teorik yaklaşımı en az satırla, taşma (overflow) yaşatmadan ve uç durumları doğru yöneterek koda aktarabilmek gerekir. Bu bölümde temel tekniklerin C dilindeki uygulamalarını inceleyeceğiz.
+
+\subsection{Hızlı Üs Alma (Binary Exponentiation)}
+
+$a^b \pmod m$ değerini basit bir döngüyle hesaplamak $O(b)$ adım sürer ve $b \approx 10^{18}$ olduğunda pratik olarak imkânsızdır. Bölüm 14'te ele aldığımız modüler aritmetik özellikleri sayesinde ikili üs alma yöntemi bu süreyi $O(\log b)$ adıma indirir.
+
+\textbf{Düşünsel Yaklaşım (İnvaryant İlkesi, bkz. Bölüm 18):}
+$a^b$ ifadesini hesaplarken şu değişmezi koruruz:
+\[
+\text{sonuc} \cdot a_{\text{guncel}}^{b_{\text{guncel}}} \equiv a_{\text{ilk}}^{b_{\text{ilk}}} \pmod m
+\]
+Eğer $b$ tek sayı ise üssü bir azaltıp tabanı sonuca çarparız ($b \gets b - 1$). Eğer $b$ çift sayı ise üssü yarıya indirip tabanın karesini alırız ($b \gets b / 2, a \gets a^2$).
+
+\begin{example}
+Büyük üsler için $a^b \pmod m$ değerini $O(\log b)$ sürede hesaplayan taşmasız C fonksiyonunu yazınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+İki 64-bitlik tamsayının çarpımı geçici olarak $2^{64}$ sınırını aşabileceğinden, ara çarpımlarda \texttt{unsigned long long} veya \texttt{long long} türü dikkatle kullanılmalıdır.
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+long long mod_us(long long taban, long long us, long long mod) {
+    long long sonuc = 1;
+    taban %= mod; // Taban moddan buyukse kucult
+    
+    while (us > 0) {
+        // Us tek sayi ise tabani sonuca dahil et
+        if (us & 1) {
+            sonuc = (sonuc * taban) % mod;
+        }
+        // Tabanin karesini al ve ussu yariya indir
+        taban = (taban * taban) % mod;
+        us >>= 1; // us = us / 2
+    }
+    return sonuc;
+}
+\end{lstlisting}
+
+Aynı algoritmanın, üs bitini bit işlemleri yerine aritmetik operatörlerle sınayan eşdeğer bir C gerçeklemesi de şöyledir:
+
+\begin{lstlisting}[language=CTemel]
+long long mod_pow(long long base, long long exp, long long mod) {
+    long long result = 1;
+    base %= mod;
+    while (exp > 0) {
+        if (exp % 2 == 1) {
+            result = (result * base) % mod;
+        }
+        base = (base * base) % mod;
+        exp /= 2;
+    }
+    return result;
+}\end{lstlisting}
+\end{proof}
+
+\subsection{Diziyi $O(1)$ Ekstra Bellek ile Döndürme (Reversal Algorithm)}
+
+$n$ elemanlı bir diziyi $k$ pozisyon sağa dairesel olarak kaydırmak istiyoruz. Ekstra dizi açmadan ($O(1)$ ek bellek) ve her elemana tam iki kez dokunarak $O(n)$ sürede bu işlemi gerçekleştirebiliriz.
+
+\textbf{Düşünsel Yaklaşım:}
+Diziyi $A$ (ilk $n-k$ eleman) ve $B$ (son $k$ eleman) olarak iki parçaya ayıralım:
+\[
+D = [A \mid B]
+\]
+Bizden istenen $[B \mid A]$ dizisidir. Ters çevirme işlemini $(\cdot)^R$ ile gösterelim. Matris cebirindeki $(AB)^{-1} = B^{-1} A^{-1}$ kuralına benzer biçimde:
+\[
+(A^R B^R)^R = (B^R)^R (A^R)^R = B A
+\]
+Bu özdeşlik aradığımız algoritmayı doğrudan verir:
+\begin{enumerate}
+    \item İlk $n-k$ elemanı kendi içinde ters çevir ($A \to A^R$).
+    \item Son $k$ elemanı kendi içinde ters çevir ($B \to B^R$).
+    \item Bütün diziyi baştan sona ters çevir ($(A^R B^R) \to B A$).
+\end{enumerate}
+
+\begin{example}
+Bir tamsayı dizisini yerinde (in-place) $k$ adım sağa kaydıran C kodunu yazınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+void ters_cevir(int *dizi, int bas, int son) {
+    while (bas < son) {
+        int gecici = dizi[bas];
+        dizi[bas] = dizi[son];
+        dizi[son] = gecici;
+        bas++;
+        son--;
+    }
+}
+
+void saga_dondur(int *dizi, int n, int k) {
+    if (n <= 1) return;
+    k = k % n; // k >= n durumunu onle
+    if (k == 0) return;
+    
+    // 1. Ilk n - k elemani cevir
+    ters_cevir(dizi, 0, n - k - 1);
+    // 2. Son k elemani cevir
+    ters_cevir(dizi, n - k, n - 1);
+    // 3. Tum diziyi cevir
+    ters_cevir(dizi, 0, n - 1);
+}
+\end{lstlisting}
+Toplam işlem sayısı $(n-k) + k + n = 2n$ yer değiştirmedir. Zaman karmaşıklığı $O(n)$, ek bellek karmaşıklığı $O(1)$'dir.
+\end{proof}
+
+\subsection{Hollanda Bayrağı Algoritması (3-Yollu Bölümleme)}
+
+Dijkstra tarafından önerilen bu klasik problemde; yalnızca 0, 1 ve 2 değerlerinden oluşan bir diziyi tek bir geçişte ($O(n)$ zaman ve $O(1)$ ek bellek) sıralamamız istenir.
+
+\textbf{Düşünsel Yaklaşım (Döngü Değişmezi):}
+Diziyi dört bölgeye ayıracak üç işaretçi $(\text{düşük}, \text{orta}, \text{yüksek})$ tanımlarız:
+\begin{itemize}
+    \item $[0, \text{düşük}-1]$: Kesinlikle $0$'lar bölgesi.
+    \item $[\text{düşük}, orta-1]$: Kesinlikle $1$'ler bölgesi.
+    \item $[orta, \text{yüksek}]$: Henüz işlenmemiş (bilinmeyen) elemanlar.
+    \item $[\text{yüksek}+1, n-1]$: Kesinlikle $2$'ler bölgesi.
+\end{itemize}
+
+Her adımda \texttt{orta} işaretçisinin gösterdiği elemana bakarız:
+\begin{itemize}
+    \item $0$ ise: \texttt{düşük} ile takas yap, her iki işaretçiyi de bir ilerlet.
+    \item $1$ ise: zaten ait olduğu yerdedir, yalnızca \texttt{orta}yı ilerlet.
+    \item $2$ ise: \texttt{yüksek} ile takas yap, sadece \texttt{yüksek} işaretçisini bir geri çek (takastan gelen eleman henüz incelenmediği için \texttt{orta} ilerlemez).
+\end{itemize}
+
+\begin{example}
+0, 1 ve 2'lerden oluşan diziyi tek geçişte sıralayan C fonksiyonunu yazınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+\begin{lstlisting}[language=CTemel]
+void dutch_national_flag(int arr[], int size) {
+    int low = 0;
+    int mid = 0;
+    int high = size - 1;
+
+    while (mid <= high) {
+        if (arr[mid] == 0) {
+            int temp = arr[low];
+            arr[low] = arr[mid];
+            arr[mid] = temp;
+            low++;
+            mid++;
+        } else if (arr[mid] == 1) {
+            mid++;
+        } else {
+            int temp = arr[mid];
+            arr[mid] = arr[high];
+            arr[high] = temp;
+            high--;
+        }
+    }
+}\end{lstlisting}
+
+Her döngü adımında ya \texttt{orta} bir artar ya da \texttt{yuksek} bir azalır. Dolayısıyla döngü en fazla $n$ adımda sonlanır. Zaman karmaşıklığı $O(n)$, alan karmaşıklığı $O(1)$'dir.
+\end{proof}
+
+\subsection{Two Pointers Tekniği: Sıralı Dizide Toplam}
+
+Sıralı bir dizide toplamları hedef bir $S$ değerine eşit olan iki elemanı bulmak istiyoruz. İç içe iki döngü $O(n^2)$ süre alır. Bölüm 22'de gördüğümüz two pointers tekniğiyle, dizinin sıralı olmasından faydalanarak bu problemi $O(n)$ zamanda çözebiliriz.
+
+\begin{example}
+Küçükten büyüğe sıralı bir $A$ dizisinde $A[i] + A[j] = S$ olacak biçimde $(i, j)$ indeks çiftini ($i < j$) bulan, yoksa bulunamadığını bildiren C kodunu yazınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Aramaya dizinin iki ucundan başlayalım; bir işaretçiyi dizinin başına ($sol = 0$), diğerini sonuna ($sag = n - 1$) yerleştirelim:
+\begin{itemize}
+    \item Eğer $A[sol] + A[sag] == S$ ise aradığımız çift bulunmuştur.
+    \item Eğer toplam $S$'den küçükse toplamı büyütmek gerekir; dizi sağa doğru arttığından $sol$ işaretçisini $1$ artırırız.
+    \item Eğer toplam $S$'den büyükse toplamı küçültmek için $sag$ işaretçisini $1$ azaltırız.
+\end{itemize}
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int cift_bul(int *A, int n, int S, int *indeks1, int *indeks2) {
+    int sol = 0;
+    int sag = n - 1;
+    
+    while (sol < sag) {
+        int simdiki_toplam = A[sol] + A[sag];
+        if (simdiki_toplam == S) {
+            *indeks1 = sol;
+            *indeks2 = sag;
+            return 1; // Bulundu
+        } else if (simdiki_toplam < S) {
+            sol++;
+        } else {
+            sag--;
+        }
+    }
+    return 0; // Bulunamadi
+}
+\end{lstlisting}
+
+Her adımda arama aralığı en az bir eleman daralır ($sol$ artar veya $sag$ azalır). Toplam işlem sayısı en fazla $n$'dir. Zaman karmaşıklığı $O(n)$, ek bellek ise $O(1)$'dir.
+\end{proof}
+
+\begin{definition}[Sık Yapılan Hata: Tamsayı Taşması (Integer Overflow)]
+İki pozitif tamsayıyı toplarken veya çarparken veri tipinin sınırlarına dikkat edilmelidir. 32-bit işaretli tamsayılar (\texttt{int}) en fazla $2^{31}-1 \approx 2 \times 10^9$ değerini alabilir. Örneğin two pointers tekniğinde \texttt{A[sol] + A[sag]} ifadesinde elemanlar $10^9$ mertebesindeyse toplam $2 \times 10^9$'u aşarak negatife taşabilir (\texttt{overflow}). Bu tür durumlarda toplam geçici olarak \texttt{long long} türüne dönüştürülmelidir:
+\[
+\text{long long simdiki\_toplam} = (\text{long long})A[sol] + A[sag];
+\]
+Benzer bir durum ikili aramada (Bölüm 24) orta nokta hesabında da yaşanır: \texttt{(sol + sag) / 2} yerine taşmayı önlemek için \texttt{sol + (sag - sol) / 2} yazılmalıdır.
+\end{definition}
+
+% ==============================================================================
+% KARMA DENEME VE PEKİŞTİRME SORULARI
+% ==============================================================================
+\section{Pekiştirme Soruları ve Çözümleri}
+
+\begin{example}
+Aşağıdaki fonksiyonun $n$ girdi boyutu için Big $O$ karmaşıklığını bulunuz:
+
+\begin{lstlisting}[language=CTemel]
+void parcala(int n) {
+    for (int i = 1; i <= n; i *= 3) {
+        for (int j = 1; j <= n; j += i) {
+            // O(1) islem
+        }
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Dış döngüde $i$ değişkeni $3^0, 3^1, 3^2, \dots, 3^k$ değerlerini alır; burada $3^k \le n < 3^{k+1}$ olup $k = \lfloor \log_3 n \rfloor$'dir. 
+
+Her bir $i = 3^m$ adımı için iç döngü:
+\[
+\left\lceil \frac{n}{3^m} \right\rceil
+\]
+kez döner. Toplam işlem sayısı:
+\[
+T(n) = \sum_{m=0}^{\lfloor \log_3 n \rfloor} \left\lceil \frac{n}{3^m} \right\rceil \approx n \sum_{m=0}^{\lfloor \log_3 n \rfloor} \left(\frac{1}{3}\right)^m
+\]
+Parantez içi, ortak çarpanı $r = 1/3 < 1$ olan azalan bir geometrik seridir:
+\[
+\sum_{m=0}^\infty \left(\frac{1}{3}\right)^m = \frac{1}{1 - 1/3} = \frac{3}{2}
+\]
+Seri sonlu adımla sınırlandırıldığında da toplam $3/2$'yi aşamaz:
+\[
+n \le T(n) < \frac{3}{2} n + \log_3 n
+\]
+Dolayısıyla toplam işlem sayısı $\Theta(n)$'dir. İlk bakışta $O(n \log n)$ gibi görünse de geometrik küçülme toplam maliyeti $O(n)$ seviyesinde tutar.
+\end{proof}
+
+\begin{example}
+Aşağıdaki C programı çalıştırıldığında ekrana hangi sayıyı basar?
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int f(int a, int b) {
+    if (b == 0) return 0;
+    if (b % 2 == 0) return f(a + a, b / 2);
+    return f(a + a, b / 2) + a;
+}
+
+int main() {
+    printf("%d\n", f(7, 13));
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Fonksiyonun matematiksel işlevini adım adım inceleyelim:
+\begin{itemize}
+    \item $b = 0$ iken sonuç $0$.
+    \item $b$ çift iken: $f(2a, b/2)$.
+    \item $b$ tek iken: $f(2a, b/2) + a$.
+\end{itemize}
+
+Her iki durumda da $a \cdot b$ çarpımı korunmaktadır:
+\[
+(2a) \cdot (b/2) = a \cdot b
+\]
+ve $b$ tek olduğunda:
+\[
+(2a) \cdot \lfloor b/2 \rfloor + a = 2a \cdot \frac{b-1}{2} + a = a(b-1) + a = a \cdot b
+\]
+Bu fonksiyon, Rus Köylü Çarpma Algoritması (Russian Peasant Multiplication) olarak bilinen ikili tabanda çarpma yönteminin rekürsif biçimidir. Fonksiyon temel olarak $a \times b$ işlemini gerçekleştirir.
+
+Girdiler $a = 7$ ve $b = 13$ olduğundan sonuç:
+\[
+7 \times 13 = 91
+\]
+olacaktır.
+
+Adımları doğrudan izleyerek de doğrulayalım:
+\begin{align*}
+f(7, 13) &= f(14, 6) + 7 \\
+f(14, 6) &= f(28, 3) \\
+f(28, 3) &= f(56, 1) + 28 \\
+f(56, 1) &= f(112, 0) + 56 \\
+f(112, 0) &= 0
+\end{align*}
+Geriye doğru toplarsak:
+\[
+f(56, 1) = 0 + 56 = 56
+\]
+\[
+f(28, 3) = 56 + 28 = 84
+\]
+\[
+f(14, 6) = 84
+\]
+\[
+f(7, 13) = 84 + 7 = 91
+\]
+Program ekrana \textbf{91} basar.
+\end{proof}
+
+\begin{example}
+Verilen pozitif bir $n$ tamsayısının ikili açılımındaki en yüksek basamaklı (en soldaki) $1$ bitinin konumunu ve sayısal değerini $O(1)$ ek bellek ile hesaplayan bir C işlevi tasarlayınız. Örneğin $n = 18 = (10010)_2$ için sonuç $16 = (10000)_2$ olmalıdır.
+\end{example}
+
+\begin{proof}[Çözüm]
+En yüksek basamaklı biti tek başına bırakmak için, bu bitin sağında kalan tüm bitleri $1$'e dönüştürebilirsek elimize $2^{k+1}-1$ biçiminde bir maske geçer. Ardından bu maskeden maskenin bir sağa kaydırılmış halini çıkardığımızda geriye yalnızca en yüksek bit kalır.
+
+Tüm sağdaki bitleri $1$ yapmanın pratik bir yolu, bit kaydırma ve VEYA (\texttt{|}) işlemlerini basamak basamak yaymaktır (bit-smearing):
+\begin{enumerate}
+    \item $n \gets n \mid (n \gg 1)$ (En yüksek bitin hemen yanındaki biti $1$ yapar; artık en az iki tane $1$ yan yanadır).
+    \item $n \gets n \mid (n \gg 2)$ (Yan yana olan bu iki $1$'i 4 bite çoğaltır).
+    \item $n \gets n \mid (n \gg 4)$ (4 biti 8 bite çoğaltır).
+    \item $n \gets n \mid (n \gg 8)$ (8 biti 16 bite çoğaltır).
+    \item $n \gets n \mid (n \gg 16)$ (16 biti 32 bite çoğaltır).
+\end{enumerate}
+Bu işlemlerin ardından $n$'in en yüksek bitinden sonraki tüm bitler $1$ olur. Örneğin $(00010010)_2 \to (00011111)_2$.
+
+En yüksek biti elde etmek için:
+\[
+\text{en\_yuksek\_bit} = n - (n \gg 1)
+\]
+işlemi yeterlidir.
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+unsigned int en_buyuk_kuvvet(unsigned int n) {
+    if (n == 0) return 0;
+    
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+    
+    return n - (n >> 1);
+}
+\end{lstlisting}
+Bu fonksiyon döngü içermez; $32$-bitlik tamsayılar için tam olarak $5$ kaydırma ve $5$ mantıksal işlemle $O(1)$ zamanda kesin sonuca ulaşır.
+\end{proof}

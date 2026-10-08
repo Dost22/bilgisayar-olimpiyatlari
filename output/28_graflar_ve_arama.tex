@@ -1,0 +1,779 @@
+\chapter[Graflar ve Arama · \textit{Orta}]{Graflar ve Arama}
+\chaptermark{Graflar ve Arama}
+
+\section{Graflar ve Temsiller}
+
+\subsection{Motivasyon: Nesneler Arasındaki İlişkileri Nasıl Modelleriz?}
+Algoritma problemlerinde ve modelleme süreçlerinde ikili ilişkiler belirleyici bir rol oynar: şehirler arasındaki kara yolları, bilgisayarlar arasındaki ağ bağlantıları, bir projedeki işlerin öncelik sıraları veya sosyal ağlardaki arkadaşlıklar buna örnektir. Bu tür sistemlerin ortak paydası, birbirinden bağımsız bir grup \emph{nesne} ile bu nesneler arasındaki \emph{bağlantılardır}.
+
+Matematikte ve bilgisayar biliminde bu ilişki ağını soyutlamanın temel aracı \textbf{graf} (graph) yapısıdır.
+
+Dört öğrenciden oluşan bir topluluk düşünelim: Ali ($A$), Burak ($B$), Cansu ($C$) ve Deniz ($D$). 
+Aralarındaki arkadaşlık ilişkileri şöyle verilsin:
+\begin{itemize}
+    \item $A$ ile $B$ arkadaştır.
+    \item $A$ ile $C$ arkadaştır.
+    \item $B$ ile $C$ arkadaştır.
+    \item $C$ ile $D$ arkadaştır.
+\end{itemize}
+Bu yapıyı bir kâğıda çizerken her öğrenciyi bir nokta, her arkadaşlığı ise iki nokta arasına çizilen bir çizgi olarak gösteririz. $D$'nin doğrudan yalnızca $C$ ile bağlı olduğunu; $A$ ve $B$'ye ise $C$ üzerinden dolaylı olarak ulaştığını hemen görebiliriz. Bu çizim, graf kavramının en somut karşılığıdır.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \draw[kenar] (0,0) -- (2,1.2);
+  \draw[kenar] (0,0) -- (2,-1.2);
+  \draw[kenar] (2,1.2) -- (2,-1.2);
+  \draw[kenar] (2,-1.2) -- (4,0);
+  \node[dugum] (A) at (0,0) {A};
+  \node[dugum] (B) at (2,1.2) {B};
+  \node[dugum] (C) at (2,-1.2) {C};
+  \node[dugum] (D) at (4,0) {D};
+  \node[etiket, below=1.2mm of A] {Ali};
+  \node[etiket, above=1.2mm of B] {Burak};
+  \node[etiket, below=1.2mm of C] {Cansu};
+  \node[etiket, below=1.2mm of D] {Deniz};
+  \node[etiket, gray] at (-0.72,0.5) {2};
+  \node[etiket, gray] at (1.4,1.78) {2};
+  \node[etiket, gray] at (1.15,-1.35) {3};
+  \node[etiket, gray] at (4,0.8) {1};
+\end{tikzpicture}
+\caption{Ali, Burak, Cansu ve Deniz arasındaki arkadaşlık grafı. Gri sayılar her
+düğümün komşu sayısını gösterir; toplamları kenar sayısının iki katıdır
+($2+2+3+1 = 8 = 2 \cdot 4$).}
+\end{figure}
+
+\begin{definition}[Graf]
+Bir $G$ grafı, iki kümenin sıralı ikilisidir: $G = (V, E)$.
+\begin{itemize}
+    \item $V$: Boş olmayan \textbf{düğüm} (node veya köşe - vertex) kümesidir. Düğüm sayısı genellikle $n = |V|$ ile gösterilir.
+    \item $E$: Düğümler arasındaki bağlantıları belirten \textbf{kenar} (edge) kümesidir. Kenar sayısı genellikle $m = |E|$ ile gösterilir.
+\end{itemize}
+\end{definition}
+
+Grafları kenar yapılarına göre üç ana grupta toplarız:
+\begin{enumerate}
+    \item \textbf{Yönsüz Graf (Undirected Graph):} Kenarların yönü yoktur. $u$ ile $v$ arasındaki kenar $\{u, v\}$ kümesi olarak ifade edilir. $u$'dan $v$'ye gitmek ile $v$'den $u$'ya gitmek farksızdır (karşılıklı arkadaşlık ilişkisi gibi).
+    \item \textbf{Yönlü Graf (Directed Graph / Digraph):} Kenarlar sıralı ikililerden oluşur: $(u, v) \in E$. Bu kenar $u$'dan başlar ve $v$'de biter; $u \to v$ olarak gösterilir. $v$'den $u$'ya bir geçiş bulunmak zorunda değildir (tek yönlü yollar veya web sayfalarındaki köprüler gibi).
+    \item \textbf{Ağırlıklı Graf (Weighted Graph):} Her kenara $w: E \to \mathbb{R}$ fonksiyonu ile bir maliyet, uzunluk veya kapasite atanmıştır.
+\end{enumerate}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \node[dugum] (A) at (0,0) {A};
+  \node[dugum] (B) at (1.9,0.9) {B};
+  \node[dugum] (C) at (1.9,-0.9) {C};
+  \node[dugum] (D) at (3.8,0) {D};
+  \draw[kitap-ok] (A) -- (B);
+  \draw[kitap-ok] (A) -- (C);
+  \draw[kitap-ok] (B) -- (C);
+  \draw[kitap-ok] (C) -- (D);
+\end{tikzpicture}
+\hspace{1.1cm}
+\begin{tikzpicture}[scale=0.9]
+  \draw[kenar] (0,0) -- (1.9,0.9);
+  \draw[kenar] (1.9,0.9) -- (1.9,-0.9);
+  \draw[kenar] (0,0) -- (1.9,-0.9);
+  \node[dugum] at (0,0) {X};
+  \node[dugum] at (1.9,0.9) {Y};
+  \node[dugum] at (1.9,-0.9) {Z};
+  \node[etiket] at (0.95,1.0) {2};
+  \node[etiket] at (2.25,0) {3};
+  \node[etiket] at (0.95,-1.0) {7};
+\end{tikzpicture}
+\caption{Yönlü graf (solda) ve ağırlıklı graf (sağda); kenar etiketleri ağırlıklardır.}
+\end{figure}
+
+Bir düğüme bağlı kenar sayısına o düğümün \textbf{derecesi} (degree) denir ve $\deg(v)$ ile gösterilir. Yönlü graflarda ise içeri derece ($\deg^-(v)$, düğüme gelen kenarlar) ve dışarı derece ($\deg^+(v)$, düğümden çıkan kenarlar) ayrımı yapılır.
+
+\begin{theorem}[El Sıkışma Lemması / Handshaking Lemma]
+Herhangi bir yönsüz $G=(V, E)$ grafında, tüm düğümlerin dereceleri toplamı kenar sayısının tam iki katına eşittir:
+\[
+\sum_{v \in V} \deg(v) = 2|E|
+\]
+\end{theorem}
+
+\begin{proof}
+Bölüm 10'da ele aldığımız çifte sayım ilkesiyle yaklaşalım. Her $e = \{u, v\}$ kenarı iki uç noktaya sahiptir. Kenarları tek tek gezdiğimizde her kenar iki kez sayılır: bir kez $u$'nun derecesini hesaplarken, bir kez de $v$'nin derecesini hesaplarken. Dolayısıyla derece toplamı doğrudan $2|E|$ değerini verir.
+\end{proof}
+
+\begin{example}
+$n=5$ düğümlü bir yönsüz grafta düğüm dereceleri sırasıyla $3, 3, 3, 2, 2$ olabilir mi?
+
+\begin{proof}[Çözüm]
+Derecelerin toplamını hesaplayalım: $3 + 3 + 3 + 2 + 2 = 13$.
+El Sıkışma Lemması gereği bu toplamın $2|E|$ olması, yani çift sayı çıkması zorunludur. 13 tek sayı olduğundan böyle bir graf çizilemez.
+\end{proof}
+\end{example}
+
+\subsection{Bilgisayarda Grafların Saklanması}
+Bir grafı kod içinde işleyebilmek adına bellekte uygun bir veri yapısıyla tutmalıyız. En sık başvurulan iki yöntem \emph{adjacency matrix} ve \emph{adjacency list}dir.
+
+\subsubsection{1. Adjacency Matrix}
+Düğümleri $0, 1, \dots, n-1$ olarak numaralandıralım. Adjacency matrix $n \times n$ boyutunda iki boyutlu bir dizidir (genellikle $A$ veya $adj$ ile gösterilir):
+\[
+A[u][v] = \begin{cases} 
+1, & \text{eğer } (u, v) \in E \text{ ise} \\
+0, & \text{aksi halde}
+\end{cases}
+\]
+Ağırlıklı graflarda $1$ yerine kenarın ağırlığı $w(u, v)$, kenar yoksa $\infty$ veya $0$ değeri saklanır.
+
+\textbf{Avantajı:} İki $u$ ve $v$ düğümü arasında doğrudan kenar olup olmadığını $O(1)$ sürede sorgularız.
+
+\textbf{Dezavantajı:} Bellek kullanımı graf seyrek de olsa her zaman $O(n^2)$'dir. $n = 10^5$ gibi büyük değerlerde matris belleğe sığmaz (yaklaşık $40\text{ GB}$ alan gerekir). Ayrıca bir düğümün tüm komşularını gezmek her durumda $O(n)$ sürer.
+
+\subsubsection{2. Adjacency List}
+Her $u \in V$ düğümü için, yalnızca $u$'ya komşu olan düğümleri saklayan dinamik bir dizi (veya liste) tutulur.
+
+\textbf{Bellek Kullanımı:} Yönsüz bir grafta her kenar iki listede yer alır, yönlü grafta ise bir listede. Toplam bellek gereksinimi $O(n + m)$ düzeyindedir.
+
+\textbf{Avantajı:} Bellek açısından son derece tutumludur; bir düğümün tüm komşularını gereksiz düğümleri taramadan, tam olarak $\deg(u)$ adımda gezmeyi sağlar.
+
+\begin{lstlisting}[language=CppTemel]
+// C++ ile Komsuluk Listesi Temsili
+#include <vector>
+
+const int MAXN = 100005;
+std::vector<int> adj[MAXN]; // adj[u], u dugumunun komsularini tutar
+
+void kenar_ekle(int u, int v) {
+    adj[u].push_back(v);
+    adj[v].push_back(u); // Yonsuz graf oldugu icin iki yonlu eklenir
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+n = 4
+m = 4
+Initialize adj as an array of n empty lists
+
+function addEdge(u, v)
+    append v to adj[u]
+    append u to adj[v]
+end function
+
+addEdge(0, 1)
+addEdge(0, 2)
+addEdge(1, 2)
+addEdge(2, 3)\end{lstlisting}
+
+\begin{example}
+$n = 4$ düğümlü ve kenarları $E = \{(0,1), (0,2), (1,2), (2,3)\}$ olan yönsüz bir grafın adjacency matrix'ini ve adjacency list'ini oluşturunuz.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \draw[kenar] (0,0) -- (2,1.2);
+  \draw[kenar] (0,0) -- (2,-1.2);
+  \draw[kenar] (2,1.2) -- (2,-1.2);
+  \draw[kenar] (2,-1.2) -- (4,0);
+  \node[dugum] at (0,0) {0};
+  \node[dugum] at (2,1.2) {1};
+  \node[dugum] at (2,-1.2) {2};
+  \node[dugum] at (4,0) {3};
+\end{tikzpicture}
+\caption{Örnekteki $n = 4$ grafı; aşağıda aynı graf hem matris hem liste olarak
+saklanır.}
+\end{figure}
+
+\begin{proof}[Çözüm]
+Adjacency matrix $4 \times 4$ boyutundadır:
+\[
+A = \begin{pmatrix}
+0 & 1 & 1 & 0 \\
+1 & 0 & 1 & 0 \\
+1 & 1 & 0 & 1 \\
+0 & 0 & 1 & 0
+\end{pmatrix}
+\]
+Matrisin köşegene göre simetrik olduğuna dikkat ediniz; bu durum tüm basit yönsüz graflar için geçerlidir.
+
+Adjacency list ise her düğümün komşularını ayrı ayrı tutar:
+\begin{align*}
+\text{adj}[0] &= [1, 2] \\
+\text{adj}[1] &= [0, 2] \\
+\text{adj}[2] &= [0, 1, 3] \\
+\text{adj}[3] &= [2]
+\end{align*}
+\end{proof}
+\end{example}
+
+\textbf{Dikkat:} $n = 10^5$ ve $m = 2 \cdot 10^5$ olan tipik bir yarışma probleminde adjacency matrix tanımlamak bellek aşımına (Memory Limit Exceeded) yol açar. Kenar sayısının düğüm sayısının karesine kıyasla az kaldığı durumlarda (\emph{seyrek graf} / sparse graph: $m \ll n^2$) adjacency list tercih edilmelidir.
+
+\section{Derinlik Öncelikli Arama (DFS)}
+
+\subsection{Motivasyon: Labirentten Çıkış ve Geri İzleme}
+Bir labirentte yol aradığımızı varsayalım. Bir kavşağa geldiğimizde kollardan birini seçip gidebildiğimiz noktaya kadar ilerleriz. Bir çıkmaz sokağa vardığımızda ise geldiğimiz yoldan adım adım geri çekilir, henüz denemediğimiz ilk yol ayrımına döner ve oradan yeni bir patikayı keşfederiz.
+
+Bu yaklaşım, \textbf{Derinlik Öncelikli Arama}nın (Depth-First Search - DFS) temel çalışma mantığıdır. DFS, bulunduğu düğümden başlayarak keşfedebileceği en derin noktaya kadar ilerler; ilerleyecek düğüm kalmadığında ise Bölüm 26'da gördüğümüz rekürsiyon yapısına uygun biçimde \emph{geri izleme} (backtracking) yaparak henüz taranmamış dallara yönelir.
+
+\subsection{Algoritmanın İşleyişi ve Ziyaret Mantığı}
+Graflarda döngüler (cycle) bulunabildiğinden, aynı düğümü tekrar tekrar ziyaret etmemek için her düğüm adına bir işaretçi dizisi (\texttt{visited}) tutulur.
+
+Algoritma şu adımlarla çalışır:
+\begin{enumerate}
+    \item $u$ düğümünü ziyaret edildi olarak işaretle.
+    \item $u$'nun tüm komşularını ($v \in \text{adj}[u]$) sırayla tara.
+    \item Eğer $v$ daha önce ziyaret edilmemişse, $v$ için rekürsif olarak DFS fonksiyonunu çağır.
+    \item $u$'nun ziyaret edilmemiş komşusu kalmadığında fonksiyon tamamlanır ve bir önceki çağrıya geri döner.
+\end{enumerate}
+
+\begin{lstlisting}[language=CTemel]
+bool vis[MAXN];
+
+void dfs(int u) {
+    vis[u] = true;
+    for (int v : adj[u]) {
+        if (!vis[v]) {
+            dfs(v);
+        }
+    }
+}
+\end{lstlisting}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \draw[vurgulu-kenar] (0,0) -- (2,1.2);
+  \draw[vurgulu-kenar] (2,1.2) -- (2,-1.2);
+  \draw[vurgulu-kenar] (2,-1.2) -- (4,0);
+  \draw[kenar, dashed] (0,0) -- (2,-1.2);
+  \node[dugum] (A) at (0,0) {A};
+  \node[dugum] (B) at (2,1.2) {B};
+  \node[dugum] (C) at (2,-1.2) {C};
+  \node[dugum] (D) at (4,0) {D};
+  \node[etiket, below=1.2mm of A] {Ali};
+  \node[etiket, above=1.2mm of B] {Burak};
+  \node[etiket, below=1.2mm of C] {Cansu};
+  \node[etiket, below=1.2mm of D] {Deniz};
+\end{tikzpicture}
+\caption{Yukarıdaki arkadaşlık grafında $A$'dan başlayan DFS: kalın kenarlar keşif
+ağacını ($A$--$B$--$C$--$D$), kesikli kenar ise geri kenarı ($A$--$C$) gösterir.}
+\end{figure}
+
+\subsection{Zaman ve Bellek Karmaşıklığı}
+\begin{theorem}
+$G=(V, E)$ grafında adjacency list ile çalışan DFS algoritmasının zaman karmaşıklığı $O(|V| + |E|)$, bellek karmaşıklığı ise en kötü durumda $O(|V|)$'dir.
+\end{theorem}
+\begin{proof}
+Her düğüm için \texttt{vis[u] = true} ataması yapıldığından hiçbir düğüm çağrı yığınına birden fazla kez girmez. Dolayısıyla her $u$ düğümünün kenar listesi tam olarak bir kez taranır. Bütün düğümlerin komşuluk listeleri uzunlukları toplamı yönsüz grafta $2|E|$, yönlü grafta $|E|$ kadardır. Kenar taramaları $O(|E|)$, başlangıç hazırlıkları ise $O(|V|)$ sürer. Toplam süre $O(|V| + |E|)$ olur.
+
+Grafın tek bir uzun zincir (yol grafı) olduğu en kötü senaryoda, rekürsiyon derinliği $|V|$'ye ulaşır ve çağrı yığını $O(|V|)$ bellek tüketir.
+\end{proof}
+
+\subsection{DFS'in Temel Uygulamaları}
+
+\subsubsection{1. Bağlı Bileşenlerin (Connected Components) Sayısını Bulma}
+Yönsüz bir grafta, aralarında en az bir yol bulunan düğümler kümesine \emph{bağlı bileşen} denir. Graf birbirinden kopuk parçalardan oluşabilir. DFS yardımıyla her bileşeni ayrı ayrı tespit edebiliriz:
+
+\begin{lstlisting}
+componentCount = 0
+visited = array of size n initialized to false
+
+FOR i = 0 TO n - 1 DO
+    IF NOT visited[i] THEN
+        DFS(i)
+        componentCount = componentCount + 1
+    END IF
+END FOR\end{lstlisting}
+
+\subsubsection{2. İki Renklendirilebilirlik (Bipartite / İki Kümeli Graf Kontrolü)}
+Bir grafın düğümleri, komşu olan hiçbir iki düğüm aynı renge sahip olmayacak biçimde iki renkle (örneğin 0 ve 1) boyanabiliyorsa bu yapıya \textbf{iki kümeli graf} (bipartite graph) denir.
+
+\begin{theorem}
+Bir grafın iki kümeli olması için gerek ve yeter koşul, içinde \textbf{tek uzunlukta döngü barındırmamasıdır}.
+\end{theorem}
+
+\begin{example}
+DFS kullanarak bir grafın iki kümeli olup olmadığını belirleyen yaklaşımı kurunuz.
+
+\begin{proof}[Çözüm]
+Her düğüme $renk \in \{0, 1\}$ değeri atayalım. Başlangıçta tüm düğümler renksizdir ($-1$).
+Başlangıç düğümüne $0$ rengi verilir. $u$ düğümünden komşusu $v$'ye geçerken:
+\begin{itemize}
+    \item Eğer $v$ boyanmamışsa, ona $1 - renk[u]$ rengi atanır ve DFS $v$'den devam eder.
+    \item Eğer $v$ boyanmışsa ve $renk[v] == renk[u]$ ise komşu iki düğüm aynı renge denk gelmiştir. Bu durum tek uzunlukta bir döngüye işaret eder; graf iki kümeli değildir.
+\end{itemize}
+Tüm düğümler çelişki üretmeden boyanabiliyorsa graf iki kümelidir.
+\end{proof}
+\end{example}
+
+\textbf{Dikkat:} Graf birden fazla bağlı bileşenden oluşuyorsa yalnızca \texttt{dfs(0)} çağırmak diğer parçaları açıkta bırakır. Grafın tamamını kapsamak için ana döngüde $0$'dan $n-1$'e kadar tüm düğümler taranmalıdır.
+
+\section{Genişlik Öncelikli Arama (BFS)}
+
+\subsection{Motivasyon: Dalgakıran ve En Az Adım Problemi}
+Durgun bir suya bir taş bırakıldığında dalgalar merkezden dışa doğru halkalar halinde yayılır: önce 1 birim uzaklıktaki noktalar ıslanır, ardından 2 birim, sonra 3 birim...
+
+Ağırlıksız bir grafta "A düğümünden B düğümüne en az kaç kenar geçerek gidebilirim?" sorusunu çözerken bu dalga mantığı devreye girer. DFS tek bir patikayı sonuna kadar zorlarken, \textbf{Genişlik Öncelikli Arama} (Breadth-First Search - BFS) kaynak düğümden başlayarak eşit mesafedeki tüm düğümleri seviye seviye keşfeder.
+
+\subsection{Kuyruk (Queue) ile Seviye Seviye İlerleme}
+Arama katman katman ilerlediği için önce keşfedilen düğümlerin komşuları daha önce incelenmelidir. Bu kural, Bölüm 25'te ele aldığımız ve \emph{İlk Giren İlk Çıkar} (FIFO) prensibiyle çalışan \textbf{kuyruk} (queue) veri yapısını gerektirir.
+
+\begin{lstlisting}[language=CTemel]
+#include <queue>
+
+int dist[MAXN]; // Baslangica olan en kisa mesafe (kenar sayisi)
+
+void bfs(int baslangic, int n) {
+    for (int i = 0; i < n; i++) dist[i] = -1;
+    
+    std::queue<int> q;
+    q.push(baslangic);
+    dist[baslangic] = 0;
+    
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        
+        for (int v : adj[u]) {
+            if (dist[v] == -1) { // Ilk kez karsilasilan dugum
+                dist[v] = dist[u] + 1;
+                q.push(v);
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection{BFS'in En Kısa Yol Özelliği}
+\begin{theorem}
+Tüm kenar ağırlıklarının 1 (veya birbirine eşit) olduğu bir grafta BFS, başlangıç düğümünden erişilebilen her $v$ düğümü için en az kenar içeren en kısa yolu (shortest path) bulmayı garanti eder.
+\end{theorem}
+\begin{proof}[İspat Taslağı]
+Kuyruktaki düğümlerin mesafeleri monoton olarak artar. Başlangıçta kuyrukta yalnızca $dist=0$ olan kaynak düğüm yer alır. $dist=k$ olan tüm düğümler tüketilmeden hiçbir $dist=k+1$ düğümünün komşularına geçilmez. Dolayısıyla bir $v$ düğümüne ilk ulaşıldığı an, ona en az sayıda kenar üzerinden varılan andır. Daha sonra bulunabilecek hiçbir alternatif yol $dist[v]$ değerinden daha az kenar içeremez.
+\end{proof}
+
+\begin{example}
+$n = 6$ düğümlü bir grafta kenarlar şunlardır:
+\[
+E = \{(0, 1), (0, 2), (1, 3), (2, 3), (3, 4), (2, 5)\}
+\]
+Başlangıç düğümü $0$ seçildiğinde her düğümün $0$'a olan BFS mesafesini adım adım çıkarınız.
+
+\begin{proof}[Çözüm]
+Kuyruğun adımlarını izleyelim:
+\begin{enumerate}
+    \item Başlangıç: $dist[0] = 0$. Kuyruk: $[0]$.
+    \item $0$ çıkarılır. Komşuları 1 ve 2: $dist[1] = 1, dist[2] = 1$. Kuyruk: $[1, 2]$.
+    \item $1$ çıkarılır. Komşuları 0 (ziyaret edildi), 3: $dist[3] = dist[1] + 1 = 2$. Kuyruk: $[2, 3]$.
+    \item $2$ çıkarılır. Komşuları 0 (ziyaret edildi), 3 (ziyaret edildi), 5: $dist[5] = dist[2] + 1 = 2$. Kuyruk: $[3, 5]$.
+    \item $3$ çıkarılır. Komşusu 4: $dist[4] = dist[3] + 1 = 3$. Kuyruk: $[5, 4]$.
+    \item $5$ ve $4$ çıkarılır; ziyaret edilmemiş komşu kalmamıştır.
+\end{enumerate}
+Nihai mesafeler $dist = [0, 1, 1, 2, 3, 2]$ olarak elde edilir.
+\end{proof}
+\end{example}
+
+Bu genişlemeyi katman katman bir şekille görelim:
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.85]
+  \draw[kenar] (0,0) -- (1.9,1.3);
+  \draw[kenar] (0,0) -- (1.9,-1.3);
+  \draw[kenar] (1.9,1.3) -- (3.8,0);
+  \draw[kenar] (1.9,-1.3) -- (3.8,0);
+  \draw[kenar] (3.8,0) -- (5.7,0);
+  \draw[kenar] (1.9,-1.3) -- (3.8,-2.6);
+  \node[dugum] at (0,0) {0};
+  \node[dugum] at (1.9,1.3) {1};
+  \node[dugum] at (1.9,-1.3) {2};
+  \node[dugum] at (3.8,0) {3};
+  \node[dugum] at (3.8,-2.6) {5};
+  \node[dugum] at (5.7,0) {4};
+  \node[etiket, gray] at (-0.55,0.1) {0};
+  \node[etiket, gray] at (2.35,1.75) {1};
+  \node[etiket, gray] at (1.35,-1.3) {1};
+  \node[etiket, gray] at (3.8,0.55) {2};
+  \node[etiket, gray] at (4.35,-2.6) {2};
+  \node[etiket, gray] at (5.7,0.55) {3};
+\end{tikzpicture}
+\caption{BFS'nin katman katman yayılışı; gri sayılar kaynak 0'a olan uzaklıklardır:
+$dist = [0, 1, 1, 2, 3, 2]$.}
+\end{figure}
+
+\subsection{0-1 BFS Sezgisi}
+Kenar ağırlıkları yalnızca $0$ veya $1$ olabiliyorsa standart BFS doğrudan uygulanamaz; zira $0$ ağırlıklı bir kenardan geçmek mesafeyi artırmaz. Ancak tam bir Dijkstra algoritması ($O(m \log n)$) çalıştırmak yerine deque (\texttt{deque}) kullanarak problemi $O(n + m)$ sürede çözebiliriz:
+\begin{itemize}
+    \item $0$ ağırlıklı bir kenardan $v$'ye geçiliyorsa: $dist[v] = dist[u]$ olur ve düğüm kuyruğun \textbf{önüne} (\texttt{push\_front}) eklenir.
+    \item $1$ ağırlıklı bir kenardan geçiliyorsa: $dist[v] = dist[u] + 1$ olur ve düğüm kuyruğun \textbf{arkasına} (\texttt{push\_back}) eklenir.
+\end{itemize}
+Böylelikle kuyruktaki düğümlerin mesafe farkı hiçbir zaman 1'i aşmaz ve monotonluk korunur.
+
+\textbf{Dikkat:} Kenar ağırlıkları birbirinden farklı pozitif sayılar olan bir grafta "en az kenar sayısı = en kısa yol" kabulü geçerli değildir. BFS yalnızca ağırlıksız veya tüm kenar ağırlıkları birbirine eşit graflarda en kısa yolu verir.
+
+\section{Topolojik Sıralama (Topological Sort)}
+
+\subsection{Motivasyon: Ders Önkoşulları ve Bağımlılık Zincirleri}
+Bir lisans programında alınması gereken dersleri düşünelim:
+\begin{itemize}
+    \item "Algoritmalar" dersini alabilmek için önce "Programlamaya Giriş" tamamlanmalıdır.
+    \item "Yapay Zeka" dersi için hem "Algoritmalar" hem de "Lineer Cebir" gereklidir.
+\end{itemize}
+Bu dersler kural ihlali yapmadan hangi sırayla tamamlanabilir?
+
+Müfredatta "A için B gerekli, B için C gerekli, C için de A gerekli" şeklinde döngüsel bir bağımlılık bulunuyorsa süreci başlatmak imkânsızdır. Bağımlılıkların çözülebilir olması için sistemin bir \textbf{Yönlü Döngüsüz Graf} (Directed Acyclic Graph - DAG) oluşturması zorunludur.
+
+\begin{definition}[Topolojik Sıralama]
+Bir yönlü $G=(V, E)$ grafında, her $(u, v) \in E$ kenarı için $u$'nun $v$'den önce yer aldığı doğrusal düğüm dizilimine \textbf{topolojik sıralama} (topological sort) denir.
+\end{definition}
+
+\begin{theorem}
+Bir yönlü grafın en az bir topolojik sıralamaya sahip olması için gerek ve yeter koşul grafın \textbf{döngüsüz (DAG)} olmasıdır.
+\end{theorem}
+\begin{proof}
+Grafta bir döngü ($v_1 \to v_2 \to \dots \to v_k \to v_1$) bulunuyorsa tanım uyarınca sıralamada $v_1$'in $v_2$'den, $v_2$'nin $v_3$'ten $\dots$ ve $v_k$'nin $v_1$'den önce gelmesi gerekirdi. Bir eleman kendisinden önce gelemeyeceğinden döngülü bir grafta topolojik sıralama yapılamaz.
+
+Tersine, döngüsüz her sonlu grafta içeri derecesi 0 olan en az bir düğüm vardır (aksi durumda geriye doğru sonsuz bir yol veya döngü oluşurdu). Bu düğüm en başa yerleştirilip graftan çıkarılarak tümevarım yoluyla geçerli bir sıralama kurulabilir.
+\end{proof}
+
+\subsection{Kahn Algoritması (İçeri Derece Sezgisi)}
+Kahn algoritması, Bölüm 27'de ele aldığımız greedy yaklaşımı içeri derecelere uygular:
+\begin{enumerate}
+    \item Grafın her düğümü için içeri dereceyi (\texttt{in\_degree}) belirle.
+    \item İçeri derecesi $0$ olan (hiçbir önkoşulu bulunmayan) tüm düğümleri bir kuyruğa ekle.
+    \item Kuyruktan bir $u$ düğümü çıkar ve sıralama listesine yaz.
+    \item $u$'dan çıkan tüm kenarları kaldır; yani her komşu $v$ için $\text{in\_degree}[v]$ değerini 1 azalt.
+    \item Bir $v$ düğümünün içeri derecesi 0'a düşerse önkoşulları tamamlanmış demektir; bu düğümü de kuyruğa al.
+    \item Kuyruk boşalana kadar adımları tekrarla.
+\end{enumerate}
+
+Sıralama listesindeki toplam eleman sayısı grafın düğüm sayısı $n$'den küçük kalırsa grafın döngü içerdiği anlaşılır.
+
+\begin{lstlisting}[language=CTemel]
+std::vector<int> topolojik_sira;
+std::queue<int> q;
+
+for (int i = 0; i < n; i++) {
+    if (in_degree[i] == 0) q.push(i);
+}
+
+while (!q.empty()) {
+    int u = q.front();
+    q.pop();
+    topolojik_sira.push_back(u);
+    
+    for (int v : adj[u]) {
+        in_degree[v]--;
+        if (in_degree[v] == 0) {
+            q.push(v);
+        }
+    }
+}
+
+if (topolojik_sira.size() < n) {
+    // Graf dongu iceriyor, siralanis yok!
+}
+\end{lstlisting}
+
+\begin{example}
+$V = \{0, 1, 2, 3, 4\}$ ders kümesi üzerinde bağımlılıklar ($u \to v$, $u$ bitmeden $v$ alınamaz) şöyle verilsin:
+\[
+E = \{(0, 2), (1, 2), (2, 3), (2, 4), (3, 4)\}
+\]
+Bu graf için geçerli bir topolojik sıralama bulunuz.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \node[dugum] (v0) at (-0.9,0.8) {0};
+  \node[dugum] (v1) at (-0.9,-0.8) {1};
+  \node[dugum] (v2) at (1.1,0) {2};
+  \node[dugum] (v3) at (3.1,0.8) {3};
+  \node[dugum] (v4) at (3.1,-0.8) {4};
+  \draw[kitap-ok] (v0) -- (v2);
+  \draw[kitap-ok] (v1) -- (v2);
+  \draw[kitap-ok] (v2) -- (v3);
+  \draw[kitap-ok] (v2) -- (v4);
+  \draw[kitap-ok] (v3) -- (v4);
+\end{tikzpicture}
+\caption{Örneğin bağımlılık grafı: 0 ve 1'in önkoşulu yoktur; 4 ise 2 ile 3'ün
+tamamlanmasını bekler.}
+\end{figure}
+
+\begin{proof}[Çözüm]
+Düğümlerin içeri derecelerini belirleyelim:
+\begin{itemize}
+    \item $\text{in\_degree}[0] = 0$
+    \item $\text{in\_degree}[1] = 0$
+    \item $\text{in\_degree}[2] = 2$ (0 ve 1'den)
+    \item $\text{in\_degree}[3] = 1$ (2'den)
+    \item $\text{in\_degree}[4] = 2$ (2 ve 3'ten)
+\end{itemize}
+
+Başlangıçta içeri derecesi 0 olan düğümler 0 ve 1'dir. Kuyruk: $[0, 1]$.
+\begin{enumerate}
+    \item $0$ çıkarılır. Liste: $[0]$. $(0, 2)$ kenarı silinir: $\text{in\_degree}[2] = 2 - 1 = 1$.
+    \item $1$ çıkarılır. Liste: $[0, 1]$. $(1, 2)$ kenarı silinir: $\text{in\_degree}[2] = 1 - 1 = 0$. 2 kuyruğa girer. Kuyruk: $[2]$.
+    \item $2$ çıkarılır. Liste: $[0, 1, 2]$. $(2, 3)$ ve $(2, 4)$ silinir. $\text{in\_degree}[3] = 0$, $\text{in\_degree}[4] = 1$. 3 kuyruğa girer. Kuyruk: $[3]$.
+    \item $3$ çıkarılır. Liste: $[0, 1, 2, 3]$. $(3, 4)$ silinir. $\text{in\_degree}[4] = 0$. 4 kuyruğa girer. Kuyruk: $[4]$.
+    \item $4$ çıkarılır. Liste: $[0, 1, 2, 3, 4]$.
+\end{enumerate}
+Geçerli bir topolojik sıralama $0, 1, 2, 3, 4$ olarak bulunur. ($1, 0, 2, 3, 4$ dizilimi de bir diğer geçerli çözümdür; topolojik sıralama tek olmak zorunda değildir.)
+\end{proof}
+\end{example}
+
+\section{MST (Minimum Spanning Tree): Kruskal ve Prim Sezgisi}
+
+\subsection{Motivasyon: Şehirleri En Düşük Maliyetle Birbirine Bağlamak}
+Bir ülkede $n$ şehir ve bu şehirler arasına döşenebilecek demir yolu hatları bulunmaktadır. Her hattın belirli bir inşa maliyeti vardır. Hedefimiz, tüm şehirlerin birbirine doğrudan veya dolaylı olarak bağlanabildiği, döngü barındırmayan ve \textbf{toplam maliyeti minimum} olan bir hat ağı kurmaktır.
+
+Graf teorisinde bu yapı \textbf{MST (minimum spanning tree)} olarak adlandırılır.
+
+\begin{definition}[Ağaç ve Spanning Tree]
+$n$ düğümlü, bağlı ve döngüsüz bir grafa \textbf{ağaç} (tree) denir. Ağaçlar her zaman tam olarak $n-1$ kenara sahiptir.
+
+Bağlı ve yönsüz bir $G=(V, E)$ grafının tüm düğümlerini kapsayan döngüsüz alt grafa $G$'nin bir \textbf{spanning tree} denir. Kenar ağırlıkları toplamı en küçük olan spanning tree'ye ise \textbf{MST (minimum spanning tree)} denir.
+\end{definition}
+
+\subsection{Kesit Özelliği (Cut Property)}
+MST algoritmalarının temel dayanağı kesit özelliğidir.
+
+\begin{theorem}[Kesit Özelliği]
+$V$ düğüm kümesini boş olmayan iki ayrık $S$ ve $V \setminus S$ kümesine ayıralım. Bir ucu $S$'de, diğer ucu $V \setminus S$'de olan kenarlara "kesit kenarları" denir. Kesit kenarları arasında ağırlığı kesin biçimde en küçük olan kenar $e^*$, $G$'nin MST'sinde yer almak \textbf{zorundadır}. \textbf{zorundadır}.
+\end{theorem}
+
+\begin{proof}
+Aksini varsayalım: $e^*$ kenarını içermeyen bir $T$ MST (minimum spanning tree) bulunsun. $e^*$ kenarı $T$'ye eklendiğinde ağaçta bir döngü oluşur. Bu döngü $S$ kümesinden $V \setminus S$ kümesine geçmek zorunda olduğundan, döngü üzerinde kesiti aşan başka bir $e'$ kenarı yer almalıdır.
+
+Şimdi $T$'den $e'$ çıkarılıp yerine $e^*$ eklensin: $T' = T \cup \{e^*\} \setminus \{e'\}$. 
+Yeni yapı tüm düğümleri birbirine bağlayan geçerli bir spanning tree'dir ve toplam maliyeti:
+\[
+w(T') = w(T) - w(e') + w(e^*)
+\]
+olur. $e^*$ kesitteki en küçük ağırlıklı kenar olduğundan $w(e^*) \le w(e')$ geçerlidir. Eğer $w(e^*) < w(e')$ ise $w(T') < w(T)$ elde edilir ki bu durum $T$'nin minimumluğuyla çelişir. Dolayısıyla en küçük ağırlıklı kenarın seçilmesi daima güvenlidir.
+\end{proof}
+
+\subsection{Kruskal Algoritması (Kenar Odaklı Greedy)}
+Kruskal algoritması, kenarları en ucuzdan en pahalıya doğru sıralayarak Bölüm 27'deki greedy yöntemle ilerler:
+\begin{enumerate}
+    \item Grafın tüm kenarlarını ağırlıklarına göre küçükten büyüğe sırala.
+    \item Sıradaki kenarı incele: Kenar mevcut seçilmiş kenarlarla bir \textbf{döngü oluşturmuyorsa} MST'ye dahil et.
+    \item Toplam $n-1$ kenar seçildiğinde işlemi sonlandır.
+\end{enumerate}
+
+Döngü kontrolünü verimli kılmak için Ayrık Küme Veri Yapısı (\emph{Disjoint Set Union - DSU}) kullanılır. Kenarları sıralamak $O(m \log m)$, DSU işlemleri ise neredeyse doğrusal zaman aldığından Kruskal algoritmasının toplam karmaşıklığı $O(m \log n)$ olur.
+
+\subsection{Prim Algoritması (Düğüm Odaklı Greedy)}
+Prim algoritması tek bir düğümle başlar ve ağacı adım adım genişletir:
+\begin{enumerate}
+    \item Ağaca başlangıç düğümünü ekle (küme $S$).
+    \item $S$ kümesindeki düğümleri dışarıdaki ($V \setminus S$) düğümlere bağlayan kenarlar arasından en küçük ağırlıklı olanı seç.
+    \item Bu kenarı MST'ye, ucundaki yeni düğümü de $S$'ye dahil et.
+    \item Tüm düğümler $S$'ye katılana kadar adımları sürdür.
+\end{enumerate}
+En küçük ağırlıklı kenarı hızlı seçmek için Bölüm 25'te gördüğümüz priority queue (min-heap) yapısı kullanılır. Bu sayede Prim algoritması $O(m \log n)$ sürede çalışır.
+
+\begin{example}
+Köşeleri $A, B, C, D$ olan bir grafın kenar ağırlıkları şöyledir:
+\[
+(A, B): 1, \quad (B, D): 2, \quad (A, C): 3, \quad (B, C): 4, \quad (C, D): 5
+\]
+Kruskal algoritması adımlarıyla MST'yi bulunuz.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \draw[kenar] (0,0) -- (2.1,1);
+  \draw[kenar] (2.1,1) -- (4.2,0);
+  \draw[kenar] (0,0) -- (2.1,-1);
+  \draw[kenar] (2.1,1) -- (2.1,-1);
+  \draw[kenar] (2.1,-1) -- (4.2,0);
+  \node[dugum] at (0,0) {A};
+  \node[dugum] at (2.1,1) {B};
+  \node[dugum] at (2.1,-1) {C};
+  \node[dugum] at (4.2,0) {D};
+  \node[etiket] at (1.05,0.95) {1};
+  \node[etiket] at (3.15,0.95) {2};
+  \node[etiket] at (1.05,-0.95) {3};
+  \node[etiket] at (2.45,0) {4};
+  \node[etiket] at (3.15,-0.95) {5};
+\end{tikzpicture}
+\caption{Örneğin ağırlıklı grafı; kenar etiketleri ağırlıklardır.}
+\end{figure}
+
+\begin{proof}[Çözüm]
+Kenarları ağırlıklarına göre sıralayalım:
+\begin{enumerate}
+    \item $(A, B)$ ağırlık 1
+    \item $(B, D)$ ağırlık 2
+    \item $(A, C)$ ağırlık 3
+    \item $(B, C)$ ağırlık 4
+    \item $(C, D)$ ağırlık 5
+\end{enumerate}
+
+Kenarları sırayla inceleyelim:
+\begin{itemize}
+    \item $(A, B)$ seçilir (Ağırlık 1). MST: $\{(A, B)\}$.
+    \item $(B, D)$ seçilir (Ağırlık 2). Döngü oluşmaz. MST: $\{(A, B), (B, D)\}$.
+    \item $(A, C)$ seçilir (Ağırlık 3). Döngü oluşmaz. MST: $\{(A, B), (B, D), (A, C)\}$.
+\end{itemize}
+$n-1 = 4-1 = 3$ kenar seçilmiş ve tüm düğümler tek bir bileşende birleşmiştir.
+Algoritma tamamlanır. MST toplam ağırlığı: $1 + 2 + 3 = 6$.
+\end{proof}
+\end{example}
+
+\section{En Kısa Yol: Dijkstra Algoritması Sezgisi}
+
+\subsection{Motivasyon: Ağırlıklı Graflarda En Kısa Rota}
+Harita uygulamalarını ele alalım. Şehirler arası mesafeler veya yol süreleri birbirinden farklıdır. Bir ilden diğerine giderken en az sayıda kavşaktan geçmek değil, \textbf{toplam seyahat süresi minimum} olan güzergâhı bulmak hedeflenir.
+
+BFS her kenarın maliyetini eşit kabul ettiğinden ağırlıklı graflarda doğrudan sonuç vermez. Kenar ağırlıklarının negatif olmadığı durumlarda \textbf{Dijkstra algoritması} devreye girer.
+
+\subsection{Gevşetme (Relaxation) İlkesi}
+Dijkstra algoritmasının temelinde, üçgen eşitsizliğine dayanan \emph{gevşetme} işlemi yer alır.
+
+$u$ düğümüne kadar bilinen en kısa mesafe $dist[u]$ olsun. $u$'dan $v$'ye uzanan kenarın ağırlığı $w(u, v)$ ise ve
+\[
+dist[u] + w(u, v) < dist[v]
+\]
+eşitsizliği sağlanıyorsa, $v$'ye daha kısa bir rota bulunmuş demektir. Mesafe değeri güncellenir:
+\[
+dist[v] \leftarrow dist[u] + w(u, v)
+\]
+
+\subsection{Dijkstra Algoritmasının İşleyişi}
+Dijkstra, greedy bir yaklaşımla her adımda henüz mesafesi kesinleşmemiş düğümler arasından başlangıca en yakın olanını işleme alır:
+
+\begin{enumerate}
+    \item Tüm düğümler için $dist[v] = \infty$ yap, kaynak düğüm için $dist[kaynak] = 0$.
+    \item Henüz ziyaret edilmemiş düğümler arasından $dist[u]$ değeri en küçük olan $u$ düğümünü seç.
+    \item $u$'yu kesinleşmiş olarak işaretle.
+    \item $u$'nun tüm komşuları $v$ için gevşetme adımını uygula.
+    \item Bütün düğümler kesinleşene kadar 2. adıma dön.
+\end{enumerate}
+
+En küçük mesafeli düğüme hızla ulaşmak için Bölüm 25'te gördüğümüz priority queue (\texttt{std::priority\_queue}) kullanılır.
+
+\begin{lstlisting}[language=CTemel]
+#include <queue>
+#include <vector>
+
+const int INF = 1e9;
+typedef std::pair<int, int> pii; // {mesafe, dugum}
+std::vector<pii> adj[MAXN];      // {komsu, agirlik}
+int dist[MAXN];
+
+void dijkstra(int kaynak, int n) {
+    for (int i = 0; i < n; i++) dist[i] = INF;
+    
+    // Kucukten buyuge siralayan min-heap
+    std::priority_queue<pii, std::vector<pii>, std::greater<pii>> pq;
+    
+    dist[kaynak] = 0;
+    pq.push({0, kaynak});
+    
+    while (!pq.empty()) {
+        auto [d, u] = pq.top();
+        pq.pop();
+        
+        // Eger kuyruktan cikan mesafe guncel mesafeden buyukse, bu eski bir kayittir
+        if (d > dist[u]) continue;
+        
+        for (auto edge : adj[u]) {
+            int v = edge.first;
+            int w = edge.second;
+            
+            if (dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                pq.push({dist[v], v});
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection{Neden Negatif Ağırlıklarda Çalışmaz?}
+Dijkstra algoritmasının doğruluğu, "pozitif kenarlar eklendikçe yol maliyetinin yalnızca artabileceği" kabulüne dayanır.
+
+Bir $u$ düğümü kuyruktan en küçük mesafe değeriyle çekildiği anda, ona başka bir düğüm üzerinden daha kısa bir yoldan ulaşılamaz; çünkü incelenebilecek tüm alternatifler başlangıçtan zaten daha uzaktadır ve pozitif kenarlar mesafeyi yalnızca büyütür.
+
+Graf negatif kenar içerdiğinde bu varsayım bozulur: Uzaktaki bir düğümden çıkan negatif bir kenar, toplam mesafeyi $dist[u]$ değerinin de altına çekebilir. Negatif kenarlı graflarda Bellman-Ford gibi farklı yöntemlere başvurulur; bu yöntemler kitabın kapsamı dışındadır.
+
+\begin{example}
+Köşeleri $0, 1, 2, 3$ olan yönlü ve ağırlıklı bir grafta kenarlar şöyledir:
+$(0 \to 1, w{=}4)$, $(0 \to 2, w{=}1)$, $(2 \to 1, w{=}2)$, $(1 \to 3, w{=}1)$, $(2 \to 3, w{=}5)$
+Kaynak düğüm $0$ olmak üzere tüm düğümlere olan en kısa mesafeleri adım adım bulunuz.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \node[dugum] (n0) at (0,0) {0};
+  \node[dugum] (n1) at (3.8,0.6) {1};
+  \node[dugum] (n2) at (1.9,-1.2) {2};
+  \node[dugum] (n3) at (5.7,0) {3};
+  \draw[kitap-ok] (n0) -- (n1);
+  \draw[kitap-ok] (n0) -- (n2);
+  \draw[kitap-ok] (n2) -- (n1);
+  \draw[kitap-ok] (n1) -- (n3);
+  \draw[kitap-ok] (n2) -- (n3);
+  \node[etiket] at (1.55,0.5) {4};
+  \node[etiket] at (0.95,-0.95) {1};
+  \node[etiket] at (2.85,0.05) {2};
+  \node[etiket] at (4.75,0.65) {1};
+  \node[etiket] at (3.8,-0.95) {5};
+\end{tikzpicture}
+\caption{Dijkstra örneğinin yönlü, ağırlıklı grafı; kenar etiketleri ağırlıklardır.}
+\end{figure}
+
+\begin{proof}[Çözüm]
+Başlangıç: $dist = [0, \infty, \infty, \infty]$. Kuyruk: $\{(0, 0)\}$.
+
+\begin{enumerate}
+    \item $(0, 0)$ çekilir. $u = 0$ kesinleşir ($dist[0] = 0$).
+    \begin{itemize}
+        \item Komşu 1: $dist[0] + 4 = 4 < \infty \implies dist[1] = 4$. Kuyruğa $(4, 1)$ eklenir.
+        \item Komşu 2: $dist[0] + 1 = 1 < \infty \implies dist[2] = 1$. Kuyruğa $(1, 2)$ eklenir.
+    \end{itemize}
+    Kuyruk: $\{(1, 2), (4, 1)\}$.
+
+    \item En küçük mesafe olan $(1, 2)$ çekilir. $u = 2$ kesinleşir ($dist[2] = 1$).
+    \begin{itemize}
+        \item Komşu 1: $dist[2] + 2 = 3 < dist[1]=4$ olduğundan gevşetme yapılır: $dist[1] = 3$. Kuyruğa $(3, 1)$ eklenir.
+        \item Komşu 3: $dist[2] + 5 = 6 < \infty \implies dist[3] = 6$. Kuyruğa $(6, 3)$ eklenir.
+    \end{itemize}
+    Kuyruk: $\{(3, 1), (4, 1), (6, 3)\}$.
+
+    \item En küçük mesafe olan $(3, 1)$ çekilir. $u = 1$ kesinleşir ($dist[1] = 3$).
+    \begin{itemize}
+        \item Komşu 3: $dist[1] + 1 = 4 < dist[3]=6$ olduğundan gevşetme yapılır: $dist[3] = 4$. Kuyruğa $(4, 3)$ eklenir.
+    \end{itemize}
+    Kuyruk: $\{(4, 1), (4, 3), (6, 3)\}$.
+
+    \item $(4, 1)$ çekilir: $4 > dist[1]=3$ olduğundan işlem yapılmadan atlanır (geçersiz kayıt).
+    \item $(4, 3)$ çekilir. $u = 3$ kesinleşir ($dist[3] = 4$). Çıkış kenarı yoktur.
+    \item $(6, 3)$ çekilir: $6 > dist[3]=4$ olduğundan atlanır.
+\end{enumerate}
+
+Sonuç mesafeleri: $dist[0] = 0$, $dist[1] = 3$, $dist[2] = 1$, $dist[3] = 4$ olarak bulunur.
+\end{proof}
+\end{example}
+
+\textbf{Dikkat:} Kuyruktan çekilen $(d,u)$ çifti için \linebreak[4]\texttt{if (d > dist[u]) continue;} kontrolünü unutmak, daha önce güncellenmiş eski kopyaların gereksiz yere işlenmesine ve algoritmanın zaman limitini aşmasına (Time Limit Exceeded) yol açabilir.
+
+\section{Bölüm Özeti ve Algoritma Karşılaştırması}
+
+Temel graf algoritmalarının kullanım alanları ve çalışma koşulları aşağıdaki tabloda derlenmiştir:
+
+\begin{center}
+\begin{tabular}{|l|p{3.2cm}|p{1.8cm}|p{2.8cm}|}
+\hline
+\textbf{Algoritma} & \textbf{Tipik Kullanım Alanı} & \textbf{Zaman} & \textbf{Kritik Koşul} \\ \hline
+\textbf{DFS} & Bileşen bulma, döngü tespiti, iki kümelilik & $O(n + m)$ & - \\ \hline
+\textbf{BFS} & Ağırlıksız en kısa yol & $O(n + m)$ & Tüm kenarlar eşit maliyetli \\ \hline
+\textbf{Topolojik Sıra} & Bağımlılık sıralaması, iş planlama & $O(n + m)$ & Graf mutlaka DAG olmalı \\ \hline
+\textbf{Kruskal / Prim} & Minimum spanning tree (MST) & $O(m \log n)$ & Graf bağlı ve yönsüz olmalı \\ \hline
+\textbf{Dijkstra} & Ağırlıklı en kısa yol & $O(m \log n)$ & Negatif kenar \textbf{olmamalıdır} \\ \hline
+\end{tabular}
+\end{center}
+
+Graf problemleriyle karşılaşıldığında izlenecek temel adımlar şunlardır:
+\begin{enumerate}
+    \item Problemdeki varlıklar düğüm, ilişkiler ise kenar olarak kurulabiliyor mu?
+    \item Graf yönlü mü, yönsüz mü? Kenarlarda maliyet veya ağırlık tanımlanmış mı?
+    \item Kenarlar ağırlıksız ise en kısa yol için \textbf{BFS}; kenarlar pozitif ağırlıklı ise \textbf{Dijkstra} tercih edilmelidir.
+    \item Bir öncelik sırası oluşturulacaksa \textbf{Topolojik Sıralama}, tüm düğümleri en az maliyetle bağlamak isteniyorsa \textbf{MST} aranmalıdır.
+\end{enumerate}

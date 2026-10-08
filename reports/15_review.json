@@ -1,0 +1,15 @@
+{
+  "file": "15_taban_aritmetigi.tex",
+  "findings": [
+    {
+      "file": "15_taban_aritmetigi.tex",
+      "line_hint": 361,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "Bit Düzeyinde İşlemler (Bitwise Operators):",
+      "issue": "Terminoloji sözleşmesine göre 'bitwise' terimi İngilizce olarak korunmalı, 'bit düzeyinde' karşılığı kullanılmamalıdır (A Grubu: İngilizce korunur / ❌ Kullanılmayacak Türkçe: bit düzeyinde).",
+      "suggested_fix": "\"Bit Düzeyinde İşlemler (Bitwise Operators):\" yerine \"Bitwise İşlemler:\" veya \"Bitwise Operatörler:\" ifadesi kullanılmalıdır.",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,782 @@
+\chapter[Rekürsiyon ve DP'ye Giriş · \textit{Orta}]{Rekürsiyon ve DP'ye Giriş}
+\chaptermark{Rekürsiyon ve DP'ye Giriş}
+
+Büyük ve karmaşık görünen birçok problem, aslında kendi kopyalarının bir araya gelmesiyle oluşur. Bir kütüphanedeki binlerce kitabı alfabetik sıraya dizmek, iki yarıyı ayrı ayrı dizip birleştirmekten ibarettir; elli basamaklı bir merdivenin tepesine ulaşmak ise kırk dokuzuncu veya kırk sekizinci basamağa geldikten sonra atılacak son bir adıma bağlıdır.
+
+Bu bölümde algoritma tasarımının temel taşlarından üç yaklaşımı inceleyeceğiz: Problemi aynı türden daha küçük alt problemlere indirgeyen \textbf{rekürsiyon (rekürsiyon)}, yinelenen hesaplamaları belleğe kaydederek zaman kazandıran \textbf{memoization (bellekleme)} ve çözümü en küçük yapı taşlarından yukarıya doğru adım adım kuran \textbf{dinamik programlama (DP)}.
+
+\section{Rekürsiyon}
+
+Gündelik hayatta bir işi tanımlarken farkında olmadan rekürsiyonu kullanırız. Örneğin bir kuyrukta önünüzde kaç kişi olduğunu öğrenmek istediğinizi düşünün. Kuyruğun en başına kadar yürüyüp herkesi tek tek saymak zorunda değilsiniz. Önünüzdeki kişiye dönüp ``Önünde kaç kişi var?'' diye sorabilirsiniz. O kişi de kendi önündekine sorar. Bu soru zinciri en öndeki kişiye kadar ilerler. En öndeki kişi ``Önümde kimse yok, yani 0 kişi var'' dediğinde geriye doğru cevaplar birer artarak döner ve nihayet size ulaşır. Rekürsiyonun özü tam olarak budur: Bir problemi, aynı problemin daha küçük boyutlu bir girdisine devretmek.
+
+\subsection{Kendi Kendini Çağırma ve Baz Durum}
+
+Bir fonksiyonun kendi gövdesi içinde kendisini doğrudan ya da dolaylı olarak çağırmasına \textbf{rekürsif fonksiyon} denir. Ancak bir fonksiyon sürekli kendisini çağırırsa bu süreç sonsuza kadar devam eder. Bu nedenle her rekürsif yapının duracağı bir sınıra ihtiyacı vardır.
+
+\begin{definition}[Baz Durum ve Rekürsif Adım]
+Bir rekürsif fonksiyon iki ana parçadan oluşur:
+\begin{enumerate}
+    \item \textbf{Baz Durum (Base Case):} Problemin artık daha küçük parçalara bölünemeyecek kadar basit olduğu ve cevabın doğrudan bilindiği durdurma koşuludur.
+    \item \textbf{Rekürsif Adım (Recursive Step):} Asıl problemin, aynı problemin daha küçük boyutlu bir veya daha fazla örneğine dönüştürülüp fonksiyonun yeniden çağrıldığı kısımdır.
+\end{enumerate}
+\end{definition}
+
+Bölüm 4'te permütasyonları sayarken kullandığımız faktöriyel tanımını hatırlayalım. $n$ pozitif bir tam sayı olmak üzere $n!$ değerini hesaplamak isteyelim:
+\[
+5! = 5 \times 4 \times 3 \times 2 \times 1
+\]
+Burada $4 \times 3 \times 2 \times 1$ çarpımı $4!$ değerine eşittir. Dolayısıyla:
+\[
+5! = 5 \times 4!
+\]
+Genel olarak $n \ge 1$ için:
+\[
+n! = n \times (n-1)!
+\]
+yazabiliriz. Bu küçülme $n=0$ olana kadar sürer; $0! = 1$ kabulü bizim durdurma noktamız, yani baz durumumuzdur.
+
+\begin{lstlisting}[language=CTemel]
+long long faktoriyel(int n) {
+    if (n == 0) {
+        return 1; // Baz durum
+    }
+    return n * faktoriyel(n - 1); // Rekursif adim
+}
+\end{lstlisting}
+
+\subsection{Çağrı Yığını (Call Stack) Mekanizması}
+
+Programlama dillerinde her fonksiyon çağrısı, belleğin \textbf{yığın (call stack)} adı verilen bölgesinde bir çerçeve (stack frame) oluşturur. Bir fonksiyon bir başkasını (veya kendisini) çağırdığında, mevcut fonksiyonun yürütülmesi duraklatılır; yerel değişkenleri ve kaldığı yer yığında saklanır. Çağrılan fonksiyon işini bitirip bir değer döndürdüğünde, duraklatılan fonksiyon yığından geri alınarak kaldığı yerden devam eder.
+
+$\text{faktoriyel}(3)$ çağrıldığında yığında gerçekleşen adımları inceleyelim:
+\begin{enumerate}
+    \item $\text{faktoriyel}(3)$ çağrılır. $3 \times \text{faktoriyel}(2)$ hesaplanmalıdır; beklemeye geçer.
+    \item $\text{faktoriyel}(2)$ çağrılır. $2 \times \text{faktoriyel}(1)$ hesaplanmalıdır; beklemeye geçer.
+    \item $\text{faktoriyel}(1)$ çağrılır. $1 \times \text{faktoriyel}(0)$ hesaplanmalıdır; beklemeye geçer.
+    \item $\text{faktoriyel}(0)$ çağrılır. $n=0$ baz durumdur, doğrudan $1$ döndürür.
+    \item Şimdi yığın geriye doğru çözülür (unwinding):
+    \begin{itemize}
+        \item $\text{faktoriyel}(1) = 1 \times 1 = 1$ döner.
+        \item $\text{faktoriyel}(2) = 2 \times 1 = 2$ döner.
+        \item $\text{faktoriyel}(3) = 3 \times 2 = 6$ döner.
+    \end{itemize}
+\end{enumerate}
+
+\begin{theorem}[Matematiksel Tümevarım ile Rekürsiyonun Eşdeğerliği]
+Bir rekürsif algoritmanın doğruluğu, matematiksel tümevarım ilkesiyle doğrudan ispatlanır:
+\begin{enumerate}
+    \item \textbf{Temel Adım (Baz Durum):} Algoritma en küçük girdi ($n=0$ veya $n=1$) için doğru sonucu verir.
+    \item \textbf{Tümevarım Adımı:} Algoritmanın $k < n$ değerleri için doğru çalıştığı varsayıldığında (tümevarım hipotezi), $n$ girdisi için yapılan birleşim işlemi de doğru sonucu üretir.
+\end{enumerate}
+Her rekürsif çağrıda parametre kesinlikle baz duruma doğru yaklaşıyorsa, algoritma sonlu adımda sonlanır ve doğrudur.
+\end{theorem}
+
+\begin{example}
+Verilen pozitif bir $a$ tam sayısı ve negatif olmayan bir $n$ tam sayısı için $a^n$ değerini $O(\log n)$ zamanda hesaplayan rekürsif bir algoritma tasarlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+İlk akla gelen yaklaşım $a^n = a \times a^{n-1}$ yazmaktır. Bu rekürsiyon $n$ adım sürer ve karmaşıklığı $O(n)$ olur. Ancak $n$'i her adımda bir azaltmak yerine yarıya indirebiliriz.
+
+$n$ çift bir sayı ise, örneğin $a^8$, bunu $(a^4)^2$ olarak düşünebiliriz. Genel olarak:
+\[
+a^n = (a^{n/2})^2 = a^{n/2} \times a^{n/2} \quad (n \text{ çift ise})
+\]
+$n$ tek bir sayı ise, örneğin $a^9 = a \times a^8$:
+\[
+a^n = a \times a^{n-1} \quad (n \text{ tek ise})
+\]
+Baz durum ise $n=0$ için $a^0 = 1$'dir.
+
+Bu stratejide $n$ her iki adımda en az yarıya düşer; dolayısıyla çağrı derinliği en fazla $2 \lceil \log_2 n \rceil$ olur.
+
+\begin{lstlisting}[language=CTemel]
+long long us_al(long long a, int n) {
+    if (n == 0) return 1; // Baz durum
+    if (n % 2 == 0) {
+        long long yari = us_al(a, n / 2);
+        return yari * yari;
+    } else {
+        return a * us_al(a, n - 1);
+    }
+}
+\end{lstlisting}
+
+Burada kritik nokta, \texttt{us\_al(a, n / 2)} değerini bir değişkende tutup karesini almaktır. Eğer doğrudan \texttt{us\_al(a, n/2) * us\_al(a, n/2)} yazılsaydı aynı fonksiyon iki kez çağrılır ve algoritma tekrar $O(n)$ karmaşıklığa gerilerdi.
+\end{proof}
+
+\begin{example}[Hanoi Kuleleri (Édouard Lucas, 1883)]
+Üç direk ($A, B, C$) ve başlangıçta $A$ direğinde büyük olanlar altta, küçük olanlar üstte olacak şekilde dizilmiş farklı boyutlarda $n$ adet disk bulunmaktadır.
+\begin{enumerate}
+    \item Her hamlede sadece tek bir disk taşınabilir.
+    \item Hiçbir disk, kendisinden daha küçük bir diskin üzerine konulamaz.
+\end{enumerate}
+Tüm diskleri $A$ direğinden $C$ direğine taşımak için gereken hamle sayısını ve adımları bulunuz.
+\end{example}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \draw[kitap-cizgi] (0,0) -- (0,1.7);
+  \draw[kitap-cizgi] (2.6,0) -- (2.6,1.7);
+  \draw[kitap-cizgi] (5.2,0) -- (5.2,1.7);
+  \draw[kitap-cizgi] (-0.95,-0.15) -- (6.15,-0.15);
+  \fill[black!8] (-0.9,0) rectangle (0.9,0.3);
+  \fill[black!8] (-0.65,0.3) rectangle (0.65,0.6);
+  \fill[black!8] (-0.4,0.6) rectangle (0.4,0.9);
+  \draw[kitap-cizgi] (-0.9,0) rectangle (0.9,0.3);
+  \draw[kitap-cizgi] (-0.65,0.3) rectangle (0.65,0.6);
+  \draw[kitap-cizgi] (-0.4,0.6) rectangle (0.4,0.9);
+  \node[etiket] at (0,-0.45) {$A$};
+  \node[etiket] at (2.6,-0.45) {$B$};
+  \node[etiket] at (5.2,-0.45) {$C$};
+  \draw[kitap-ok, draw=kitapvurgu] (0.35,1.4) .. controls (1.7,2.4) and (3.9,2.4)
+        .. (4.85,1.4);
+  \node[etiket] at (2.6,2.9) {ta\c{s}\i};
+\end{tikzpicture}
+\caption{Hanoi Kuleleri'nin başlangıç durumu ($n=3$): amaç $A$'daki tüm
+diskleri $C$'ye taşımaktır; $B$ yardımcı direktir.}
+\end{figure}
+
+\begin{proof}[Çözüm]
+Bu problemi Bölüm 9'da yineleme bağıntıları bağlamında modellemiş ve $H_n = 2H_{n-1} + 1$ bağıntısını elde etmiştik; şimdi aynı bağıntının rekürsif fonksiyon karşılığını kuralım. Problemi doğrudan tüm diskler üzerinden kavramak güçtür; bu nedenle en alttaki en büyük diske ($n$. diske) odaklanalım. Bu diski $A$'dan $C$'ye taşıyabilmemiz için:
+\begin{enumerate}
+    \item Üzerindeki $n-1$ diskin $A$'dan kalkmış ve yardımcı direk olan $B$'de toplanmış olması gerekir.
+    \item Bu yapıldıktan sonra en büyük diski doğrudan $A$'dan $C$'ye taşırız (1 hamle).
+    \item Ardından $B$'deki $n-1$ diski, bu kez $A$'yı yardımcı direk olarak kullanarak $C$'ye taşırız.
+\end{enumerate}
+
+Böylece $n$ diskli problem, iki adet $(n-1)$ diskli alt probleme indirgenmiş olur.
+
+Baz durum: $n=1$ olduğunda, tek disk doğrudan hedefe taşınır (1 hamle).
+
+Hamle sayısını $H(n)$ ile gösterelim:
+\[
+H(n) = 2 H(n-1) + 1, \quad H(1) = 1
+\]
+Bu rekürsif bağıntıyı çözelim:
+\begin{align*}
+H(1) &= 1 = 2^1 - 1 \\
+H(2) &= 2(1) + 1 = 3 = 2^2 - 1 \\
+H(3) &= 2(3) + 1 = 7 = 2^3 - 1 \\
+&\ \ \vdots \\
+H(n) &= 2^n - 1
+\end{align*}
+
+Sözde kod ile çözümü ifade edersek:
+\begin{lstlisting}
+ALGORITHM Hanoi(n, source, target, auxiliary)
+    IF n == 1 THEN
+        OUTPUT "Disk 1: " + source + " -> " + target
+        RETURN
+    END IF
+
+    Hanoi(n - 1, source, auxiliary, target)
+    OUTPUT "Disk " + n + ": " + source + " -> " + target
+    Hanoi(n - 1, auxiliary, target, source)
+END ALGORITHM\end{lstlisting}
+$2^n - 1$ hamle gereklidir ve her hamle kaçınılmazdır; dolayısıyla zaman karmaşıklığı $O(2^n)$'dir.
+\end{proof}
+
+\begin{example}
+Elemanları $\{1, 2, \dots, n\}$ olan bir kümenin tüm alt kümelerini rekürsif olarak ekrana yazdıran bir algoritma tasarlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölüm 1 ve 5'te gördüğümüz gibi, bir kümenin alt kümesini oluştururken her eleman için önümüzde bağımsız iki seçenek bulunur: O eleman alt kümede \emph{ya vardır} ya da \emph{yoktur}.
+
+$k$. elemana geldiğimizde iki dala ayrılırız:
+\begin{enumerate}
+    \item $k$ elemanını mevcut kümeye ekle ve $(k+1)$. eleman için rekürsiyonu çağır.
+    \item $k$ elemanını kümeye ekleme ve $(k+1)$. eleman için rekürsiyonu çağır.
+\end{enumerate}
+Baz durum: $k = n+1$ olduğunda tüm elemanlar hakkında karar verilmiştir; o anki küme yazdırılır.
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int kume[100];
+
+void alt_kumeler(int n, int k, int secilen_sayisi) {
+    if (k > n) {
+        // Baz durum: Tum elemanlar incelendi
+        printf("{ ");
+        for (int i = 0; i < secilen_sayisi; i++) {
+            printf("%d ", kume[i]);
+        }
+        printf("}\n");
+        return;
+    }
+    // 1. Secenek: k elemanini sec
+    kume[secilen_sayisi] = k;
+    alt_kumeler(n, k + 1, secilen_sayisi + 1);
+
+    // 2. Secenek: k elemanini secme
+    alt_kumeler(n, k + 1, secilen_sayisi);
+}
+\end{lstlisting}
+Toplam $2^n$ adet alt küme olduğundan fonksiyon tam $2^{n+1}-1$ kez çağrılır ve toplam çalışma zamanı $O(n 2^n)$ olur.
+\end{proof}
+
+\subsection*{En Sık Yapılan Hatalar}
+\begin{enumerate}
+    \item \textbf{Baz Durumu Unutmak veya Yanlış Tanımlamak:} Rekürsif fonksiyonlarda baz durum yazılmazsa veya parametre baz duruma hiçbir zaman ulaşamayacak şekilde güncellenirse (örneğin $n-1$ yerine yanlışlıkla $n+1$ yazılırsa), fonksiyon belleğin çağrı yığınını tüketene kadar kendini çağırır ve program \emph{Segmentation Fault (Stack Overflow)} hatası vererek çöker.
+    \item \textbf{Ağır Nesneleri Değer Olarak (Pass-by-Value) Kopyalamak:} C++ veya Python gibi dillerde her çağrıda büyük bir diziyi kopyalayarak parametre geçirmek, hem zaman karmaşıklığını artırır hem de belleği hızla tüketir. Dizi paylaşımlı (global veya işaretçi/referans ile) iletilmelidir.
+\end{enumerate}
+
+\section{Memoization}
+
+Rekürsiyon, bir problemi alt parçalara bölerek kurgulamada son derece doğal ve etkilidir. Ancak saf rekürsiyon bazen ciddi bir verimsizliğe yol açar: \textbf{Örtüşen Alt Problemler (Overlapping Subproblems)}. Başka bir deyişle algoritma, tamamen aynı parametrelerle çağrılan alt problemleri tekrar tekrar en baştan hesaplar.
+
+\subsection{Tekrar Eden Hesaplamaların Maliyeti}
+
+Bölüm 9'da yineleme bağıntılarını incelerken gördüğümüz Fibonacci dizisini ele alalım. Tanım gereği:
+\[
+F_0 = 0, \quad F_1 = 1
+\]
+ve her $n \ge 2$ için:
+\[
+F_n = F_{n-1} + F_{n-2}
+\]
+Bu tanımı doğrudan koda dökelim:
+
+\begin{lstlisting}[language=CTemel]
+long long fibo(int n) {
+    if (n <= 0) return 0;
+    if (n == 1) return 1;
+    return fibo(n - 1) + fibo(n - 2);
+}
+\end{lstlisting}
+
+$F_5$'i hesaplamak istediğimizde fonksiyonun oluşturduğu çağrı ağacını adım adım inceleyelim:
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.9, every node/.style={minimum size=7mm, font=\footnotesize}]
+  \draw[kenar] (0,0) -- (-1.8,-1.1);
+  \draw[kenar] (0,0) -- (1.8,-1.1);
+  \draw[kenar] (-1.8,-1.1) -- (-2.7,-2.2);
+  \draw[kenar] (-1.8,-1.1) -- (-0.9,-2.2);
+  \draw[kenar] (1.8,-1.1) -- (0.9,-2.2);
+  \draw[kenar] (1.8,-1.1) -- (2.7,-2.2);
+  \draw[kenar] (-2.7,-2.2) -- (-3.15,-3.3);
+  \draw[kenar] (-2.7,-2.2) -- (-2.25,-3.3);
+  \draw[kenar] (-0.9,-2.2) -- (-1.35,-3.3);
+  \draw[kenar] (-0.9,-2.2) -- (-0.45,-3.3);
+  \draw[kenar] (0.9,-2.2) -- (0.45,-3.3);
+  \draw[kenar] (0.9,-2.2) -- (1.35,-3.3);
+  \draw[kenar] (-3.15,-3.3) -- (-3.85,-4.4);
+  \draw[kenar] (-3.15,-3.3) -- (-3.05,-4.4);
+  \node[dugum] at (0,0) {f(5)};
+  \node[dugum] at (-1.8,-1.1) {f(4)};
+  \node[dugum, vurgulu] at (1.8,-1.1) {f(3)};
+  \node[dugum, vurgulu] at (-2.7,-2.2) {f(3)};
+  \node[dugum, fill=kitapvurgu!12] at (-0.9,-2.2) {f(2)};
+  \node[dugum, fill=kitapvurgu!12] at (0.9,-2.2) {f(2)};
+  \node[dugum] at (2.7,-2.2) {f(1)};
+  \node[dugum, fill=kitapvurgu!12] at (-3.15,-3.3) {f(2)};
+  \node[dugum] at (-2.25,-3.3) {f(1)};
+  \node[dugum] at (-1.35,-3.3) {f(1)};
+  \node[dugum] at (-0.45,-3.3) {f(0)};
+  \node[dugum] at (0.45,-3.3) {f(1)};
+  \node[dugum] at (1.35,-3.3) {f(0)};
+  \node[dugum] at (-3.85,-4.4) {f(1)};
+  \node[dugum] at (-3.05,-4.4) {f(0)};
+\end{tikzpicture}
+\caption{fibo(5) çağrı ağacı: boyalı düğümler birden çok kez sıfırdan
+hesaplanır.}
+\end{figure}
+
+Ağaca bakıldığında gereksiz tekrarlar hemen göze çarpar:
+\begin{itemize}
+    \item $\text{fibo}(3)$ değeri \textbf{2 kez},
+    \item $\text{fibo}(2)$ değeri \textbf{3 kez},
+    \item $\text{fibo}(1)$ değeri \textbf{5 kez} sıfırdan hesaplanmaktadır.
+\end{itemize}
+
+$n$ biraz büyüdüğünde, örneğin $n=45$ olduğunda toplam fonksiyon çağrısı sayısı milyarları bulur ve program saniyelerce sürer. Saf rekürsif Fibonacci fonksiyonunun çalışma zamanı kabaca altın oran tabanlıdır: $O\left(\left(\frac{1+\sqrt{5}}{2}\right)^n\right) \approx O(1.618^n)$, yani üsteldir.
+
+\subsection{Memoization İlkesi}
+
+\begin{definition}[Memoization]
+Bir fonksiyonun daha önce hesapladığı girdilere ait sonuçları bir tabloda (dizi, hash tablosu vb.) saklaması ve aynı girdiyle tekrar çağrıldığında hesaplama yapmak yerine saklanan sonucu doğrudan döndürmesi tekniğine \textbf{memoization (bellekleme)} denir.
+\end{definition}
+
+Memoization, ``yukarıdan aşağıya'' (top-down) bir yaklaşımdır. Problemi yine en büyük girdiden başlayarak kurarız; ancak çözülen her alt problemin sonucunu hafızaya not ederiz.
+
+\begin{theorem}[Memoization Karmaşıklık Analizi]
+Bir rekürsif fonksiyonda birbirinden farklı $S$ adet durum (farklı parametre kombinasyonu) varsa ve her durum için memoization tablosu kontrol edilip geçiş maliyeti $O(1)$ sürede hesaplanıyorsa; tüm algoritmanın zaman karmaşıklığı:
+\[
+T = O(S \times \text{geçiş başına maliyet})
+\]
+ve bellek karmaşıklığı saklanan durum sayısı kadar, yani $O(S)$ olur.
+\end{theorem}
+
+\begin{proof}[İspat Taslağı]
+Her farklı durum için fonksiyon gövdesi yalnızca \emph{bir kez} baştan sona çalışır ve bulunan sonuç tabloya yazılır. Sonraki tüm çağrılarda tablo değeri $O(1)$ sürede doğrudan döndürülür. Dolayısıyla her durum en fazla bir kez çözülür. $S$ durumun her biri $O(1)$ zamanda işlendiğinde toplam süre $O(S)$ olur.
+\end{proof}
+
+Fibonacci problemine memoization uygulayalım:
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+long long memo[100];
+
+long long fibo_memo(int n) {
+    if (n <= 0) return 0;
+    if (n == 1) return 1;
+    
+    // Tabloda daha once hesaplanmis mi kontrol et
+    if (memo[n] != -1) {
+        return memo[n];
+    }
+    
+    // Hesaplanmamis, hesapla ve kaydet
+    memo[n] = fibo_memo(n - 1) + fibo_memo(n - 2);
+    return memo[n];
+}
+
+int main() {
+    for (int i = 0; i < 100; i++) memo[i] = -1; // -1 ile baslat
+    printf("F(50) = %lld\n", fibo_memo(50));
+    return 0;
+}
+\end{lstlisting}
+Burada $S = n+1$ farklı durum vardır. Her durum yalnızca bir kez hesaplandığından karmaşıklık $O(2^n)$ yerine doğrudan $O(n)$'e düşer. Böylece $F_{50}$ milisaniyeler içinde hesaplanabilir.
+
+\begin{example}[Izgarada Yol Sayısı]
+$n \times m$ boyutlarında bir ızgaranın sol üst köşesinden $(0,0)$ sağ alt köşesine $(n-1, m-1)$ gitmek istiyorsunuz. Her adımda yalnızca bir birim \textbf{sağa} veya bir birim \textbf{aşağı} hareket edebilirsiniz. $(0,0)$ noktasından $(n-1, m-1)$ noktasına kaç farklı yoldan gidilebilir?
+\end{example}
+
+\begin{proof}[Çözüm]
+Hedefe tersten bakalım: $(r, c)$ karesine nereden gelebiliriz?
+Sadece sağa ve aşağı hareket edilebildiğine göre, $(r, c)$ hücresine ya solundaki $(r, c-1)$ hücresinden sağa giderek ya da üstündeki $(r-1, c)$ hücresinden aşağı inerek ulaşılmış olabilir.
+
+O halde $(r, c)$ hücresine ulaşma yollarının sayısı:
+\[
+Yol(r, c) = Yol(r-1, c) + Yol(r, c-1)
+\]
+\textbf{Baz durumlar:}
+\begin{itemize}
+    \item Başlangıç noktası: $Yol(0, 0) = 1$.
+    \item Izgara sınırları dışı: $r < 0$ veya $c < 0$ ise $Yol(r, c) = 0$.
+\end{itemize}
+
+Bu bağıntıyı $3 \times 3$'lük bir ızgarada adım adım kuralım:
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=1.0]
+  \node[kutu] (g00) at (0,0) {1};
+  \node[kutu] (g01) at (1,0) {1};
+  \node[kutu] (g02) at (2,0) {1};
+  \node[kutu] (g10) at (0,-1) {1};
+  \node[kutu] (g11) at (1,-1) {2};
+  \node[kutu, fill=kitapvurgu!12] (g12) at (2,-1) {3};
+  \node[kutu] (g20) at (0,-2) {1};
+  \node[kutu, fill=kitapvurgu!12] (g21) at (1,-2) {3};
+  \node[kutu, vurgulu] (g22) at (2,-2) {6};
+  \draw[kitap-ok, draw=kitapvurgu] (g12) -- (g22);
+  \draw[kitap-ok, draw=kitapvurgu] (g21) -- (g22);
+  \node[etiket, anchor=east] at (-1.25,0) {ba\c{s}lang\i\c{c}};
+  \node[etiket, anchor=west] at (3.25,-2) {hedef};
+\end{tikzpicture}
+\caption{$Yol(r, c) = Yol(r-1, c) + Yol(r, c-1)$: her hücre, sol ve üst
+komşularının toplamıdır; örneğin $(2,2)$ hücresine $3+3=6$ yol ulaşır.}
+\end{figure}
+
+Burada durum parametreleri $(r, c)$ ikilisidir. Toplam farklı durum sayısı $n \times m$'dir. Memoization olmadan dallanma sayısı $2^{n+m}$ mertebesinde olurken, $n \times m$'lik bir tablo ile karmaşıklık $O(n \times m)$'e iner.
+
+Sözde kod ile memoization uygulaması:
+\begin{lstlisting}
+ALGORITHM countPaths(row, col, memo)
+    IF row == 0 AND col == 0 THEN
+        RETURN 1
+    END IF
+
+    IF row < 0 OR col < 0 THEN
+        RETURN 0
+    END IF
+
+    state = (row, col)
+    IF state IS IN memo THEN
+        RETURN memo[state]
+    END IF
+
+    memo[state] = countPaths(row - 1, col, memo) + countPaths(row, col - 1, memo)
+    RETURN memo[state]
+END ALGORITHM
+
+INITIALIZE memo AS EMPTY MAP
+OUTPUT countPaths(14, 14, memo)\end{lstlisting}
+Bölüm 9'da kafes yollarını sayarken gördüğümüz gibi, bu problem kombinatorik olarak $\binom{(n-1)+(m-1)}{n-1}$ formülüyle de çözülebilir. DP ve memoization, bu kombinatorik toplamı formül ezberine gerek kalmadan adım adım keşfetmemizi sağlar.
+\end{proof}
+
+\begin{example}[Madeni Para Bozdurma]
+Elinizde $\{c_1, c_2, \dots, c_k\}$ değerlerinde sınırsız sayıda madeni para bulunmaktadır. Toplam $V$ tutarını oluşturmak için kullanılması gereken \textbf{en az} madeni para sayısını bulunuz. Eğer bu tutar oluşturulamıyorsa $-1$ döndürünüz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Hedefimiz $V$ tutarını oluşturmak olduğuna göre ilk adımı düşünelim: İlk madeni para olarak listedeki herhangi bir $c_i$ değerini seçebiliriz.
+
+Eğer $c_i$ değerli parayı seçersek, geriye $V - c_i$ tutarı kalır ve bu tutar için gereken en az para sayısını bulup $1$ ekleriz. Tüm geçerli paralar arasından en küçük sonucu vereni seçmeliyiz:
+\[
+f(V) = 1 + \min_{\{i \mid c_i \le V\}} f(V - c_i)
+\]
+\textbf{Baz durum:}
+\begin{itemize}
+    \item $f(0) = 0$ (0 tutarı için 0 para gerekir).
+    \item $V < 0$ ise imkânsızdır, sonsuz ($\infty$) döndürülür.
+\end{itemize}
+
+Farklı durum sayısı $V+1$'dir. Memoization tablosu sayesinde her tutar sadece bir kez hesaplanır.
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+#include <limits.h>
+#define INF 1000000000
+
+int paralar[] = {1, 3, 4};
+int k = 3;
+int memo[10005];
+
+int min_para(int v) {
+    if (v == 0) return 0;
+    if (v < 0) return INF;
+    if (memo[v] != -1) return memo[v];
+
+    int en_iyi = INF;
+    for (int i = 0; i < k; i++) {
+        if (v >= paralar[i]) {
+            int sonuc = min_para(v - paralar[i]);
+            if (sonuc != INF && sonuc + 1 < en_iyi) {
+                en_iyi = sonuc + 1;
+            }
+        }
+    }
+    memo[v] = en_iyi;
+    return memo[v];
+}
+\end{lstlisting}
+Her durum için $k$ farklı para denendiğinden zaman karmaşıklığı $O(V \times k)$, bellek karmaşıklığı ise $O(V)$ olur.
+\end{proof}
+
+\subsection*{En Sık Yapılan Hatalar}
+\begin{enumerate}
+    \item \textbf{Memo Tablosunu Yanlış İlklendirmek:} Bir durumun cevabı meşru olarak $0$ olabiliyorsa (örneğin maliyetin 0 çıkabildiği durumlar), tabloyu $0$ ile ilklendirmek fonksiyonun o durumu henüz hesaplanmamış sayıp tekrar tekrar çalıştırmasına yol açar. Tablo daima ulaşılamayacak bir değerle (genellikle $-1$ veya $\infty$) doldurulmalıdır.
+    \item \textbf{Çağrı Derinliği Aşımı:} Memoization yukarıdan aşağıya çalıştığı için çağrı derinliği çok büyüdüğünde (örneğin $N=10^6$ için tek tek azalan durumlarda) çağrı yığını dolar ve program çöker. Bu tip durumlarda döngü tabanlı dinamik programlama tercih edilmelidir.
+\end{enumerate}
+
+\section{DP'ye Giriş (Dinamik Programlama)}
+
+Memoization yönteminde problemin zirvesinden başlayıp aşağıya doğru indik. Şimdi madalyonun diğer yüzünü çevirelim: Problemi en küçük parçalarından başlayarak bir duvar örer gibi yukarıya doğru adım adım inşa edebiliriz.
+
+Bu yaklaşıma \textbf{Dinamik Programlama (Tabulation / Aşağıdan Yukarıya DP)} denir.
+
+\subsection{Dinamik Programlamanın İki Temel Özelliği}
+
+Bir problemin dinamik programlama ile çözülebilmesi için iki temel özelliğe sahip olması gerekir:
+
+\begin{definition}[Optimal Alt Yapı ve Örtüşen Alt Problemler]
+\begin{enumerate}
+    \item \textbf{Optimal Alt Yapı (Optimal Substructure):} Büyük bir problemin optimal (en iyi) çözümünün, alt problemlerinin optimal çözümlerinden oluşturulabilmesidir.
+    \item \textbf{Örtüşen Alt Problemler (Overlapping Subproblems):} Aynı alt problemlerin çözüm sürecinde defalarca karşımıza çıkmasıdır.
+\end{enumerate}
+\end{definition}
+
+Eğer alt problemler örtüşmüyorsa (yani her alt problem tamamen bağımsız ve yeniyse), dinamik programlama yerine \textbf{Böl ve Yönet (Divide and Conquer)} yaklaşımı (örneğin Hızlı Sıralama veya Birleştirmeli Sıralama) kullanılır.
+
+\subsection{Yukarıdan Aşağı (Memoization) ile Aşağıdan Yukarı (Tabulation) Karşılaştırması}
+
+\begin{center}
+\begin{tabular}{|l|p{4.6cm}|p{4.6cm}|}
+\hline
+\textbf{Kriter} & \textbf{Yukarıdan Aşağı (Memoization)} & \textbf{Aşağıdan Yukarı (Tabulation)} \\ \hline
+\textbf{Yapı} & Rekürsiyon + Önbellek & Döngüler (\texttt{for} / \texttt{while}) + Tablo \\ \hline
+\textbf{Yürütme Sırası} & İhtiyaç duyuldukça alt problemlere dallanır. & En küçük alt problemden başlanarak sırayla tablo doldurulur. \\ \hline
+\textbf{Avantajı} & Sadece gereken alt problemler çözülür; düşünmesi doğaldır. & Çağrı yığını maliyeti yoktur; hızlıdır; bellek optimizasyonuna açıktır. \\ \hline
+\textbf{Dezavantajı} & Çağrı yığını taşması riski taşır; sabit çarpanı daha büyüktür. & İhtiyaç duyulmasa bile tablodaki tüm durumlar hesaplanabilir. \\ \hline
+\end{tabular}
+\end{center}
+
+\subsection{DP'nin Çekirdeği: Durum ve Geçiş}
+
+Dinamik programlama ile problem çözerken iki temel soruya cevap aranır:
+\begin{enumerate}
+    \item \textbf{Durum (State) nedir?} Alt problemi eksiksiz ve benzersiz şekilde tarif eden değişkenler kümesi nedir? ($dp[i]$, $dp[i][j]$ vb.)
+    \item \textbf{Geçiş Bağıntısı (Transition) nedir?} Bir durumu, daha önce hesaplanmış daha küçük durumlardan nasıl elde ederiz?
+\end{enumerate}
+
+\begin{example}[Merdiven Tırmanma Problemi]
+$n$ basamaklı bir merdivenin tepesine çıkmak istiyorsunuz. Her adımda \textbf{1 basamak} veya \textbf{2 basamak} atlayabilirsiniz. Zirveye kaç farklı şekilde ulaşabilirsiniz?
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölüm 9'da yineleme bağıntıları çerçevesinde ele aldığımız bu problemi, şimdi dinamik programlamanın durum ve geçiş diliyle kuralım.
+Son adımı düşünelim. $n$. basamağa basmadan hemen önce nerede olabilirdik?
+\begin{itemize}
+    \item $(n-1)$. basamakta olup 1 basamak atlamış olabiliriz.
+    \item $(n-2)$. basamakta olup 2 basamak atlamış olabiliriz.
+\end{itemize}
+Başka bir ihtimal yoktur. $(n-1)$. ve $(n-2)$. basamağa kaç farklı yolla çıkabildiğimizi bilirsek, bu iki sayıyı toplayarak $n$. basamağa ulaşma sayısını buluruz.
+
+\textbf{Durum Tanımı:}
+$dp[i]$: $i$. basamağa ulaşmanın farklı yollarının sayısı.
+
+\textbf{Geçiş Bağıntısı:}
+\[
+dp[i] = dp[i-1] + dp[i-2] \quad (i \ge 2)
+\]
+\textbf{Baz Durumlar:}
+$0$. basamakta durmak 1 yoldur: $dp[0] = 1$.
+$1$. basamağa sadece 1 adımla gidilebilir: $dp[1] = 1$.
+
+Bu bildiğimiz Fibonacci bağıntısıdır. Şimdi bunu döngü ile aşağıdan yukarıya çözelim:
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \node[kutu] (b0) at (0,0) {1};
+  \node[kutu] (b1) at (1.15,0) {1};
+  \node[kutu] (b2) at (2.3,0) {2};
+  \node[kutu, fill=kitapvurgu!12] (b3) at (3.45,0) {3};
+  \node[kutu, fill=kitapvurgu!12] (b4) at (4.6,0) {5};
+  \node[kutu, vurgulu] (b5) at (5.75,0) {8};
+  \node[etiket] at (0,-0.6) {0};
+  \node[etiket] at (1.15,-0.6) {1};
+  \node[etiket] at (2.3,-0.6) {2};
+  \node[etiket] at (3.45,-0.6) {3};
+  \node[etiket] at (4.6,-0.6) {4};
+  \node[etiket] at (5.75,-0.6) {5};
+  \draw[kitap-ok, draw=kitapvurgu] (b4.north) .. controls (4.6,1.25) and (5.75,1.25)
+        .. (5.75,0.425);
+  \draw[kitap-ok, draw=kitapvurgu] (b3.north) .. controls (3.45,1.85) and (5.325,1.85)
+        .. (5.325,0.425);
+\end{tikzpicture}
+\caption{Merdiven problemi için $dp$ tablosu: $dp[i] = dp[i-1] + dp[i-2]$.
+Örneğin $dp[5] = dp[4] + dp[3] = 5 + 3 = 8$.}
+\end{figure}
+
+\begin{lstlisting}[language=CTemel]
+long long merdiven(int n) {
+    if (n <= 1) return 1;
+    long long dp[n + 1];
+    dp[0] = 1;
+    dp[1] = 1;
+    for (int i = 2; i <= n; i++) {
+        dp[i] = dp[i - 1] + dp[i - 2];
+    }
+    return dp[n];
+}
+\end{lstlisting}
+
+Zaman karmaşıklığı $O(n)$, bellek karmaşıklığı $O(n)$'dir.
+
+\textbf{Bellek Optimizasyonu:}
+$dp[i]$'yi hesaplamak için tablonun tamamına ihtiyacımız yoktur; yalnızca bir önceki ($dp[i-1]$) ve iki önceki ($dp[i-2]$) değer yeterlidir. Dolayısıyla bütün bir diziyi tutmak yerine yalnızca iki değişken saklayarak bellek karmaşıklığını $O(1)$'e düşürebiliriz:
+
+\begin{lstlisting}[language=CTemel]
+long long merdiven_optimizasyon(int n) {
+    if (n <= 1) return 1;
+    long long onceki2 = 1; // dp[0]
+    long long onceki1 = 1; // dp[1]
+    long long suanki = 0;
+    for (int i = 2; i <= n; i++) {
+        suanki = onceki1 + onceki2;
+        onceki2 = onceki1;
+        onceki1 = suanki;
+    }
+    return suanki;
+}
+\end{lstlisting}
+Bu sadeleştirme, yarışmalarda bellek limitini aşmamak için önemli bir tekniktir.
+\end{proof}
+
+\begin{example}[Minimum Maliyetli Merdiven Tırmanışı]
+$n$ basamaklı bir merdivende her $i$. basamağa basmanın bir $maliyet[i]$ bedeli vardır. $0$. veya $1$. basamaktan tırmanmaya başlayabilirsiniz. Her adımda 1 veya 2 basamak yukarı çıkabilirsiniz. Merdivenin tepesine (yani $n$. indekse) ulaşmak için katlanılması gereken \textbf{minimum} toplam maliyet nedir?
+\end{example}
+
+\begin{proof}[Çözüm]
+Merdivenin $i$. basamağına varmak için atılan son adımı düşünelim. O basamağa ya $(i-1)$. basamaktan ya da $(i-2)$. basamaktan gelinmiştir. $i$. basamağa gelene kadar ödenen toplam minimum maliyet, bu iki basamağın hangisinden gelmek daha ucuzsa onun maliyetine $i$. basamağın maliyetinin eklenmesiyle bulunur.
+
+\textbf{Durum:}
+$dp[i]$: $i$. basamağa basmanın minimum toplam maliyeti.
+
+\textbf{Geçiş:}
+\[
+dp[i] = maliyet[i] + \min(dp[i-1], dp[i-2])
+\]
+\textbf{Baz Durum:}
+Başlangıç $0$ veya $1$ olabildiğinden:
+$dp[0] = maliyet[0]$
+$dp[1] = maliyet[1]$
+
+Merdivenin tepesi $n$. basamaktır (üzerinde basamak maliyeti yoktur). Oraya varmak $\min(dp[n-1], dp[n-2])$ maliyetindedir.
+
+\begin{lstlisting}[language=CTemel]
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
+int min_maliyet(int maliyet[], int n) {
+    if (n == 1) return maliyet[0];
+    int dp[n];
+    dp[0] = maliyet[0];
+    dp[1] = maliyet[1];
+    
+    for (int i = 2; i < n; i++) {
+        dp[i] = maliyet[i] + MIN(dp[i - 1], dp[i - 2]);
+    }
+    return MIN(dp[n - 1], dp[n - 2]);
+}
+\end{lstlisting}
+Zaman karmaşıklığı $O(n)$, bellek karmaşıklığı $O(n)$'dir (benzer şekilde $O(1)$ belleğe optimize edilebilir).
+\end{proof}
+
+\begin{example}[Maksimum Alt Dizi Toplamı — Kadane Algoritması]
+$A = [a_0, a_1, \dots, a_{n-1}]$ tam sayılardan oluşan bir dizi veriliyor (negatif sayılar içerebilir). Dizinin ardışık (bitişik) elemanlarından oluşan alt dizileri arasından toplamı \textbf{en büyük} olan alt dizinin toplamını bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Tüm $[i, j]$ aralıklarını tek tek denemek $O(n^2)$ süre alır. Bunun yerine diziyi soldan sağa tararken dinamik programlamadan yararlanabiliriz.
+
+$i$. elemanı incelerken, bu elemanda biten en büyük toplamlı alt diziyi düşünelim. Önümüzde iki seçenek vardır:
+\begin{enumerate}
+    \item $i$. elemanı, $(i-1)$. elemanda biten en iyi alt dizinin ucuna ekleriz.
+    \item Önceki alt diziyi bırakıp $a_i$ elemanından yeni bir alt dizi başlatırız (önceki toplam negatif ise bu hamle açıkça daha kazançlıdır).
+\end{enumerate}
+
+\textbf{Durum:}
+$dp[i]$: $i$. elemanda ($a_i$) \textbf{kesinlikle biten} en büyük alt dizi toplamı.
+
+\textbf{Geçiş:}
+\[
+dp[i] = \max(a_i, dp[i-1] + a_i)
+\]
+Tüm dizideki genel en büyük toplam ise, herhangi bir indekste biten en büyüklerin maksimumudur:
+\[
+\text{Cevap} = \max_{0 \le i < n} dp[i]
+\]
+
+\textbf{Baz Durum:}
+$dp[0] = a_0$.
+
+\begin{lstlisting}[language=CTemel]
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
+long long max_alt_dizi(int a[], int n) {
+    long long suanki_max = a[0];
+    long long genel_max = a[0];
+    
+    for (int i = 1; i < n; i++) {
+        suanki_max = MAX((long long)a[i], suanki_max + a[i]);
+        genel_max = MAX(genel_max, suanki_max);
+    }
+    return genel_max;
+}
+\end{lstlisting}
+Bu etkili DP çözümü, literatürde \textbf{Kadane Algoritması} olarak geçer. Çalışma zamanı sadece $O(n)$ ve bellek ihtiyacı $O(1)$'dir.
+\end{proof}
+
+\begin{example}[Aşağıdan Yukarıya Madeni Para Bozdurma]
+$\{1, 3, 4\}$ değerindeki paralarla $V$ tutarını oluşturmak için gereken minimum para sayısını aşağıdan yukarıya (tabulation) yöntemiyle bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Hesaplamaya en küçük tutardan, yani $0$'dan başlayarak $V$'ye kadar her bir tutar için gereken minimum para sayısını bir tabloda saklayalım.
+
+\textbf{Durum:}
+$dp[i]$: $i$ tutarını elde etmek için gereken minimum para sayısı.
+
+\textbf{Geçiş:}
+$i$ tutarına ulaşmak için son eklediğimiz para $c \in \{1, 3, 4\}$ olabilir:
+\[
+dp[i] = 1 + \min_{\{c \mid c \le i\}} dp[i - c]
+\]
+\textbf{Baz Durum:}
+$dp[0] = 0$. Diğer tüm değerleri başlangıçta $\infty$ yaparız.
+
+Tabloyu elle $V=6$ için adım adım dolduralım:
+\begin{itemize}
+    \item $dp[0] = 0$
+    \item $i=1$: $dp[1] = 1 + dp[0] = 1$ (1'lik para kullanıldı)
+    \item $i=2$: $dp[2] = 1 + dp[1] = 2$ (1'lik)
+    \item $i=3$: Paralar 1 veya 3 olabilir: $\min(1+dp[2], 1+dp[0]) = \min(3, 1) = 1$ (3'lük)
+    \item $i=4$: Paralar 1, 3 veya 4: $\min(1+dp[3], 1+dp[1], 1+dp[0]) = \min(2, 2, 1) = 1$ (4'lük)
+    \item $i=5$: $\min(1+dp[4], 1+dp[2], 1+dp[1]) = \min(2, 3, 2) = 2$ (4+1 veya 1+4)
+    \item $i=6$: $\min(1+dp[5], 1+dp[3], 1+dp[2]) = \min(3, 2, 3) = 2$ (3+3)
+\end{itemize}
+
+Sonuç $dp[6] = 2$'dir ($3+3$ madeni paralarıyla).
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \node[kutu] (p0) at (0,0) {0};
+  \node[kutu] (p1) at (1.15,0) {1};
+  \node[kutu, fill=kitapvurgu!12] (p2) at (2.3,0) {2};
+  \node[kutu, fill=kitapvurgu!12] (p3) at (3.45,0) {1};
+  \node[kutu] (p4) at (4.6,0) {1};
+  \node[kutu] (p5) at (5.75,0) {2};
+  \node[kutu, vurgulu] (p6) at (6.9,0) {2};
+  \node[etiket] at (0,-0.6) {0};
+  \node[etiket] at (1.15,-0.6) {1};
+  \node[etiket] at (2.3,-0.6) {2};
+  \node[etiket] at (3.45,-0.6) {3};
+  \node[etiket] at (4.6,-0.6) {4};
+  \node[etiket] at (5.75,-0.6) {5};
+  \node[etiket] at (6.9,-0.6) {6};
+  \draw[kitap-ok, draw=black!55] (p5.north) .. controls (5.75,1.15) and (6.9,1.15)
+        .. (6.9,0.425);
+  \draw[kitap-ok, draw=kitapvurgu] (p3.north) .. controls (3.45,1.35) and (6.65,1.35)
+        .. (6.65,0.425);
+  \draw[kitap-ok, draw=kitapvurgu] (p2.north) .. controls (2.3,2.5) and (6.475,2.5)
+        .. (6.475,0.425);
+  \node[etiket, black!55] at (6.35,1.35) {1'lik};
+  \node[etiket, kitapvurgu] at (5.0,1.55) {3'l\"uk};
+  \node[etiket, kitapvurgu] at (4.35,2.4) {4'l\"uk};
+\end{tikzpicture}
+\caption{$V=6$ için $dp$ tablosu ($\{1, 3, 4\}$ paraları): $dp[6]=2$'ye hem
+$dp[3]$ (3'lük) hem $dp[2]$ (4'lük) üzerinden ulaşılır; $dp[5]$ (1'lik) daha kötü
+bir değer verir.}
+\end{figure}
+
+\begin{lstlisting}[language=CTemel]
+int min_para_tabulation(int paralar[], int k, int V) {
+    int dp[V + 1];
+    dp[0] = 0;
+    for (int i = 1; i <= V; i++) {
+        dp[i] = 1e9; // Sonsuz ile baslat
+        for (int j = 0; j < k; j++) {
+            if (i >= paralar[j]) {
+                if (dp[i - paralar[j]] + 1 < dp[i]) {
+                    dp[i] = dp[i - paralar[j]] + 1;
+                }
+            }
+        }
+    }
+    return (dp[V] >= 1e9) ? -1 : dp[V];
+}
+\end{lstlisting}
+Tablo düzenli doldurulduğundan hiçbir rekürsif çağrı maliyeti oluşmaz; döngü $V \times k$ kez döner ve süre $O(V \cdot k)$ olur.
+\end{proof}
+
+\subsection*{En Sık Yapılan Hatalar}
+\begin{enumerate}
+    \item \textbf{Döngü Sıralamasını Yanlış Kurmak:} DP tablosu doldurulurken temel kural şudur: \emph{Bir durumu hesaplarken başvurduğunuz tüm alt durumlar daha önceden hesaplanmış olmalıdır.} Örneğin $dp[i]$ değeri $dp[i-1]$'e bağlıysa döngü $1$'den $n$'e doğru gitmelidir; aksi yönde bir döngü henüz hesaplanmamış anlamsız değerleri kullanır.
+    \item \textbf{Durumu Eksik Tanımlamak:} Problemin sonucunu etkileyen bir parametreyi (örneğin son yapılan hamle, kullanılan para adedi vb.) durum tanımına katmamak geçiş bağıntısını kurmayı imkânsız hale getirir.
+    \item \textbf{Dizi Sınırlarını Aşmak (Out of Bounds):} $dp[i-2]$ veya $dp[i-c]$ yazarken $i-2 < 0$ durumlarını kontrol etmemek negatif indeks hatalarına yol açar.
+\end{enumerate}
+
+\section{Bölüm Özeti ve Problem Çözme Rehberi}
+
+TÜBİTAK 1. Aşama sınavında bir soruyla karşılaştığınızda izlemeniz gereken zihinsel yol haritası şudur:
+
+\begin{enumerate}
+    \item \textbf{İndirgeme Düşüncesi:} Problemin en son adımını hayal edin. ``Son hamle ne olabilirdi?'' veya ``Bu elemanı kümeye alsam geriye ne kalır, almasam ne kalır?'' diye sorun.
+    \item \textbf{Saf Rekürsiyonu Kurun:} İlk olarak kafanızda veya karalama kâğıdında baz durumları ve rekürsif bağıntıyı netleştirin.
+    \item \textbf{Alt Problemler Çakışıyor mu?} Fonksiyon aynı parametrelerle tekrar çağrılıyor mu? Cevabınız evet ise bir memoization tablosu tasarlayın.
+    \item \textbf{Aşağıdan Yukarıya Çevirin (Tabulation):} Bellek sınırları darsa veya çağrı yığını riski bulunuyorsa bağıntıyı bir döngü yapısına dönüştürün.
+    \item \textbf{Bellek Tasarrufu Yapılabilir mi?} Gelecekteki durumlar için tablonun sadece son birkaç hücresi yetiyorsa diziyi silip durumu birkaç değişkende tutun.
+\end{enumerate}
+
+Rekürsiyon ve dinamik programlama belirli bir algoritma değil, genel bir problem çözme biçimidir. İlerleyen bölümlerde bu temellerin üzerine 2-boyutlu DP, sırt çantası (knapsack) ve ağaçlar üzerinde DP gibi daha ileri teknikleri kuracağız.

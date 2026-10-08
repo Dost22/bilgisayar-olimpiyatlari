@@ -1,0 +1,15 @@
+{
+  "file": "33_alistirmalar_sayilar_teknikler.tex",
+  "findings": [
+    {
+      "file": "33_alistirmalar_sayilar_teknikler.tex",
+      "line_hint": 438,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "include <stdio.h>",
+      "issue": "C kodunda önişlemci direktifi eksik yazılmıştır; başında '#' işareti olmadan 'include <stdio.h>' derleme hatasına yol açar.",
+      "suggested_fix": "#include <stdio.h>",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "file": "13_ebob_ve_ekok.tex",
+  "findings": [
+    {
+      "file": "13_ebob_ve_ekok.tex",
+      "line_hint": 277,
+      "type": "duplicated_example",
+      "severity": "major",
+      "excerpt": "\\begin{example}[1959 Uluslararası Matematik Olimpiyatı - Soru 1]\nHer $n$ pozitif tamsayısı için $\\frac{21n + 4}{14n + 3}$ kesrinin sadeleştirilemez (indirgenemez) olduğunu kanıtlayınız.\n\\end{example}",
+      "issue": "Bu örnek (IMO 1959, Soru 1: $(21n+4)/(14n+3)$ kesrinin sadeleştirilemezliği) Bölüm 12'de (12_asal_sayilar.tex) zaten birebir aynı soru ve yöntemle çözülmüştür.",
+      "suggested_fix": "Örneği Öklid algoritmasını pekiştiren farklı bir problemle değiştiriniz (örneğin $\\gcd(2n+1, 3n+2)$ veya $\\gcd(n!+1, (n+1)!+1)$ gibi bir olimpiyat sorusu).",
+      "confidence": "high"
+    },
+    {
+      "file": "13_ebob_ve_ekok.tex",
+      "line_hint": 244,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "/* Özyinelemeli (rekürsif) yöntem */",
+      "issue": "Terminoloji sözleşmesine göre 'özyineleme' terimi yasaklanmış olup 'rekürsiyon / rekürsif' kullanımı standardize edilmiştir.",
+      "suggested_fix": "Yorum satırını '/* Rekürsif yöntem */' şeklinde güncelleyiniz.",
+      "confidence": "high"
+    },
+    {
+      "file": "13_ebob_ve_ekok.tex",
+      "line_hint": 454,
+      "type": "logic_gap",
+      "severity": "medium",
+      "excerpt": "Bu inceleme bize, buradaki çözümün ikilinin yalnızca yer değiştirmesi durumuna dayandığını gösterir.",
+      "issue": "Örnekte 'c'nin alabileceği değerler hakkında ne söylenebilir?' diye sorulup çözümde sadece c = b - a durumunda kümenin {a+c, b-c} = {b, a} olarak korunduğu gösterilmiştir. Başka c değerlerinin mümkün olup olmadığı tartışılmamış, ancak çözüm sanki tek durum buymuş gibi kesin bir dille genelleme yapmıştır.",
+      "suggested_fix": "Soruyu 'b > a olmak üzere c = b - a seçiminin eşitliği sağladığını gösteriniz' şeklinde netleştiriniz veya genel durumda (a+c) + (b-c) = a+b toplamı korunduğundan {a+c, b-c} = {a, b} olmasının yeterli olduğunu, ancak genel bölen çiftleri için başka çözümlerin de araştırılabileceğini belirterek mantıksal iddiayı sınırlandırınız.",
+      "confidence": "medium"
+    }
+  ]
+}

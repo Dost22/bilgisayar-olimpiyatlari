@@ -1,0 +1,426 @@
+\chapter[Karmaşıklık ve Big O · \textit{Temel}]{Karmaşıklık ve Big O}
+\chaptermark{Karmaşıklık ve Big O}
+
+Yazdığımız bir programın doğru çalışması tek başına yeterli değildir; programın verilen zaman ve bellek sınırları içinde de sonuç üretmesi gerekir. TÜBİTAK 1.~Aşama sınavında ve programlama yarışmalarında problemler genellikle katı süre sınırlarına (çoğunlukla 1 saniye) ve bellek sınırlarına (örneğin 256 MB) sahiptir. Aynı problemi çözen iki farklı algoritmadan biri sonucu saniyenin binde birinde bulurken, diğeri kabul edilebilir sürelerin çok ötesinde çalışabilir.
+
+Algoritmaların çalışma hızını ve bellek tüketimini; donanımdan, işletim sisteminden ya da programlama dilinden bağımsız biçimde ölçmek temel bir gerekliliktir. Bu doğrultuda önce temel işlem adımlarını saymayı, ardından bu davranışı matematiksel olarak ifade eden Big O notasyonunu ve yarışmalardaki pratik sınırları ele alacağız.
+
+\section{İşlem Sayısı}
+
+Bir algoritmanın ne kadar hızlı çalıştığını saniye cinsinden ölçmek ilk başta mantıklı görünebilir. Ancak aynı programı eski bir dizüstü bilgisayarda çalıştırdığımızda 5 saniye, modern bir sunucuda çalıştırdığımızda ise 0.5 saniye sürebilir. Dahası, arka planda müzik çalması veya işletim sisteminin bir güncelleme yapması bile ölçülen süreyi değiştirebilir. 
+
+Bize donanımdan bağımsız, evrensel bir ölçü gerekir: \textbf{Algoritmanın girdi boyutuna bağlı olarak yürüttüğü temel işlem sayısı}.
+
+\subsection{Temel İşlem Nedir?}
+
+Bir bilgisayarın işlemcisinin sabit sürede gerçekleştirebildiği en küçük adımlara \emph{temel işlem} diyoruz. Bunlar:
+\begin{itemize}
+    \item İki sayıyı toplamak, çıkarmak, çarpmak veya bölmek ($a + b$, $x \times y$),
+    \item İki değeri karşılaştırmak ($a < b$, $x == y$),
+    \item Bir değişkene değer atamak ($x \gets 5$),
+    \item Dizinin belirli bir indisine erişmek ($A[i]$).
+\end{itemize}
+
+Şimdi somut bir problem üzerinden adım sayısını tam olarak hesaplayalım.
+
+\begin{example}
+$n$ elemanlı bir tam sayı dizisindeki en büyük elemanı bulmak istiyoruz. Aşağıdaki algoritmanın toplam işlem sayısını $n$ cinsinden belirleyelim.
+
+\begin{lstlisting}[language=CTemel]
+int en_buyuk = A[0];
+for (int i = 1; i < n; i++) {
+    if (A[i] > en_buyuk) {
+        en_buyuk = A[i];
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Adımları tek tek sayalım:
+\begin{enumerate}
+    \item \texttt{int en\_buyuk = A[0];}: 1 dizi erişimi ve 1 atama (2 işlem).
+    \item Döngü başlangıcı: \texttt{int i = 1;} (1 atama).
+    \item Döngü koşulu: \texttt{i < n} kontrolü her adımda yapılır. Döngü $n-1$ kez döner, son kontrolle birlikte $n$ kez karşılaştırma yapılır.
+    \item İndis artırımı: \texttt{i++} işlemi $n-1$ kez yapılır.
+    \item Karşılaştırma: \texttt{A[i] > en\_buyuk} koşulu her döngü adımında 1 dizi erişimi ve 1 karşılaştırma olmak üzere 2 işlem gerektirir, toplam $2(n-1)$ işlem.
+    \item Güncelleme: \texttt{en\_buyuk = A[i]} satırı dizinin içeriğine bağlı olarak en iyi durumda 0 kez, en kötü durumda (dizi kesin artan ise) $n-1$ kez çalışır. Her çalışmada 1 dizi erişimi ve 1 atama (2 işlem) vardır.
+\end{enumerate}
+
+En kötü durumda (worst-case) toplam işlem sayısı:
+\[ T(n) = 2 + 1 + n + (n-1) + 2(n-1) + 2(n-1) = 6n - 2 \]
+
+En iyi durumda (best-case, ilk eleman en büyükse):
+\[ T(n) = 2 + 1 + n + (n-1) + 2(n-1) + 0 = 4n \]
+
+Görüldüğü üzere girdi boyutu $n$ iki katına çıktığında, yürütülen işlem sayısı da yaklaşık iki katına çıkmaktadır. Katsayılar (4 veya 6) donanıma veya derleyici optimizasyonuna göre değişebilir; ancak büyümenin $n$ ile \emph{doğrusal} olduğu gerçeği sabittir.
+\end{proof}
+
+\subsection{İç İçe Döngüler ve Büyüme Hızı}
+
+Şimdi iki farklı algoritmayı karşılaştıralım. Amacımız $1$'den $n$'e kadar olan sayıların toplamını hesaplamak olsun.
+
+\textbf{1. Yöntem (Tek Döngü):}
+\begin{lstlisting}[language=CTemel]
+long long toplam = 0;
+for (int i = 1; i <= n; i++) {
+    toplam += i;
+}
+\end{lstlisting}
+Burada döngü $n$ defa döner. Her adımda 1 toplama ve 1 atama yapılır. Yaklaşık işlem sayısı $c_1 \cdot n$ kadardır (burada $c_1$ küçük bir sabittir).
+
+\textbf{2. Yöntem (Matematiksel Formül):}
+\begin{lstlisting}[language=CTemel]
+long long toplam = (long long)n * (n + 1) / 2;
+\end{lstlisting}
+Burada $n = 10$ olsa da, $n = 10^9$ olsa da sadece 1 toplama, 1 çarpma ve 1 bölme yapılır. İşlem sayısı girdi boyutundan tamamen bağımsızdır; sabit bir $c_2$ sayısıdır.
+
+\textbf{3. Yöntem (Gereksiz İç İçe Döngü):}
+Aynı toplamı, $i$ sayısını $1$'den $i$'ye kadar $1$'leri toplayarak hesaplayan yapay bir algoritma düşünelim:
+\begin{lstlisting}[language=CTemel]
+long long toplam = 0;
+for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= i; j++) {
+        toplam += 1;
+    }
+}
+\end{lstlisting}
+İçteki döngü $i = 1$ iken 1 kez, $i = 2$ iken 2 kez, \dots, $i = n$ iken $n$ kez çalışır. Toplam adım sayısı:
+\[ 1 + 2 + 3 + \dots + n = \frac{n(n+1)}{2} = \frac{1}{2}n^2 + \frac{1}{2}n \]
+
+Girdi boyutu büyüdükçe bu üç algoritmanın adım sayılarını kıyaslayalım:
+
+\begin{center}
+\begin{tabular}{|r|r|r|r|}
+\hline
+$n$ & 2. Yöntem ($c_2$) & 1. Yöntem ($2n$) & 3. Yöntem ($\frac{1}{2}n^2 + \frac{1}{2}n$) \\
+\hline
+$10$ & 3 & 20 & 55 \\
+$1\,000$ & 3 & $2\,000$ & $500\,500$ \\
+$100\,000$ & 3 & $200\,000$ & $5\,000\,050\,000$ ($5 \times 10^9$) \\
+$1\,000\,000$ & 3 & $2\,000\,000$ & $500\,000\,500\,000$ ($5 \times 10^{11}$) \\
+\hline
+\end{tabular}
+\end{center}
+
+$n = 100\,000$ olduğunda 1. yöntem modern bir bilgisayarda birkaç milisaniyede biterken, 3. yöntem saniyeler sürer. $n = 1\,000\,000$ olduğunda 3. yöntemin bitmesi dakikalar alacaktır.
+
+Buradan çıkaracağımız temel sonuç şudur: \textbf{Girdi $n$ büyüdükçe, fonksiyonun en yüksek dereceli terimi tüm davranışı belirler.} $T(n) = \frac{1}{2}n^2 + \frac{1}{2}n$ ifadesinde $n = 10^6$ için $\frac{1}{2}n^2 = 5 \times 10^{11}$ iken, $\frac{1}{2}n = 5 \times 10^5$'tir. Küçük dereceli terim, toplamın yanında ihmal edilebilir düzeydedir. Benzer biçimde öndeki $\frac{1}{2}$ katsayısı da $n^2$'nin büyüme hızının yanında belirleyici rolünü kaybeder.
+
+Bu gözlem bizi algoritmik karmaşıklığın standart diline götürür: Big O notasyonu.
+
+\section{Big O Notasyonu}
+
+\subsection{Motivasyon ve Biçimsel Tanım}
+
+Bir algoritmanın işlem sayısı tam olarak $T(n) = 3n^2 + 14n + 120$ olsun. Başka bir algoritmanınki ise $T'(n) = n^2 + 200n + 5$ olsun. İkisi de temelde $n^2$ ile ölçeklenir; yani girdi 10 katına çıktığında işlem sayısı kabaca 100 katına çıkar. Analiz yaparken ayrıntılardaki $14n$ veya sabit $120$ gibi küçük terimlerle ve baştaki katsayılarla uğraşmak istemeyiz. Algoritmanın \emph{asemptotik} (yani $n$ sonsuza giderkenki) üst sınırını belirlemek isteriz.
+
+\begin{definition}[Big O (Büyük O)]
+$f(n)$ ve $g(n)$, pozitif tam sayılardan pozitif reel sayılara tanımlı iki fonksiyon olsun. Eğer her $n \ge n_0$ için
+\[ f(n) \le c \cdot g(n) \]
+olacak biçimde pozitif reel bir $c$ sabiti ve pozitif bir $n_0$ tam sayısı varsa,
+\[ f(n) = O(g(n)) \]
+yazılır ve ``$f(n)$, $g(n)$ mertebesindedir'' denir.
+\end{definition}
+
+Bu tanım şunu söyler: Yeterince büyük $n$ değerleri için ($n \ge n_0$), $f(n)$ fonksiyonu $g(n)$'in sabit bir katını asla geçemez. $g(n)$, $f(n)$ için bir \textbf{asemptotik üst sınırdır}.
+
+\begin{theorem}
+$P(n) = a_k n^k + a_{k-1} n^{k-1} + \dots + a_1 n + a_0$ derecesi $k$ olan bir polinom ve $a_k > 0$ olsun. Bu durumda $P(n) = O(n^k)$'dir.
+\end{theorem}
+
+\begin{proof}
+Her $n \ge 1$ için üçgen eşitsizliğini kullanarak:
+\[ |P(n)| \le |a_k| n^k + |a_{k-1}| n^{k-1} + \dots + |a_0| \]
+$n \ge 1$ olduğundan her $i \le k$ için $n^i \le n^k$ yazabiliriz. Dolayısıyla:
+\[ |P(n)| \le (|a_k| + |a_{k-1}| + \dots + |a_0|) n^k \]
+Burada $c = |a_k| + |a_{k-1}| + \dots + |a_0|$ ve $n_0 = 1$ seçilirse tanımdaki eşitsizlik sağlanır. Demek ki $P(n) = O(n^k)$'dir.
+\end{proof}
+
+Bu teorem sayesinde karmaşık polinomlarla tek tek uğraşmak gerekmez: En büyük dereceli terimi alır, katsayısını 1 yaparız. Örneğin:
+\[ 5n^3 + 100n^2 - 7n + 42 = O(n^3) \]
+
+\subsection{Temel Karmaşıklık Sınıfları ve Sezgileri}
+
+Olimpiyatlarda en sık karşılaşacağımız karmaşıklık sınıflarını küçükten büyüğe sıralayalım:
+
+\begin{multline*}
+O(1) < O(\log n) < O(\sqrt{n}) < O(n) < O(n \log n) \\
+< O(n^2) < O(n^3) < O(2^n) < O(n!)
+\end{multline*}
+
+Şimdi bu sınıfların sezgisel anlamlarını inceleyelim.
+
+\subsubsection{1. Sabit Zaman: $O(1)$}
+İşlem sayısı girdinin büyüklüğünden bağımsızdır. Girdi ister 5 ister 5 milyar olsun, işlem sabit sayıda adımda tamamlanır.
+\begin{itemize}
+    \item Bir dizinin $k$. elemanına erişmek: \texttt{A[k]}
+    \item İki sayının tek mi çift mi olduğunu kontrol etmek: \texttt{x \% 2 == 0}
+    \item Aritmetik bir formülü hesaplamak: \texttt{n * (n + 1) / 2}
+\end{itemize}
+
+\subsubsection{2. Logaritmik Zaman: $O(\log n)$}
+Bir algoritma her adımda arama uzayını veya girdiyi sabit bir oranda (genellikle yarı yarıya) küçültüyorsa, o algoritmanın karmaşıklığı logaritmiktir. 
+
+Örnek olarak bir sayıyı sürekli 2'ye böldüğümüzü düşünelim:
+\begin{lstlisting}[language=CTemel]
+int sayac = 0;
+while (n > 1) {
+    n = n / 2;
+    sayac++;
+}
+\end{lstlisting}
+$n = 16$ için değerler: $16 \to 8 \to 4 \to 2 \to 1$ (4 adım). 
+Genel olarak $2^k \le n$ ise döngü yaklaşık $\lfloor \log_2 n \rfloor$ adım sürer. Big O gösteriminde logaritmanın tabanı yazılmaz; çünkü taban değişimi yalnızca sabit bir çarpan getirir: $\log_a n = \frac{\log_b n}{\log_b a} = c \cdot \log_b n$. Dolayısıyla $O(\log_2 n) = O(\log_{10} n) = O(\log n)$'dir.
+
+$O(\log n)$ algoritmaları son derece yavaş büyür. $n = 10^{18}$ gibi çok büyük bir girdi için bile $\log_2(10^{18}) \approx 60$ adımdır.
+
+\subsubsection{3. Doğrusal Zaman: $O(n)$}
+Girdideki her elemana sabit sayıda (örneğin 1 veya 2 kez) bakılıyorsa algoritma doğrusaldır.
+\begin{itemize}
+    \item $n$ elemanlı bir dizinin toplamını bulmak.
+    \item Sırasız bir dizide belirli bir değeri aramak (lineer arama).
+\end{itemize}
+
+\subsubsection{4. Doğrusal-Logaritmik Zaman: $O(n \log n)$}
+Genellikle bir problemi logaritmik derinlikte parçalara ayırıp her seviyede $O(n)$ iş yapan ``böl ve yönet'' algoritmalarında karşımıza çıkar. Yaygın sıralama algoritmaları (Merge Sort, Hızlı Sıralama) bu sınıftadır. $n = 10^6$ için $n \log_2 n \approx 2 \times 10^7$ işlem demektir ve bu olimpik süre sınırları için oldukça güvenli bir çalışma hacmidir.
+
+\subsubsection{5. Karesel Zaman: $O(n^2)$}
+Genellikle iç içe iki döngünün tüm çiftleri taradığı durumlarda ortaya çıkar.
+\begin{lstlisting}[language=CTemel]
+for (int i = 0; i < n; i++) {
+    for (int j = 0; j < n; j++) {
+        // Sabit sayida islem O(1)
+    }
+}
+\end{lstlisting}
+Tüm $(i, j)$ ikililerinin sayısı $n \times n = n^2$'dir. $n = 1\,000$ için $n^2 = 10^6$ (hızlı), fakat $n = 100\,000$ için $n^2 = 10^{10}$ olur ve süre sınırını aşar.
+
+\subsubsection{6. Üstel ve Faktöriyel Zaman: $O(2^n)$ ve $O(n!)$}
+Bölüm 4 ve 5'te gördüğümüz sayma kurallarıyla bağlantılı olarak, bir kümenin tüm alt kümelerini gezmek $2^n$, tüm permütasyonlarını gezmek ise $n!$ adım gerektirir. Bu algoritmalar yalnızca çok küçük $n$ değerleri ($n \le 20$ veya $n \le 11$) için pratik sürede çalışabilir.
+
+\subsection{Çözümlü Örnekler: Karmaşıklık Nasıl Hesaplanır?}
+
+\begin{example}
+Aşağıdaki kod parçasının zaman karmaşıklığını Big O cinsinden bulunuz.
+
+\begin{lstlisting}[language=CTemel]
+for (int i = 1; i <= n; i *= 2) {
+    for (int j = 1; j <= n; j++) {
+        toplam++;
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+İç ve dış döngülerin adım sayılarını birbirinden bağımsız biçimde inceleyebiliriz:
+\begin{itemize}
+    \item Dıştaki döngü: $i$ değişkeni $1, 2, 4, 8, \dots$ şeklinde ikiye katlanarak ilerliyor. Dolayısıyla $i \le n$ koşulu sağlandığı sürece döngü adımı sayısı $k$, $2^{k-1} \le n$ eşitsizliğine uyar. Yani dış döngü tam olarak $\lfloor \log_2 n \rfloor + 1$ kez döner.
+    \item İçteki döngü: Dış döngünün her bir adımında, $j$ değişkeni $1$'den $n$'e kadar birer birer artar. Yani iç döngü her zaman $n$ kez çalışır.
+\end{itemize}
+Toplam işlem sayısı iç ve dış döngü adımlarının çarpımıdır:
+\[ (\lfloor \log_2 n \rfloor + 1) \times n = O(n \log n) \]
+\end{proof}
+
+\begin{example}
+Aşağıdaki kod parçasının zaman karmaşıklığını belirleyiniz.
+
+\begin{lstlisting}[language=CTemel]
+for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= n; j += i) {
+        toplam++;
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+İçteki döngünün adım sayısı $i$'ye bağlı olduğundan sınırları doğrudan çarpmak yerine her $i$ değeri için adımları tek tek toplayalım:
+
+\begin{itemize}
+    \item $i = 1$ için: $j$ birer birer artar, döngü $\frac{n}{1}$ kez çalışır.
+    \item $i = 2$ için: $j$ ikişer ikişer artar, döngü $\frac{n}{2}$ kez çalışır.
+    \item $i = 3$ için: $j$ üçer üçer artar, döngü $\frac{n}{3}$ kez çalışır.
+    \item \dots
+    \item $i = n$ için: $j$ $n$'er artar, döngü $\frac{n}{n} = 1$ kez çalışır.
+\end{itemize}
+
+Toplam adım sayısı:
+\[ S = \frac{n}{1} + \frac{n}{2} + \frac{n}{3} + \dots + \frac{n}{n} = n \left( 1 + \frac{1}{2} + \frac{1}{3} + \dots + \frac{1}{n} \right) \]
+
+Parantez içindeki ifade harmonik seridir ($H_n$). Bilindiği üzere $H_n = \ln n + \gamma + O(1/n)$ olup büyüme hızı $O(\log n)$'dir. 
+
+Dolayısıyla toplam adım sayısı:
+\[ S = n \cdot O(\log n) = O(n \log n) \]
+Bu analiz, Bölüm 12'de göreceğimiz Eratosthenes kalburunun karmaşıklık hesabının da temelini oluşturur.
+\end{proof}
+
+\begin{example}
+Aşağıdaki fonksiyonun zaman karmaşıklığını bulunuz.
+
+\begin{lstlisting}[language=CTemel]
+void islem(int n) {
+    while (n > 0) {
+        for (int i = 0; i < n; i++) {
+            printf("*");
+        }
+        n /= 2;
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+İlk bakışta iç içe bir yapı görüp doğrudan $O(n \log n)$ demek sık yapılan bir hatadır. Adımları toplayarak görelim:
+\begin{itemize}
+    \item 1. adımda $n$ yıldız basılır.
+    \item 2. adımda $n / 2$ yıldız basılır.
+    \item 3. adımda $n / 4$ yıldız basılır.
+    \item \dots
+\end{itemize}
+Toplam işlem sayısı:
+\[ T(n) = n + \frac{n}{2} + \frac{n}{4} + \frac{n}{8} + \dots + 1 \]
+$n$ parantezine alırsak:
+\[ T(n) = n \left( 1 + \frac{1}{2} + \frac{1}{4} + \frac{1}{8} + \dots \right) \]
+Sonsuz geometrik serinin toplamı $\sum_{i=0}^{\infty} \left(\frac{1}{2}\right)^i = \frac{1}{1 - 1/2} = 2$'dir.
+Dolayısıyla:
+\[ T(n) < 2n \]
+Yani toplam işlem sayısı $2n$'i asla geçemez. O halde bu algoritmanın karmaşıklığı $O(n \log n)$ değil, \textbf{$O(n)$}'dir.
+\end{proof}
+
+\begin{example}[Döngü Gövdesindeki Gizli Maliyetler]
+Aşağıdaki kod parçasının karmaşıklığını inceleyelim:
+
+\begin{lstlisting}
+result = empty list
+FOR EACH element IN A DO
+    IF element NOT IN result THEN
+        APPEND element TO result
+    END IF
+END FOR\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Tek bir döngü görüldüğünde kodun $O(n)$ olduğunu varsaymak sık yapılan bir yanılgıdır.
+
+İçerideki arama adımı (\texttt{element NOT IN result}), bir listenin içinde baştan sona eleman arar. \texttt{result} listesinde $k$ eleman varken bu arama işlemi $O(k)$ sürer. Dizi tekil elemanlardan oluşuyorsa $k$, $0$'dan $n-1$'e kadar büyür. 
+Toplam maliyet:
+\[ 0 + 1 + 2 + \dots + (n-1) = \frac{n(n-1)}{2} = O(n^2) \]
+Programlama dillerinin yerleşik fonksiyonlarını (örneğin dizide arama, dilimleme ya da kopyalama) kullanırken o işlemlerin arka plandaki maliyetini mutlaka hesaba katmalıyız.
+\end{proof}
+
+\section{Pratik Limitler}
+
+Teorik Big O analizini somut yarışma koşullarına uyarlayalım. Karşımızda girdi boyutu $n$ olarak verilmiş ve süre sınırı 1.0 saniye olan bir problem olduğunda, hangi karmaşıklıktaki bir algoritmayı tasarlamalıyız?
+
+\subsection{Temel Eşik: $10^8$ İşlem / Saniye}
+
+\begin{definition}[$10^8$ Kuralı]
+Modern yarışma sunucularında (Codeforces, TÜBİTAK sınav sistemi, AtCoder vb.) standart bir C/C++ programı \textbf{1 saniyede yaklaşık $10^8$ (100 milyon) basit işlem} gerçekleştirir.
+\end{definition}
+
+Bu kural mutlak bir sınır olmamakla birlikte yürütülen işlemlerin türüne göre esneklik gösterir:
+\begin{itemize}
+    \item Basit toplama, çıkarma, bit işlemleri (bitwise) ve dizi erişimleri çok hızlıdır; 1 saniyede $2 \times 10^8$ hatta $4 \times 10^8$ adet çalışabilir.
+    \item Çarpma nispeten hızlıdır; bölme (\texttt{/}) ve mod alma (\texttt{\%}) işlemleri ise işlemci için daha maliyetli olup 1 saniyede ancak $5 \times 10^7$ civarında yürütülebilir.
+    \item Kayan noktalı sayı fonksiyonları (\texttt{sqrt}, \texttt{sin}, \texttt{pow}) belirgin biçimde daha yavaştır.
+\end{itemize}
+
+Bununla birlikte, kaba bir ön tahmin için $10^8$ eşiği en güvenilir başlangıç noktasıdır.
+
+\subsection{Girdi Boyutuna ($n$) Göre Algoritma Tahmini}
+
+TÜBİTAK 1.~Aşama sınavında problem metnindeki $n$ sınırlarına bakarak hedeflenen algoritmanın karmaşıklığı doğrudan tahmin edilebilir. Aşağıdaki tablo bu kararda temel rehberdir:
+
+\begin{center}
+\begin{tabular}{|l|p{4.2cm}|p{4.6cm}|}
+\hline
+\textbf{Girdi Boyutu ($n$)} & \textbf{Beklenen Karmaşıklık} & \textbf{Tipik Algoritma / Yaklaşım} \\
+\hline
+$n \le 10$ & $O(n!)$ & Tüm permütasyonları deneme \\
+$n \le 20$ & $O(2^n)$ veya $O(2^n \cdot n)$ & Tüm alt kümeleri gezme, bitmask DP \\
+$n \le 500$ & $O(n^3)$ & Floyd-Warshall, 3 iç içe döngü \\
+$n \le 5\,000$ & $O(n^2)$ & Kaba kuvvet ikilileri tarama, basit DP \\
+$n \le 200\,000$ & $O(n \log n)$ veya $O(n)$ & Sıralama, ikili arama, segment ağacı \\
+$n \le 10^7$ & $O(n)$ & Basit tek geçişli döngü, kalbur \\
+$n > 10^9$ & $O(\log n)$ veya $O(1)$ & Matematiksel formül, hızlı üs alma \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{example}
+Bir problemde $n = 100\,000$ tam sayı veriliyor. Tüm $(i, j)$ indis çiftleri ($1 \le i < j \le n$) için $|A[i] - A[j]|$ farklarının en küçüğünü bulmamız isteniyor. Hangi yaklaşımı seçmeliyiz?
+\end{example}
+
+\begin{proof}[Çözüm]
+\textbf{1. Yaklaşım (Kaba Kuvvet):} Tüm çiftleri iç içe iki döngüyle deneriz. 
+Bölüm 5'te gördüğümüz kombinasyon formülüyle, tüm çiftlerin sayısı $\binom{n}{2} = \frac{n(n-1)}{2}$'dir. 
+$n = 10^5$ için:
+\[ \frac{10^5 \times (10^5 - 1)}{2} \approx \frac{10^{10}}{2} = 5 \times 10^9 \text{ işlem} \]
+$10^8$ kuralına göre bu işlem yaklaşık $\frac{5 \times 10^9}{10^8} = 50$ saniye sürer. Süre sınırı 1 saniye olduğundan bu yöntem \textbf{Zaman Sınırı Aşımı} (Time Limit Exceeded - TLE) verecektir.
+
+\textbf{2. Yaklaşım (Sıralama):} Sayıları önce küçükten büyüğe sıralarız. Birbirine en yakın iki sayı, sıralı dizide kesinlikle ardışık olmak zorundadır.
+\begin{enumerate}
+    \item Diziyi sırala: $O(n \log n)$
+    \item Yan yana duran elemanların farkına tek bir döngüde bak: $O(n)$
+\end{enumerate}
+Toplam karmaşıklık $O(n \log n)$ olur. $n = 10^5$ için:
+\[ n \log_2 n \approx 10^5 \times 17 \approx 1.7 \times 10^6 \text{ işlem} \]
+Bu da yaklaşık $0.02$ saniye sürer ve süre sınırının oldukça altında kalır.
+\end{proof}
+
+\subsection{Alan (Bellek) Karmaşıklığı}
+
+Algoritmalar yalnızca zaman değil, hafıza da tüketir. Yarışmalarda tipik bellek sınırı 128 MB ile 512 MB arasındadır (en yaygın olanı 256 MB).
+
+Bellek analizinde temel veri tiplerinin kapladığı yerleri bilmek gerekir:
+\begin{itemize}
+    \item \texttt{bool} / \texttt{char}: 1 bayt
+    \item \texttt{int}: 4 bayt
+    \item \texttt{long long} / \texttt{double}: 8 bayt
+\end{itemize}
+
+Bellek miktarını megabayta çevirmek için:
+\[ 1 \text{ KB} = 1024 \text{ bayt}, \quad 1 \text{ MB} = 1024 \text{ KB} \approx 10^6 \text{ bayt} \]
+
+Pratik kural olarak:
+\begin{itemize}
+    \item $10^7$ elemanlı bir \texttt{int} dizisi: $10^7 \times 4 \text{ bayt} \approx 40 \text{ MB}$ yer tutar.
+    \item $10^8$ elemanlı bir \texttt{int} dizisi: $\approx 400 \text{ MB}$ yer tutar (ve 256 MB sınırında hafıza aşımı verir).
+    \item $5000 \times 5000$ boyutunda iki boyutlu bir \texttt{int} matrisi: $2.5 \times 10^7 \times 4 \approx 100 \text{ MB}$ yer tutar.
+\end{itemize}
+
+\begin{example}[Alan-Zaman Takası (Space-Time Tradeoff)]
+Algoritma tasarımında sıklıkla ek bellek kullanılarak hız kazanılır veya tam tersine bellek tasarrufu adına işlem süresi artırılır.
+
+Bir dizideki sayıların daha önce görülüp görülmediğini denetlemek için:
+\begin{itemize}
+    \item Ekstra bellek kullanmazsak: Her yeni eleman için dizinin başına bakarız $\to O(n^2)$ zaman, $O(1)$ ek bellek.
+    \item Bir frekans dizisi (veya doğruluk tablosu) tutarsak: Sayıyı gördüğümüzde \texttt{var\_mi[x] = true} yaparız $\to O(n)$ zaman, sayının alabileceği en büyük değer ($M$) kadar $O(M)$ ek bellek.
+\end{itemize}
+\end{example}
+
+\begin{example}[Rekürsiyon Yığını (Call Stack)]
+Yalnızca tanımladığınız diziler değil, çağırdığınız rekürsif (rekürsif) fonksiyonlar da bellek tüketir. Her fonksiyon çağrısı işletim sisteminin çağrı yığını (call stack) bölgesinde yer tutar.
+
+Örneğin:
+\begin{lstlisting}[language=CTemel]
+void dfs(int u) {
+    for (int v : komsular[u]) {
+        if (!ziyaret[v]) dfs(v);
+    }
+}
+\end{lstlisting}
+Graf bir zincir biçimindeyse ve $n = 200\,000$ ise, \texttt{dfs} fonksiyonu iç içe $200\,000$ kez çağrılır. Her çağrı yığında yaklaşık 32--64 bayt tuttuğunda toplam yığın boyutu $200\,000 \times 48 \approx 10 \text{ MB}$ seviyesine ulaşır. Pek çok yarışma platformunda ve Windows sistemlerinde varsayılan yığın limiti 8 MB civarındadır. Program genel bellek sınırını aşmamış olsa dahi \textbf{Stack Overflow} (Yığın Taşması) hatası alarak çöker.
+\end{example}
+
+\subsection{Bölüm Özeti ve Kontrol Listesi}
+
+Bir problemi çözerken şu adımları alışkanlık haline getiriniz:
+\begin{enumerate}
+    \item Soru metnindeki $n$ sınırına bakarak hedef karmaşıklığı belirleyin ($n = 10^5$ ise $O(n^2)$ bir algoritma tasarlamak yerine doğrudan $O(n \log n)$ veya $O(n)$ çözümlere yönelin).
+    \item Kodunuzdaki iç içe döngülerin sınırlarını ve yerleşik dil fonksiyonlarının maliyetlerini tek tek hesaba katın.
+    \item İşlem sayınızın $10^8$ sınırını aşıp aşmadığını kaba bir hesapla test edin.
+    \item Tanımladığınız dizilerin toplam boyutunun 256 MB limitini geçmediğinden emin olun.
+\end{enumerate}

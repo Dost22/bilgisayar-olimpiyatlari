@@ -1,0 +1,595 @@
+\chapter[Döngüler ve Fonksiyonlar · \textit{Temel}]{Döngüler ve Fonksiyonlar}
+\chaptermark{Döngüler ve Fonksiyonlar}
+
+Algoritmik düşüncenin kalbinde iki temel ihtiyaç yatar: bir işlemi belirli bir kural dahilinde defalarca tekrarlamak ve karmaşık bir problemi bağımsız, yönetilebilir alt parçalara bölmek. Önceki bölümde gördüğümüz sıralı yürütme ve koşullu dallanma yapıları, bilgisayara yalnızca sonlu ve dallanan yollar çizebilmemizi sağlıyordu. Ancak giriş boyutu $n$ olduğunda, $n$'e bağlı sayıda adımı tek tek elle yazmak imkânsızdır. 
+
+Algoritmaların yürütme gücünü katlayan \textbf{döngü} mekanizmaları ile program mimarisinin omurgasını oluşturan \textbf{fonksiyon} soyutlaması bu bölümün ana konusudur. TÜBİTAK 1. Aşama sınavında sıkça karşımıza çıkan döngü izleme (kod okuma), iterasyon sayısı hesaplama, döngü değişmezleri (loop invariants) kurma ve fonksiyonların bellek modelini (çağrı yığını) anlama becerilerini somut örneklerle ele alacağız.
+
+\section{Döngüler}
+
+\subsection{Motivasyon ve Temel Sezgi}
+
+Bir matematik probleminde $1$'den $100$'e kadar olan tam sayıların toplamını bulmamız istendiğinde, Gauss'un yöntemini kullanarak $\frac{100 \times 101}{2} = 5050$ sonucuna doğrudan ulaşabiliriz. Ancak bilgisayar programlama dünyasında her bağıntının kapalı bir cebirsel formülü bulunmaz. Örneğin, klavyeden girilen bir sayının asal olup olmadığını sınamak, bir tam sayının iki tabanındaki basamaklarını saymak veya Collatz dizisinin kaç adımda $1$'e ulaştığını görmek için adımları teker teker yürütmek gerekir.
+
+Döngüler, belirli bir mantıksal koşul doğru (\texttt{true}) olduğu sürece bir kod bloğunu art arda çalıştıran kontrol yapılarıdır. Programlamanın sunduğu en temel güç, sonlu satırda kod yazarak dinamik işlem adımları üretebilmektir.
+
+\subsection{\texttt{while} Döngüsü}
+
+En yalın döngü yapısı \texttt{while} döngüsüdür. Çalışma mantığı doğrudan bir koşullu ifadeye dayanır: "Koşul sağlandığı sürece bu bloğu tekrarla."
+
+\begin{definition}[while Döngüsü]
+Bir koşul ifadesi ve bir döngü gövdesinden oluşan; koşul her adımın başında doğru (\texttt{1} veya \texttt{true}) değerini ürettiği müddetçe gövdesini işleten döngü yapısına \textbf{while döngüsü} denir. Koşul yanlış (\texttt{0} veya \texttt{false}) olduğu anda döngü sonlanır ve akış döngünün ardındaki ilk satırdan devam eder.
+\end{definition}
+
+Somut bir problem ele alalım: Pozitif bir $n$ tam sayısının onluk tabandaki basamaklarının toplamını bulmak istiyoruz. Örneğin $n = 3845$ olsun. Son basamağı elde etmek için $n \pmod{10}$ işlemini yaparız ($5$). Ardından bu basamaktan kurtulmak için tamsayı bölmesiyle $n \leftarrow \lfloor n / 10 \rfloor$ yazarız ($384$). Sayı $0$ olana kadar bu adımı tekrarlarsak tüm basamakları tüketmiş oluruz.
+
+\begin{lstlisting}[language=CTemel]
+int n = 3845;
+int toplam = 0;
+
+while (n > 0) {
+    toplam += n % 10; // Son basamagi ekle
+    n /= 10;          // Son basamagi at
+}
+\end{lstlisting}
+
+Bu işlem adım adım şöyle ilerler:
+\begin{enumerate}
+    \item Başlangıçta: $n = 3845$, $\text{toplam} = 0$. Koşul $3845 > 0$ doğru.
+    \item 1. Adım: $\text{toplam} = 0 + 5 = 5$, $n = 384$. Koşul $384 > 0$ doğru.
+    \item 2. Adım: $\text{toplam} = 5 + 4 = 9$, $n = 38$. Koşul $38 > 0$ doğru.
+    \item 3. Adım: $\text{toplam} = 9 + 8 = 17$, $n = 3$. Koşul $3 > 0$ doğru.
+    \item 4. Adım: $\text{toplam} = 17 + 3 = 20$, $n = 0$. Koşul $0 > 0$ \textbf{yanlış}.
+    \item Döngü biter; sonuç $20$'dir.
+\end{enumerate}
+
+Aynı mantığı C programında tam bir akışla görelim:
+
+\begin{lstlisting}[language=CTemel]
+int main(void) {
+    int n = 3845;
+    int sum = 0;
+    while (n > 0) {
+        sum += n % 10;
+        n /= 10;
+    }
+    return 0;
+}\end{lstlisting}
+
+Burada dikkat edilmesi gereken önemli bir nokta, C dilinde değişken türü tamsayı (\texttt{int}) olduğunda \texttt{/} operatörünün doğrudan alt taban değerini hesaplamasıdır.
+
+\subsection{\texttt{for} Döngüsü}
+
+Genellikle tekrar sayısı önceden bilinen ya da belirli bir aralıkta bir sayaç değişkeninin adım adım ilerletildiği durumlarda \texttt{for} döngüsü tercih edilir. 
+
+C dilinde \texttt{for} döngüsü üç temel bileşenden oluşur:
+\[
+\texttt{for (başlangıç; koşul; güncelleme) \{ gövde \}}
+\]
+
+Bu üçlünün çalışma sırası belirli bir kurala bağlıdır:
+\begin{enumerate}
+    \item \textbf{Başlangıç (Initialization):} Döngüye girilmeden önce yalnızca bir kez çalıştırılır.
+    \item \textbf{Koşul (Condition):} Her iterasyonun (adımın) başında denetlenir. Yanlış ise döngü anında terk edilir.
+    \item \textbf{Gövde (Body):} Koşul doğru ise gövdedeki kodlar icra edilir.
+    \item \textbf{Güncelleme (Increment/Update):} Gövde tamamlandıktan hemen sonra sayaç güncellenir ve doğrudan 2. adıma (koşul denetimine) dönülür.
+\end{enumerate}
+
+\begin{lstlisting}[language=CTemel]
+int toplam = 0;
+for (int i = 1; i <= n; i++) {
+    toplam += i;
+}
+\end{lstlisting}
+
+Sayaç temelli klasik bir toplama döngüsü şu şekildedir:
+
+\begin{lstlisting}[language=CTemel]
+int sum = 0;
+for (int i = 1; i <= n; i++) {
+    sum += i;
+}\end{lstlisting}
+
+Döngü sınırlarını belirlerken son değerin aralığa dahil olup olmadığı dikkatle izlenmelidir.
+
+\subsection{\texttt{do-while} Döngüsü}
+
+Klasik \texttt{while} ve \texttt{for} döngülerinde koşul gövdeden \emph{önce} denetlenir; bu nedenle koşul en başta sağlanmıyorsa gövde hiç çalışmayabilir. Ancak bazı algoritmik durumlarda gövdenin \textbf{en az bir kez} çalışması gerekir.
+
+\begin{definition}[do-while Döngüsü]
+Koşul denetimini gövdenin sonunda gerçekleştiren döngü türüdür. C dilinde sözdizimi:
+\begin{lstlisting}[language=CTemel]
+do {
+    // Govde (en az bir kez calisir)
+} while (kosul);
+\end{lstlisting}
+şeklindedir.
+\end{definition}
+
+Örneğin, kullanıcının girdiği pozitif tam sayının basamak sayısını hesaplarken $n = 0$ özel durumunu ele alalım. Eğer standart \texttt{while (n > 0)} kurarsak, $n = 0$ için döngüye hiç girilmez ve basamak sayısı hatalı şekilde $0$ bulunur. Oysa \texttt{do-while} ile yazılırsa:
+
+\begin{lstlisting}[language=CTemel]
+int n = 0;
+int basamak_sayisi = 0;
+do {
+    basamak_sayisi++;
+    n /= 10;
+} while (n > 0);
+\end{lstlisting}
+Kod bloğu bir kez çalışır, \texttt{basamak\_sayisi} $1$ olur, $n$ yine $0$ kalır ve koşul $0 > 0$ yanlış olduğu için döngü sonlanır. Sayı $0$ dahi olsa doğru basamak sayısı olan $1$'e ulaşılır.
+
+\subsection{Akış Kontrol İfadeleri: \texttt{break} ve \texttt{continue}}
+
+Döngünün normal mantıksal akışını değiştirmek amacıyla iki anahtar kelime kullanılır:
+
+\begin{itemize}
+    \item \textbf{\texttt{break}:} İçinde bulunduğu en yakın döngüyü anında sonlandırır. Program akışı döngü bloğunun hemen sonrasına atlar.
+    \item \textbf{\texttt{continue}:} Döngü gövdesindeki geri kalan komutları atlayarak doğrudan bir sonraki iterasyona geçer. \texttt{for} döngüsünde bu, güncelleme adımının çalıştırılması anlamına gelir.
+\end{itemize}
+
+\begin{example}
+Aşağıdaki C kod parçası çalıştırıldığında ekrana ne yazdırılır?
+\begin{lstlisting}[language=CTemel]
+int toplam = 0;
+for (int i = 1; i <= 10; i++) {
+    if (i % 3 == 0) {
+        continue;
+    }
+    if (i > 7) {
+        break;
+    }
+    toplam += i;
+}
+printf("%d\n", toplam);
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Adım adım sayaç değerlerini izleyelim:
+\begin{itemize}
+    \item $i = 1$: $1 \pmod 3 \neq 0$, $1 \not> 7 \implies \text{toplam} = 0 + 1 = 1$.
+    \item $i = 2$: $2 \pmod 3 \neq 0$, $2 \not> 7 \implies \text{toplam} = 1 + 2 = 3$.
+    \item $i = 3$: $3 \pmod 3 == 0 \implies \texttt{continue}$ çalışır, döngünün sonuna atlar, toplama eklenmez.
+    \item $i = 4$: $4 \pmod 3 \neq 0$, $4 \not> 7 \implies \text{toplam} = 3 + 4 = 7$.
+    \item $i = 5$: $5 \pmod 3 \neq 0$, $5 \not> 7 \implies \text{toplam} = 7 + 5 = 12$.
+    \item $i = 6$: $6 \pmod 3 == 0 \implies \texttt{continue}$ çalışır, atlanır.
+    \item $i = 7$: $7 \pmod 3 \neq 0$, $7 \not> 7 \implies \text{toplam} = 12 + 7 = 19$.
+    \item $i = 8$: $8 \pmod 3 \neq 0$, fakat $8 > 7$ koşulu sağlanır. \texttt{break} çalışır ve döngü tamamen terk edilir.
+\end{itemize}
+Sonuç olarak ekrana $19$ yazdırılır.
+\end{proof}
+
+\subsection{Döngü Değişmezi (Loop Invariant)}
+
+Bir döngünün hedeflenen işi doğru yaptığını matematiksel kesinlikle göstermek için döngü değişmezlerinden yararlanırız. Bilgisayar biliminde döngü doğruluğu, Bölüm 2'de gördüğümüz matematiksel tümevarımın ve Bölüm 18'de incelediğimiz invaryant kavramının programlama dünyasındaki izdüşümüdür.
+
+\begin{definition}[Döngü Değişmezi]
+Bir döngünün her iterasyonundan önce ve sonra doğru kalmayı sürdüren mantıksal önermeye \textbf{döngü değişmezi (loop invariant)} denir.
+\end{definition}
+
+Bir döngü değişmezinin geçerliliği üç adımda ispatlanır:
+\begin{enumerate}
+    \item \textbf{Başlangıç (Initialization):} Döngünün ilk iterasyonundan önce önerme doğrudur (tümevarımın taban adımı).
+    \item \textbf{Sürdürme (Maintenance):} Döngünün herhangi bir iterasyonundan önce önerme doğruysa, iterasyonun gövdesi icra edildikten sonra da doğru kalır (tümevarım adımı).
+    \item \textbf{Sonlanma (Termination):} Döngü sona erdiğinde, değişmezin doğruluğu ve döngünün sonlanma koşulu bir araya gelerek algoritmanın hedeflenen sonucu ürettiğini gösterir.
+\end{enumerate}
+
+\begin{example}
+Dizi toplamını hesaplayan bir algoritmanın doğruluğunu döngü değişmezi ile gösteriniz:
+\begin{lstlisting}[language=CTemel]
+int s = 0;
+for (int i = 0; i < n; i++) {
+    s += A[i];
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Değişmez önermemiz şu olsun: "$k$'ıncı iterasyon başlamadan önce, $s = \sum_{j=0}^{k-1} A[j]$ eşitliği geçerlidir."
+
+\begin{itemize}
+    \item \textbf{Başlangıç:} $i = 0$ iken henüz döngüye girilmemiştir. Tanım gereği $s = 0$'dır ve boş toplam $0$'a eşittir. Değişmez doğrudur.
+    \item \textbf{Sürdürme:} $i = k$ adımı başlamadan önce değişmezin doğru olduğunu, yani $s = \sum_{j=0}^{k-1} A[j]$ olduğunu varsayalım. Gövde çalıştırıldığında $s$ değerine $A[k]$ eklenir:
+    \[
+    s_{\text{yeni}} = s + A[k] = \left(\sum_{j=0}^{k-1} A[j]\right) + A[k] = \sum_{j=0}^{k} A[j]
+    \]
+    Güncelleme adımında $i$ değeri $k+1$ yapılır. Böylece yeni iterasyon başlamadan önce $s = \sum_{j=0}^{(k+1)-1} A[j]$ şartı sağlanmış olur. Değişmez korunur.
+    \item \textbf{Sonlanma:} Döngü $i = n$ olduğunda durur. Değişmezimiz bu anda $s = \sum_{j=0}^{n-1} A[j]$ olduğunu söyler. Bu da tam olarak $A[0], A[1], \dots, A[n-1]$ elemanlarının toplamıdır. Algoritma doğru biçimde sonlanır.
+\end{itemize}
+\end{proof}
+
+\subsection{İç İçe Döngüler (Nested Loops) ve Adım Sayısı Analizi}
+
+TÜBİTAK 1. Aşama sınavında sık rastlanan soru tiplerinden biri, iç içe geçmiş döngülerin toplam kaç kez çalıştığını (veya ekrana kaç kez çıktı verdiğini) hesaplamaktır.
+
+Bir döngünün gövdesinde başka bir döngü yer aldığında, dıştaki döngünün \emph{her bir} adımında içteki döngü baştan sona tekrar çalışır. Eğer dış döngü $N$ kez, iç döngü her seferinde $M$ kez dönüyorsa toplam adım sayısı $N \times M$ olur. Ancak çoğu algoritmada iç döngünün sınırları dış döngünün değişkenine bağlıdır.
+
+\begin{example}
+Aşağıdaki kod parçasında \texttt{sayac++} satırı toplam kaç kez çalıştırılır?
+\begin{lstlisting}[language=CTemel]
+int sayac = 0;
+for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= i; j++) {
+        sayac++;
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Dış döngüdeki $i$ değişkeninin aldığı her değer için iç döngünün kaç kez çalıştığını listeleyelim:
+\begin{itemize}
+    \item $i = 1$ için: $j \in \{1\} \implies 1$ kez,
+    \item $i = 2$ için: $j \in \{1, 2\} \implies 2$ kez,
+    \item $i = 3$ için: $j \in \{1, 2, 3\} \implies 3$ kez,
+    \item $\dots$
+    \item $i = n$ için: $j \in \{1, 2, \dots, n\} \implies n$ kez.
+\end{itemize}
+Toplam adım sayısı, ardışık sayıların toplamıdır:
+\[
+T(n) = \sum_{i=1}^{n} i = 1 + 2 + 3 + \dots + n = \frac{n(n+1)}{2}
+\]
+Bu toplam $O(n^2)$ karmaşıklığına karşılık gelir.
+\end{proof}
+
+\begin{example}
+Aşağıdaki kod parçasında \texttt{printf} fonksiyonu kaç kez çağrılır?
+\begin{lstlisting}[language=CTemel]
+for (int i = 1; i <= n; i *= 2) {
+    for (int j = 1; j <= n; j++) {
+        printf("*");
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Dış döngünün artış biçimine dikkat edelim: $i$ değişkeni birer birer değil, ikiye katlanarak artmaktadır: $1, 2, 4, 8, 16, \dots, 2^k \le n$. 
+
+Burada dış döngü tam olarak $\lfloor \log_2 n \rfloor + 1$ kez döner. İç döngü ise $i$'den bağımsız olarak her seferinde $n$ kez çalışır. Dolayısıyla toplam çağrı sayısı:
+\[
+T(n) = n \cdot (\lfloor \log_2 n \rfloor + 1)
+\]
+olur. Bu işlem $O(n \log n)$ karmaşıklığındadır.
+\end{proof}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Aşağıdaki kod bloğu yürütüldükten sonra $x$ değişkeninin son değeri ne olur?
+\begin{lstlisting}[language=CTemel]
+int x = 0;
+for (int i = 1; i <= 4; i++) {
+    for (int j = i; j <= 4; j++) {
+        for (int k = 1; k <= j; k++) {
+            x++;
+        }
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Üç adet iç içe döngü bulunmaktadır ve en içteki işlem $x$'i $1$ artırmaktadır. Dolayısıyla $x$'in son değeri, aşağıdaki koşulları sağlayan $(i, j, k)$ tamsayı üçlülerinin sayısına eşittir:
+\[
+1 \le i \le 4, \quad i \le j \le 4, \quad 1 \le k \le j
+\]
+Sabit bir $j$ değeri için $i$'nin alabileceği değerler $1 \le i \le j$ aralığındadır (çünkü $i \le j$ şartı geçerlidir). Yani belirli bir $j$ için tam $j$ tane geçerli $i$ değeri bulunur.
+
+Aynı zamanda $k$ değişkeni de $1$'den $j$'ye kadar ilerlemektedir; dolayısıyla $k$ da $j$ farklı değer alabilir.
+
+Buna göre her bir $j \in \{1, 2, 3, 4\}$ değeri için oluşturulabilecek $(i, k)$ çiftlerinin sayısı $j \times j = j^2$ olur.
+Toplam adım sayısı:
+\[
+x = \sum_{j=1}^{4} j^2 = 1^2 + 2^2 + 3^2 + 4^2 = 1 + 4 + 9 + 16 = 30
+\]
+olarak hesaplanır.
+\end{proof}
+
+\begin{example}
+Pozitif bir $n$ tam sayısının asal olup olmadığını $O(\sqrt{n})$ karmaşıklıkta sınayan algoritmayı tasarlayınız ve sonlanma garantisini gösteriniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölüm 12'de gördüğümüz üzere, bir $n$ sayısı bileşik ise $n = a \cdot b$ şeklinde yazılabilir. Eğer hem $a > \sqrt{n}$ hem de $b > \sqrt{n}$ olsaydı, çarpımları $a \cdot b > \sqrt{n} \cdot \sqrt{n} = n$ çelişkisini doğururdu. O halde çarpanlardan en az biri $\le \sqrt{n}$ olmak zorundadır. Bu nedenle $2$'den başlayarak $\lfloor\sqrt{n}\rfloor$'ye kadar olan sayıları denemek yeterlidir.
+
+\begin{lstlisting}[language=CTemel]
+int asal_mi = (n >= 2); // 0 ve 1 asal degildir
+
+for (int d = 2; d * d <= n; d++) {
+    if (n % d == 0) {
+        asal_mi = 0; // Bolen bulundu, asal degil
+        break;       // Bosuna devam etme, erken cik
+    }
+}
+\end{lstlisting}
+
+Burada döngü koşulu olarak $d \le \sqrt{n}$ yerine $d * d \le n$ yazılmıştır. Bu tercih, karekök fonksiyonundaki kayan noktalı sayı (floating point) yuvarlama hatalarından ve ek fonksiyon çağrısı maliyetinden kaçınmak için standart bir yaklaşımdır. Eğer $n$ bir bölen içeriyorsa \texttt{break} ile döngüden derhal çıkılır; bölen yoksa $d$ sayısı $\lfloor\sqrt{n}\rfloor + 1$'e ulaştığında koşul bozulur ve döngü sonlanır.
+\end{proof}
+
+\subsection{En Sık Yapılan Hatalar}
+
+\begin{enumerate}
+    \item \textbf{Bir Eksiği / Bir Fazlası Hatası (Off-by-One Error):} Döngü sınırlarında $<$ ile $\le$ ayrımını yanlış yapmak. Örneğin $n$ elemanlı bir diziyi gezerken \texttt{for (int i = 0; i <= n; i++)} yazılırsa, bellek sınırlarının dışına çıkılarak $A[n]$ elemanına erişilmeye çalışılır (segmentation fault veya tanımsız bellek okuma).
+    \item \textbf{Sonsuz Döngü (Infinite Loop):} Döngü koşulunu etkileyen değişkenin gövdede güncellenmesinin unutulması:
+\begin{lstlisting}[language=CTemel]
+int i = 1;
+while (i <= 10) {
+    printf("%d\n", i);
+    // i++ yazilmasi unutulursa sonsuz dongu olusur!
+}
+\end{lstlisting}
+    \item \textbf{Döngü İçinde Döngü Değişkenini Bozmak:} İç içe döngülerde yanlışlıkla her iki döngüde de aynı sayacı kullanmak:
+\begin{lstlisting}[language=CTemel]
+for (int i = 0; i < n; i++) {
+    for (int i = 0; i < m; i++) { // HATA: Dis dongunun i'si ezildi!
+        // ...
+    }
+}
+\end{lstlisting}
+\end{enumerate}
+
+\section{Fonksiyonlar}
+
+\subsection{Motivasyon ve Modülerlik İlkesi}
+
+Uzun bir algoritmayı tek bir blok halinde (\texttt{main} içinde) yazmak üç temel soruna yol açar:
+\begin{enumerate}
+    \item \textbf{Kod Tekrarı:} Aynı matematiksel hesabı (örneğin iki sayının EBOB'unu bulma veya kombinasyon hesaplama) programın birkaç farklı yerinde yapmamız gerektiğinde, kodu kopyalayıp yapıştırmak hata olasılığını artırır.
+    \item \textbf{Hata Ayıklama Güçlüğü:} Bir değişkenin değerinin nerede bozulduğunu takip etmek zorlaşır.
+    \item \textbf{Zihinsel Yük:} Büyük problemleri küçük, bağımsız ve tek bir işi yerine getiren alt birimlere ayırmak programın anlaşılırlığını sağlar.
+\end{enumerate}
+
+Fonksiyonlar, belirli bir görevi yerine getiren, parametre alabilen ve bir sonuç üretebilen bağımsız alt programlardır.
+
+\subsection{Fonksiyon Anatomisi ve Çağrı Yığını (Call Stack)}
+
+C dilinde bir fonksiyon şu genel şablona sahiptir:
+\[
+\texttt{donus\_turu fonksiyon\_adi(parametre\_listesi) \{ govde \}}
+\]
+
+Bir fonksiyon çağrıldığında bilgisayar belleğindeki işleyişi kavramak, değişken kapsamı (scope) sorularını çözmenin temelidir.
+
+\begin{definition}[Çağrı Yığını ve Yığın Çerçevesi]
+Program yürütülürken çağrılan her fonksiyon için belleğin \textbf{yığın (stack)} bölgesinde bir \textbf{yığın çerçevesi (stack frame)} açılır. Bu çerçevede:
+\begin{itemize}
+    \item Fonksiyona aktarılan parametreler,
+    \item Fonksiyonun içinde tanımlanan yerel değişkenler (local variables),
+    \item Fonksiyon işini bitirdiğinde geri döneceği adres (return address)
+\end{itemize}
+saklanır. Fonksiyon tamamlandığında (\texttt{return}), açılan yığın çerçevesi bellekten silinir (\textbf{pop} edilir) ve kontrol çağıran fonksiyona geri döner.
+\end{definition}
+
+Yerel değişkenlerin ömrü (lifetime) ait oldukları fonksiyonun çalışmasıyla sınırlıdır; kapsamları (scope) ise yalnızca o fonksiyon bloğudur.
+
+\subsection{Parametre Aktarım Mekanizmaları}
+
+Programlama dillerinde argümanların fonksiyonlara nasıl aktarıldığı, değişkenlerin değerlerinin kalıcı olarak değişip değişmeyeceğini belirler.
+
+\subsubsection{1. Değer ile Aktarım (Pass-by-Value)}
+
+C dilinde temel türler fonksiyona kopyalanarak aktarılır. Fonksiyon parametre olarak orijinal değişkenin kendisini değil, o anki değerinin bir \textbf{kopyasını} alır. Fonksiyon içinde bu parametre üzerinde yapılan hiçbir değişiklik çağıran yerdeki orijinal değişkeni etkilemez.
+
+\begin{example}
+Aşağıdaki C programı çalıştırıldığında çıktısı ne olur?
+\begin{lstlisting}[language=CTemel]
+void arttir(int a) {
+    a = a + 5;
+}
+
+int main() {
+    int x = 10;
+    arttir(x);
+    printf("%d\n", x);
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+\texttt{main} fonksiyonunda $x$ değişkeni için bellekte bir yer ayrılır ve içine $10$ yazılır. \texttt{arttir(x)} çağrıldığında, \texttt{arttir} fonksiyonunun yığın çerçevesinde yeni bir $a$ değişkeni oluşturulur ve $x$'in değeri olan $10$ bu değişkene kopyalanır.
+
+Fonksiyon içinde $a$ değişkeni $15$ yapılır; ancak bu işlem yalnızca kopyayı değiştirmiştir. Fonksiyon tamamlandığında \texttt{arttir}'ın yığın çerçevesi kaldırılır. Kontrol \texttt{main}'e döndüğünde $x$ değişkeni hâlâ $10$'dur. Dolayısıyla ekrana $10$ yazdırılır.
+\end{proof}
+
+\subsubsection{2. İşaretçi ile Aktarım (Pass-by-Pointer)}
+
+Eğer bir fonksiyonun çağıran taraftaki bir değişkeni doğrudan güncellemesini istiyorsak, fonksiyon parametresi olarak değişkenin değerini değil, bellekteki \textbf{adresini} göndermeliyiz. Bu mekanizmaya C dilinde işaretçiler (pointers) aracılığıyla ulaşılır.
+
+\begin{example}[İki Değişkenin Değerini Takas Etme -- Swap]
+İki tamsayı değişkeninin değerlerini birbiriyle değiştiren fonksiyonu doğru kuralım:
+\begin{lstlisting}[language=CTemel]
+void takas(int *x, int *y) {
+    int gecici = *x; // x'in isaret ettigi adresteki degeri al
+    *x = *y;         // y'nin adresindeki degeri x'in adresine yaz
+    *y = gecici;     // gecici degeri y'nin adresine yaz
+}
+
+int main() {
+    int a = 3, b = 7;
+    takas(&a, &b); // a ve b'nin bellek adreslerini gonderiyoruz
+    printf("a = %d, b = %d\n", a, b);
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Açıklama]
+Burada \texttt{\&a} ifadesi "$a$'nın bellek adresi" demektir. \texttt{takas} fonksiyonundaki \texttt{int *x} ise "bir tamsayının adresini tutan işaretçi" anlamına gelir. Fonksiyon, adresleri kullanarak doğrudan \texttt{main}'in belleğindeki değerlere erişir ve bunları yerinde değiştirir. Çıktı: \texttt{a = 7, b = 3} olur.
+\end{proof}
+
+\subsubsection{3. Gösterici ile Dinamik Yapıların Güncellenmesi}
+
+C dilinde dinamik yapıları bir fonksiyona aktarırken yapının adresini işaretçi olarak vermek, fonksiyon içindeki değişikliklerin kalıcı olmasını sağlar:
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct {
+    int *data;
+    size_t size;
+    size_t capacity;
+} List;
+
+void modify_list(List *list) {
+    if (list->size >= list->capacity) {
+        size_t new_capacity = list->capacity == 0 ? 4 : list->capacity * 2;
+        int *new_data = (int *)realloc(list->data, new_capacity * sizeof(int));
+        if (!new_data) {
+            return;
+        }
+        list->data = new_data;
+        list->capacity = new_capacity;
+    }
+    list->data[list->size++] = 99;
+}
+
+int main(void) {
+    List a;
+    a.size = 3;
+    a.capacity = 4;
+    a.data = (int *)malloc(a.capacity * sizeof(int));
+    if (!a.data) {
+        return 1;
+    }
+
+    a.data[0] = 1;
+    a.data[1] = 2;
+    a.data[2] = 3;
+
+    modify_list(&a);
+
+    printf("[");
+    for (size_t i = 0; i < a.size; i++) {
+        printf("%d%s", a.data[i], (i == a.size - 1) ? "" : ", ");
+    }
+    printf("]\n");
+
+    free(a.data);
+    return 0;
+}\end{lstlisting}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Aşağıdaki C programı çalıştırıldığında çıktısı ne olur?
+\begin{lstlisting}[language=CTemel]
+int f(int *p, int c) {
+    c = c - 1;
+    if (c == 0) return 1;
+    *p = *p + 2;
+    return f(p, c) * (*p);
+}
+
+int main() {
+    int x = 2;
+    int sonuc = f(&x, 3);
+    printf("x = %d, sonuc = %d\n", x, sonuc);
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Fonksiyona $x$'in adresi (\texttt{\&x}) ve $c=3$ değeri aktarılmaktadır. Fonksiyon çağrılarını yığın mantığıyla adım adım izleyelim:
+
+\begin{enumerate}
+    \item \textbf{1. Çağrı: $f(\&x, 3)$}
+    \begin{itemize}
+        \item $c = 3 - 1 = 2$.
+        \item $c == 0$ yanlış ($c=2$).
+        \item $*p = *p + 2 \implies x = 2 + 2 = 4$ olur.
+        \item Dönecek değer: $f(\&x, 2) \times (*p)$. ($*p$ çarpımı, içerideki rekürsif çağrı sonuçlandıktan sonra hesaplanacaktır.)
+    \end{itemize}
+    
+    \item \textbf{2. Çağrı: $f(\&x, 2)$}
+    \begin{itemize}
+        \item $c = 2 - 1 = 1$.
+        \item $c == 0$ yanlış ($c=1$).
+        \item $*p = *p + 2 \implies x = 4 + 2 = 6$ olur.
+        \item Dönecek değer: $f(\&x, 1) \times (*p)$.
+    \end{itemize}
+    
+    \item \textbf{3. Çağrı: $f(\&x, 1)$}
+    \begin{itemize}
+        \item $c = 1 - 1 = 0$.
+        \item $c == 0$ doğru. Doğrudan \textbf{1} döndürür. $x$ değeri değişmez, $6$ olarak kalır.
+    \end{itemize}
+\end{enumerate}
+
+Geri dönüş yolunu (yığının çözülmesini) takip edelim:
+\begin{itemize}
+    \item 2. Çağrının dönüşü: $f(\&x, 1) \times (*p) = 1 \times 6 = 6$.
+    \item 1. Çağrının dönüşü: $f(\&x, 2) \times (*p) = 6 \times 6 = 36$.
+\end{itemize}
+Sonuç olarak \texttt{main} içinde $x = 6$ ve \texttt{sonuc} $= 36$ olarak bulunur.
+Ekrana basılan satır: \texttt{x = 6, sonuc = 36}.
+\end{proof}
+
+\begin{example}[Öklid Algoritması ile EBOB]
+İki pozitif $a$ ve $b$ tam sayısının en büyük ortak bölenini ($\gcd(a, b)$) döngüsel olarak hesaplayan fonksiyonu yazınız ve döngü değişmezini kurunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Öklid algoritmasının matematiksel temelini Bölüm 13'te ele almıştık; burada aynı algoritmayı döngü değişmezi çerçevesinde, C dilinde kodlamaya odaklanacağız. Öklid bağıntısına göre $\gcd(a, b) = \gcd(b, a \pmod b)$ ve $\gcd(a, 0) = a$'dır. Bu indirgemeyi $b$ sıfır olana kadar sürdürürüz:
+
+\begin{lstlisting}[language=CTemel]
+int ebob(int a, int b) {
+    while (b != 0) {
+        int kalan = a % b;
+        a = b;
+        b = kalan;
+    }
+    return a;
+}
+\end{lstlisting}
+
+\textbf{Döngü Değişmezi:} Döngünün her adımında $\gcd(a_{\text{yeni}}, b_{\text{yeni}}) = \gcd(a_{\text{eski}}, b_{\text{eski}})$ eşitliği korunur. $a \pmod b < b$ olduğundan, her adımda $b$ kesin olarak küçülür; dolayısıyla döngü sonlu sayıda adımda $b = 0$ durumuna ulaşmak zorundadır. $b = 0$ olduğunda $\gcd(a, 0) = a$ eşitliğinden dolayı sonuç $a$ olur.
+\end{proof}
+
+\begin{example}[İkili Üs Alma -- Binary Exponentiation]
+Verilen bir taban $a$ ve pozitif tamsayı üs $n$ için $a^n$ değerini $O(\log n)$ zamanda döngüsel olarak hesaplayan fonksiyonu tasarlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Buradaki temel fikir şudur: Eğer $n$ çift ise $a^n = (a^2)^{n/2}$ yazılabilir. Eğer $n$ tek ise $a^n = a \cdot a^{n-1}$ olur. Üssün ikili tabandaki basamaklarını soldan sağa veya sağdan sola tarayarak $O(n)$ yerine $O(\log n)$ adımda sonuca ulaşabiliriz.
+
+\begin{lstlisting}[language=CTemel]
+long long us_al(long long a, long long n) {
+    long long sonuc = 1;
+    while (n > 0) {
+        if (n % 2 == 1) { // n'in son biti 1 mi?
+            sonuc *= a;
+        }
+        a = a * a;       // Tabani karele
+        n /= 2;          // Ussu ikiye bol
+    }
+    return sonuc;
+}
+\end{lstlisting}
+
+Değişmezimiz her adım başında $\text{sonuc} \cdot a^n = A^N$ (başlangıçtaki değerler) eşitliğidir. $n = 0$ olduğunda $\text{sonuc} = A^N$ elde edilir.
+\end{proof}
+
+\subsection{En Sık Yapılan Hatalar}
+
+\begin{enumerate}
+    \item \textbf{Dönüş Değeri Olmayan Dal Bırakmak:} Bir fonksiyonda dönüş türü \texttt{int} tanımlanmışsa, her olası koşul dalından mutlaka bir \texttt{return} ifadesi geçmelidir. Aksi halde tanımsız davranış (undefined behavior) oluşur:
+\begin{lstlisting}[language=CTemel]
+int isaret(int n) {
+    if (n > 0) return 1;
+    else if (n < 0) return -1;
+    // HATA: n == 0 durumunda ne donecegi tanimsizdir!
+}
+\end{lstlisting}
+    \item \textbf{Yerel Değişkenin Bellek Adresini Döndürmek (Dangling Pointer):} Fonksiyon tamamlandığında yerel değişkenlerin yığın çerçevesi bellekten silinir. Bu nedenle fonksiyon içinde tanımlanan bir yerel değişkenin adresini \texttt{return} ile döndürmek ciddi bir hatadır:
+\begin{lstlisting}[language=CTemel]
+int* hatali_fonksiyon() {
+    int x = 42;
+    return &x; // HATA! x fonksiyon bittigi an yok olur.
+}
+\end{lstlisting}
+    \item \textbf{Global Değişken Bağımlılığı:} Fonksiyonların girdilerini parametre almak yerine global değişkenlerden okuması ve değiştirmesi, öngörülemeyen yan etkilere (side-effects) yol açar. Fonksiyonlar mümkün mertebe saf (pure) ve dış ortamdan bağımsız tasarlanmalıdır.
+\end{enumerate}

@@ -1,0 +1,516 @@
+\chapter[Algoritma Nedir · \textit{Temel}]{Algoritma Nedir}
+\chaptermark{Algoritma Nedir}
+
+\section{Problem, Girdi-Çıktı ve Algoritma}
+
+Bilgisayar biliminin temel sorusu ``Bilgisayarlar nasıl programlanır?'' değil, ``Hangi problemler hangi yöntemlerle, ne kadar sürede ve kesinlikle çözülebilir?'' sorusudur. Kod yazmak bir inşaat ustasının tuğla dizmesine benzer; mimariyi belirleyen, yapının sağlam durmasını ve amaca ulaşmasını sağlayan asıl unsur ise düşünce planıdır. İşte bu düşünce planına \textbf{algoritma} diyoruz.
+
+Gündelik yaşamda algoritma kavramını anlamanın en pratik yolu bir \textbf{yemek tarifi} düşünmektir. Elinizde belirli malzemeler vardır: un, yumurta, şeker ve süt. Amacınız ise kabarık, lezzetli bir kek elde etmektir. Bir kek tarifi size adım adım ne yapmanız gerektiğini söyler:
+\begin{enumerate}
+    \item 3 yumurta ile 1 su bardağı şekeri beyaz köpük olana dek çırp.
+    \item 1 su bardağı sütü ve yarım su bardağı sıvı yağı ekleyip 1 dakika karıştır.
+    \item 2.5 su bardağı un ve bir paket kabartma tozunu eleyerek karışıma ilave et.
+    \item Önceden 180 dereceye ısıtılmış fırında 35 dakika pişir.
+\end{enumerate}
+
+Bu benzetmede:
+\begin{itemize}
+    \item \textbf{Girdi (Input):} Elimizdeki un, şeker, yumurta gibi başlangıç nesneleridir.
+    \item \textbf{Çıktı (Output):} Fırından çıkan pişmiş kek, yani ulaşmak istediğimiz sonuçtur.
+    \item \textbf{Tarif:} Malzemeleri çıktıya dönüştüren sıralı, açık ve net adımlar kümesidir.
+\end{itemize}
+
+Ancak mutfaktaki tarifler ile bilgisayar bilimindeki algoritmalar arasında önemli bir fark vardır: Mutfak tarifleri genellikle insan sezgisine güvenir. ``Kulak memesi kıvamına gelene kadar yoğur'', ``bir tutam tuz ekle'' ya da ``kızarana kadar fırınla'' gibi ifadeler insan için anlamlıdır; çünkü insan gözüyle, dokunuşuyla veya tecrübesiyle bu belirsizliği giderir. Bilgisayarın ise ne tecrübesi, ne gözü, ne de sezgisi vardır. Bilgisayar son derece hızlı, fakat bütünüyle ``harfi harfine'' itaat eden bir işlemcidir. Bu nedenle bir algoritmanın adımları hiçbir muğlaklığa yer bırakmayacak biçimde kesin olmalıdır.
+
+\begin{definition}[Hesaplamalı Problem ve Örneklem]
+Bir \textbf{hesaplamalı problem} (computational problem), girdiler kümesi ile her geçerli girdi için beklenen çıktılar arasındaki matematiksel ilişkinin genel tanımıdır. 
+
+Problemin belirli ve somut bir girdisine o problemin bir \textbf{örneklemi} (instance) denir. 
+\end{definition}
+
+Örneğin, ``Verilen bir tamsayı listesini küçükten büyüğe sıralama'' bir problemdir. Bu problemin somut bir örneklemi ise $[7, 2, 9, 1, 5]$ listesidir; bu örneklem için beklenen çıktı $[1, 2, 5, 7, 9]$ olmalıdır.
+
+\begin{definition}[Algoritma]
+Bir \textbf{algoritma}, iyi tanımlanmış bir girdi kümesini alıp, sonlu sayıda adımda, açıkça belirlenmiş kuralları işleterek istenen çıktıyı üreten iyi tanımlanmış hesaplama adımları dizisidir.
+\end{definition}
+
+Modern bilgisayar biliminin öncülerinden Donald Knuth, bir sürecin tam anlamıyla bir ``algoritma'' sayılabilmesi için beş temel kriteri sağlaması gerektiğini belirtir:
+\begin{enumerate}
+    \item \textbf{Girdi (Input):} Algoritmanın dışarıdan aldığı sıfır veya daha fazla iyi tanımlı veri.
+    \item \textbf{Çıktı (Output):} Algoritmanın ürettiği, girdiyle belirli bir matematiksel ilişki içinde olan en az bir veri.
+    \item \textbf{Belirlilik (Definiteness):} Her adım kesin, açık ve tek anlamlı olmalıdır. ``Biraz bekle'' veya ``rastgele bir sayı seç'' (hangi dağılımdan olduğu belirtilmedikçe) algoritma adımı olamaz.
+    \item \textbf{Sonluluk (Finiteness):} Algoritma her geçerli girdi için sonlu sayıda işlem adımı sonrasında durmalıdır. Sonsuza kadar çalışan bir döngü algoritma değildir.
+    \item \textbf{Etkinlik (Effectiveness):} Her adım, prensipte bir insanın eline bir kâğıt ve kalem alarak sonlu bir sürede kusursuzca yürütebileceği kadar temel olmalıdır.
+\end{enumerate}
+
+Şimdi bu kavramları pekiştirmek için somuttan soyuta birkaç örnek inceleyelim.
+
+\begin{example}
+Girdi olarak verilen iki pozitif $a$ ve $b$ tam sayısının toplamını hesaplamak istiyoruz. İlkokuldan beri bildiğimiz ``eldenin aktarılması'' yöntemi bir algoritma mıdır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Evet, insanlık tarihinin en eski ve temel algoritmalarından biridir.
+\begin{itemize}
+    \item \textbf{Girdi:} $a$ ve $b$ sayılarının basamak dizilimleri.
+    \item \textbf{Çıktı:} $c = a + b$ sayısının basamak dizilimi.
+    \item \textbf{Süreç:}
+    \begin{enumerate}
+        \item Sayıları birler basamağı aynı hizada olacak biçimde alt alta yaz. Elde değerini $e = 0$ olarak başlat.
+        \item Sağdan sola doğru her sütundaki rakamları ve eldeki $e$ değerini topla: $T = basamak_1 + basamak_2 + e$.
+        \item Yeni basamağı $T \bmod 10$ olarak sonuca yaz; yeni eldeyi $e = \lfloor T / 10 \rfloor$ yap.
+        \item Tüm basamaklar bittiğinde elde $e > 0$ kalmışsa onu en sola ekle ve dur.
+    \end{enumerate}
+\end{itemize}
+Bu adımlar belirlidir, sonludur ve her sütunda temel aritmetik işlemler yapıldığı için etkindir.
+\end{proof}
+
+\begin{example}
+Bir torbanın içinde ağırlıkları birbirinden farklı $n$ adet taş bulunmaktadır ($n \ge 1$). Yalnızca iki taşı tartıp hangisinin daha ağır olduğunu söyleyebilen iki kefeli bir denge terazisi kullanarak en ağır taşı bulan bir algoritma tasarlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Torbada tek bir taş varsa ($n=1$), en ağır taş doğrudan odur. Birden fazla taş varsa, ilk taşı elimize ``şu ana kadar gördüğümüz en ağır taş'' adayı olarak alırız. Sonra torbadan teker teker diğer taşları çeker, elimizdeki adayla tartarız. Çektiğimiz taş daha ağır çıkarsa eski adayı kenara bırakıp yeni taşı aday yaparız; aksi halde yeni taşı kenara atarız.
+
+Algoritmanın adımları şöyledir:
+\begin{enumerate}
+    \item Taşları $T_1, T_2, \dots, T_n$ olarak etiketle.
+    \item En ağır adayını belirle: $EnAgir \leftarrow T_1$.
+    \item $i = 2$'den $n$'ye kadar sırasıyla şu adımı tekrarla:
+    \begin{itemize}
+        \item $T_i$ ile $EnAgir$ taşını terazide karşılaştır.
+        \item Eğer $T_i > EnAgir$ ise, güncellemeyi yap: $EnAgir \leftarrow T_i$.
+    \end{itemize}
+    \item Torbada taş kalmadığında $EnAgir$ taşını çıktı olarak ver ve dur.
+\end{enumerate}
+Bu algoritma her $i$ adımında tam olarak $1$ tartı yapar; toplamda $n - 1$ tartı ile kesin olarak sonuca ulaşır ve her zaman durur.
+\end{proof}
+
+\begin{example}
+Pozitif bir $n$ tam sayısı verildiğinde aşağıdaki kuralı uygulayalım:
+\begin{itemize}
+    \item Eğer $n = 1$ ise DUR.
+    \item Eğer $n$ çift ise, yeni sayı $n / 2$ olsun.
+    \item Eğer $n$ tek ise, yeni sayı $3n + 1$ olsun.
+\end{itemize}
+Bu işlem dizisi, verilen herhangi bir $n$ girdisi için bir algoritma mıdır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Bu ünlü kural, matematikte \textbf{Collatz Problemi} (veya $3n+1$ problemi) olarak bilinir. Örneğin $n = 6$ ile başlarsak:
+\[ 6 \to 3 \to 10 \to 5 \to 16 \to 8 \to 4 \to 2 \to 1 \quad \text{(Durur)} \]
+Bugüne kadar bilgisayarlarla test edilen sayılar için bu dizi her zaman $1$'e ulaşmış ve sonlanmıştır. Ancak günümüz matematiğinde, istisnasız her pozitif $n$ tam sayısı için bu dizinin sonlu adımda $1$'e ulaşıp ulaşmadığı henüz \textbf{ispatlanamamıştır}. 
+
+Dolayısıyla, sonluluk (finiteness) şartının her girdi için sağlandığı matematiksel olarak kanıtlanamadığından, bu prosedürün genel anlamda bir algoritma olup olmadığı henüz kesinleşmiş değildir. Bir yöntemin sezgisel olarak çalışması yetmez; her geçerli girdi için duracağının garanti edilmesi gerekir.
+\end{proof}
+
+\begin{caution}
+\textbf{En sık yapılan hata:} Algoritmayı belirli bir programlama diliyle (C, Python, Java) özdeşleştirmektir. Programlama dilleri birer araçtır; C dili 1970'lerde ortaya çıkmıştır, fakat Bölüm 13'te ele aldığımız Öklid'in EBOB algoritması 2300 yaşındadır. Algoritma, dilin ve donanımın ötesinde saf bir matematiksel fikirdir.
+\end{caution}
+
+\section{Sözde Kod (Pseudo-Code)}
+
+Bir algoritmayı başkasına aktarırken iki uç tuzakla karşılaşırız:
+\begin{enumerate}
+    \item \textbf{Doğal dilin muğlaklığı:} Türkçe veya İngilizce serbest metin yazdığımızda cümleler yanlış anlamalara açıktır. ``Sayının karekökünü al, duruma göre devam et'' gibi ifadeler kesinlik taşımaz.
+    \item \textbf{Gerçek programlama dillerinin sözdizimi yükü:} Bir fikri hemen C veya C++ ile yazmaya kalktığımızda; noktalı virgüller, kütüphane eklemeleri (\texttt{\#include}), bellek türleri (\texttt{int}, \texttt{long long}) ve derleyici ayrıntıları arasında algoritmanın asıl mantığı kaybolabilir.
+\end{enumerate}
+
+Bu iki ucun dengesi \textbf{sözde kod} (pseudocode) kullanmaktır. Sözde kod, herhangi bir derleyicinin katı sözdizimi kurallarına bağlı olmayan, fakat mantıksal akışı (dallanma, döngü, atama) bir bilgisayar programı kadar net ifade eden yarı-biçimsel bir talimat dilidir.
+
+Sözde kod yazarken kabul gören temel yapılar şunlardır:
+\begin{itemize}
+    \item \textbf{Değer Atama:} Bir değişkene değer vermek için sola doğru bir ok ($\leftarrow$) veya \texttt{:=} simgesi kullanılır. Örneğin, $x \leftarrow 5$ ifadesi ``$x$'in yeni değeri 5 olsun'' demektir.
+    \item \textbf{Koşul (Dallanma):} $\text{\textbf{EĞER }} \dots \text{\textbf{ İSE }} \dots \text{\textbf{ DEĞİLSE}}$ blokları.
+    \item \textbf{Döngüler:} Belirli bir koşul sağlandığı sürece tekrarlanan $\text{\textbf{İKEN}} \dots \text{\textbf{ YAP}}$ veya sınırları belirli $\text{\textbf{İÇİN}} \dots \text{\textbf{ YAP}}$ blokları.
+    \item \textbf{Girdi ve Çıktı:} $\text{\textbf{GİRDİ}}$ ve $\text{\textbf{DÖNDÜR}}$ (veya $\text{\textbf{YAZDIR}}$) komutları.
+    \item \textbf{Girintileme (Indentation):} Hangi adımların hangi bloğun içinde olduğunu göstermek için satırlar sağa kaydırılarak yazılır.
+\end{itemize}
+
+Şimdi sözde kodun kullanımını basit bir problemle görelim.
+
+\begin{example}[İki Değişkenin Değerini Takas Etme / Swap]
+Elinizde iki değişken var: $a$ ve $b$. Başlangıçta $a = 5$ ve $b = 9$ olsun. Bu iki değişkenin değerlerini öyle değiştirin ki işlem sonunda $a = 9$ ve $b = 5$ olsun.
+\end{example}
+
+\begin{proof}[Çözüm]
+İlk bakışta akla şu adımlar gelebilir:
+\begin{align*}
+    a &\leftarrow b \\
+    b &\leftarrow a
+\end{align*}
+Bu adımları tek tek yürütelim (trace edelim):
+\begin{enumerate}
+    \item Başlangıç: $a = 5, b = 9$.
+    \item $a \leftarrow b$ adımı çalışır: $b$'nin değeri $9$ olduğundan $a$'nın yeni değeri $9$ olur. Artık hafızada $a = 9, b = 9$ vardır. Dikkat ederseniz $a$'nın eski değeri olan $5$ kayboldu.
+    \item $b \leftarrow a$ adımı çalışır: $a$'nın değeri $9$ olduğundan $b$'ye yine $9$ atanır.
+    \item Sonuç: $a = 9, b = 9$. Takas başarısız oldu.
+\end{enumerate}
+
+\textbf{Fiziksel Benzetme:} Sol elinizde bir bardak portakal suyu, sağ elinizde bir bardak elma suyu olduğunu varsayalım. Bardakları kırmadan ve sıvıları karıştırmadan suların yerini nasıl değiştirirsiniz? Üçüncü ve boş bir bardağa ihtiyaç vardır. Portakal suyunu boş bardağa dökünce ilk bardak boşa çıkar. Elma suyunu bu bardağa aktarırsınız. Son olarak üçüncü bardaktaki portakal suyunu sağ bardağa boşaltırsınız.
+
+Algoritmada da aynı şekilde üçüncü bir \textbf{geçici değişken} (temporary variable, $gecici$) kullanırız:
+\end{proof}
+
+Bu fikrin sözde kodu şu şekildedir:
+
+\begin{center}
+\begin{minipage}{1.0\textwidth}
+\begin{tabular}{p{2.4cm}p{9.4cm}}
+\hline
+\multicolumn{2}{l}{\textbf{Algoritma:} $\text{DEGER\_TAKAS}(a, b)$} \\
+\hline
+\textbf{Girdi:} & İki değişken $a$ ve $b$ \\
+\textbf{Çıktı:} & Değerleri yer değiştirmiş $a$ ve $b$ \\
+1: & $gecici \leftarrow a$ \quad \textit{(a'nın orijinal değeri yedeklenir)} \\
+2: & $a \leftarrow b$ \quad \textit{(b'nin değeri a'ya yazılır)} \\
+3: & $b \leftarrow gecici$ \quad \textit{(yedekteki eski a değeri b'ye aktarılır)} \\
+4: & \textbf{döndür} $(a, b)$ \\
+\hline
+\end{tabular}
+\end{minipage}
+\end{center}
+
+\begin{example}[Dizide En Büyük Elemanı Bulma]
+$n$ elemanlı bir $A = [A[1], A[2], \dots, A[n]]$ tam sayı dizisinin en büyük elemanını bulan algoritmayı sözde kod ile yazınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Adım adım kurgulayalım:
+\begin{enumerate}
+    \item Girdi boş olamaz, $n \ge 1$ olduğunu varsayalım.
+    \item En büyük adayımızı dizinin ilk elemanı yapalım: $eb \leftarrow A[1]$.
+    \item $2$'den $n$'ye kadar her bir $i$ indisi için $A[i]$'yi inceleyelim.
+    \item Eğer $A[i] > eb$ ise, yeni rekor $A[i]$'dir; dolayısıyla $eb \leftarrow A[i]$ güncellemesini yapalım.
+    \item Döngü bittiğinde $eb$ değerini döndürelim.
+\end{enumerate}
+\end{proof}
+
+Bunu biçimsel sözde kod olarak yazalım:
+
+\begin{center}
+\begin{minipage}{1.0\textwidth}
+\begin{tabular}{p{2.4cm}p{9.4cm}}
+\hline
+\multicolumn{2}{l}{\textbf{Algoritma:} $\text{EN\_BUYUK\_BUL}(A, n)$} \\
+\hline
+\textbf{Girdi:} & $n$ elemanlı $A[1 \dots n]$ tam sayı dizisi ($n \ge 1$) \\
+\textbf{Çıktı:} & Dizideki en büyük tam sayı değeri \\
+1: & $eb \leftarrow A[1]$ \\
+2: & \textbf{için} $i \leftarrow 2$ \textbf{'den} $n$ \textbf{'ye kadar yap:} \\
+3: & \quad \textbf{eğer} $A[i] > eb$ \textbf{ise:} \\
+4: & \quad \quad $eb \leftarrow A[i]$ \\
+5: & \textbf{döndür} $eb$ \\
+\hline
+\end{tabular}
+\end{minipage}
+\end{center}
+
+\begin{example}[Öklid Algoritması ile EBOB Hesabı]
+Verilen iki pozitif $a$ ve $b$ tam sayısının en büyük ortak bölenini ($\gcd(a, b)$) bulan Öklid algoritmasını sözde kod olarak yazınız ve $a = 48, b = 18$ için adım adım izleme tablosu (trace table) oluşturunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölüm 13'te ayrıntılarını gördüğümüz üzere Öklid'in temel gözlemi şudur: Eğer $a = q \cdot b + k$ (burada $k = a \bmod b$ kalandır) şeklinde yazılırsa, $a$ ile $b$'nin ortak bölenleri ile $b$ ile $k$'nin ortak bölenleri tamamen aynıdır. Dolayısıyla:
+\[ \gcd(a, b) = \gcd(b, a \bmod b) \]
+Kalan $0$ olduğunda bölen sayı aradığımız EBOB'dur.
+\end{proof}
+
+Sözde kod:
+\begin{center}
+\begin{minipage}{1.0\textwidth}
+\begin{tabular}{p{2.4cm}p{9.4cm}}
+\hline
+\multicolumn{2}{l}{\textbf{Algoritma:} $\text{OKLID\_EBOB}(a, b)$} \\
+\hline
+\textbf{Girdi:} & İki pozitif tam sayı $a$ ve $b$ \\
+\textbf{Çıktı:} & $\gcd(a, b)$ \\
+1: & \textbf{iken} $b \neq 0$ \textbf{yap:} \\
+2: & \quad $kalan \leftarrow a \bmod b$ \\
+3: & \quad $a \leftarrow b$ \\
+4: & \quad $b \leftarrow kalan$ \\
+5: & \textbf{döndür} $a$ \\
+\hline
+\end{tabular}
+\end{minipage}
+\end{center}
+
+Şimdi $a = 48$ ve $b = 18$ girdileri için algoritmanın bellek durumunu adım adım izleyelim:
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Adım} & \textbf{Koşul ($b \neq 0$)} & $kalan = a \bmod b$ & Yeni $a$ & Yeni $b$ \\
+\hline
+Başlangıç & --- & --- & 48 & 18 \\
+1. Döngü & $18 \neq 0$ (Doğru) & $48 \bmod 18 = 12$ & 18 & 12 \\
+2. Döngü & $12 \neq 0$ (Doğru) & $18 \bmod 12 = 6$ & 12 & 6 \\
+3. Döngü & $6 \neq 0$ (Doğru) & $12 \bmod 6 = 0$ & 6 & 0 \\
+Döngü Sonu & $0 \neq 0$ (Yanlış) & Algoritma çıkar & \textbf{Sonuç: 6} & 0 \\
+\hline
+\end{tabular}
+\end{center}
+
+Sonuç olarak $\gcd(48, 18) = 6$ doğru biçimde bulunmuştur.
+
+\begin{caution}
+\textbf{En sık yapılan hata:} Sözde kod yazarken ``sihirli adımlar'' atmaktır. Örneğin, sözde kodun içine tek bir satırda ``$A$ dizisindeki en büyük elemanı bul'' veya ``$n$ sayısının asal çarpanlarını ayır'' yazıp geçmek çözümü gizlemektir. Sözde kod, o işlemin mantıksal alt adımlarını (döngü ve karşılaştırmaları) net biçimde sergilemelidir.
+\end{caution}
+
+\section{Değişken, Koşul ve Döngü}
+
+Bir algoritmanın hesaplama yapabilmesi için üç temel yapı taşına ihtiyacı vardır:
+\begin{enumerate}
+    \item Bilgiyi saklamak (\textbf{Değişken}),
+    \item Duruma göre yol ayrımına gitmek (\textbf{Koşul / Dallanma}),
+    \item Adımları tekrar etmek (\textbf{Döngü}).
+\end{enumerate}
+Bilgisayar biliminde Böhm-Jacopini teoremi gereği, Turing-tamı olan herhangi bir hesaplama yalnızca bu üç yapının (sıralı işlem, koşullu dallanma, koşullu döngü) birleşimiyle ifade edilebilir.
+
+\subsection{Değişkenler ve Atama Mantığı}
+
+Matematikte $x = x + 1$ ifadesi bir çelişkidir; hiçbir gerçel sayı kendisinin bir fazlasına eşit olamaz. Ancak bilgisayar biliminde:
+\[ x \leftarrow x + 1 \]
+ifadesi bir denklik veya eşitlik değil, bir \textbf{eylemdir (atama işlemi)}.
+
+\begin{definition}[Değişken ve Atama]
+Bir \textbf{değişken}, bilgisayar belleğinde belirli bir değere ev sahipliği yapan isimlendirilmiş bir saklama alanıdır (kutu). 
+
+$\text{Değişken} \leftarrow \text{İfade}$ atama işlemi iki aşamada gerçekleşir:
+\begin{enumerate}
+    \item Sağ taraftaki ifadenin anlık değeri hesaplanır.
+    \item Elde edilen sonuç, sol taraftaki değişkenin bellekteki kutusuna yazılır (eski değer silinir).
+\end{enumerate}
+\end{definition}
+
+Dolayısıyla $x \leftarrow x + 1$ demek, ``$x$'in kutusundaki mevcut sayıyı oku, 1 ekle, çıkan sonucu tekrar o kutunun içine koy'' demektir.
+
+\subsection{Koşullar (Dallanma)}
+
+Algoritmanın akışı tek bir doğru çizgi üzerinde gitmek zorunda değildir; verinin durumuna göre farklı yollar seçilmelidir.
+\begin{itemize}
+    \item $\text{\textbf{eğer }} \text{koşul} \text{ \textbf{ise:}}$ Koşul doğruysa belirtilen işlemleri yap.
+    \item $\text{\textbf{değilse:}}$ Koşul yanlışsa bu alternatif işlemleri yap.
+\end{itemize}
+
+\subsection{Döngüler ve Döngü Değişmezi (Loop Invariant)}
+
+Döngüler, belirli bir işlem öbeğini tekrar tekrar çalıştırmamızı sağlar. İki temel döngü çeşidi vardır:
+\begin{enumerate}
+    \item \textbf{Koşullu Döngü (İken / While):} Önceden kaç kez döneceğini tam bilmediğimiz, bir koşul bozulana kadar süren döngüler.
+    \item \textbf{Sayaçlı Döngü (İçin / For):} Bir sayacın belirli bir başlangıç değerinden bitiş değerine kadar adım adım ilerlediği döngüler.
+\end{enumerate}
+
+Bölüm 18'de incelediğimiz invaryant (değişmez) ilkesi döngülerin analizinde de karşımıza çıkar. Bir döngünün doğruluğunu garanti eden bu mantıksal araca \textbf{döngü değişmezi} (loop invariant) denir.
+
+\begin{definition}[Döngü Değişmezi]
+Döngü değişmezi, döngünün her yinelenmesinden (iterasyonundan) önce ve sonra doğru kalan mantıksal bir önermedir.
+\end{definition}
+
+Döngü değişmezi yöntemi, Bölüm 2'de gördüğümüz tümevarım ilkesiyle doğrudan örtüşür ve üç aşamada incelenir:
+\begin{enumerate}
+    \item \textbf{Başlangıç (Temel Adım):} Döngü ilk kez başlamadan önce önerme doğrudur.
+    \item \textbf{Sürdürme (Tümevarım Adımı):} Döngünün bir adımının başında önerme doğruysa, o adım tamamlandığında da önerme doğru kalmaya devam eder.
+    \item \textbf{Sonlanma:} Döngü bittiğinde, korunan bu değişmez önerme bize aradığımız problemin doğru çözümünü verir.
+\end{enumerate}
+
+Şimdi bu yapıları somut problemlerle inceleyelim.
+
+\begin{example}[Toplam Hesabı ve Döngü Değişmezi]
+$1$'den $n$'ye kadar olan tam sayıların toplamını hesaplayan bir döngü tasarlayınız ve doğruluğunu döngü değişmezi kullanarak ispatlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bir prefix sum değişkeni $T$ tutalım. Başlangıçta $T = 0$ olsun. Bir sayaç $i = 1$'den $n$'ye kadar her adımda $T$'ye eklensin.
+
+Sözde kod:
+\begin{center}
+\begin{minipage}{1.0\textwidth}
+\begin{tabular}{p{2.4cm}p{9.4cm}}
+\hline
+\multicolumn{2}{l}{\textbf{Algoritma:} $\text{TOPLAM}(n)$} \\
+\hline
+1: & $T \leftarrow 0$ \\
+2: & $i \leftarrow 1$ \\
+3: & \textbf{iken} $i \le n$ \textbf{yap:} \\
+4: & \quad $T \leftarrow T + i$ \\
+5: & \quad $i \leftarrow i + 1$ \\
+6: & \textbf{döndür} $T$ \\
+\hline
+\end{tabular}
+\end{minipage}
+\end{center}
+
+\textbf{Doğruluk İspatı (Döngü Değişmezi):}
+Döngünün her adımının başında şu iddiada bulunalım:
+\textbf{Değişmez (Invariant):} Döngü koşulu kontrol edilirken $T = \sum_{k=1}^{i-1} k$ eşitliği geçerlidir.
+\begin{itemize}
+    \item \textbf{Başlangıç:} Döngü başlamadan önce $i = 1$ ve $T = 0$'dır. Boş toplam tanımdan $0$ olduğundan $\sum_{k=1}^{0} k = 0$'dır. Eşitlik $0 = 0$ olup başlangıçta doğrudur.
+    \item \textbf{Sürdürme:} Herhangi bir adımın başında $T = \sum_{k=1}^{i-1} k$ doğru olsun. Döngü gövdesi çalıştığında:
+    Yeni toplam:
+    \[ T_{yeni} = T_{eski} + i = \left(\sum_{k=1}^{i-1} k\right) + i = \sum_{k=1}^{i} k \]
+    Ardından sayaç $i_{yeni} = i + 1$ yapılır. Böylece bir sonraki adımın başında:
+    \[ T_{yeni} = \sum_{k=1}^{i_{yeni}-1} k \]
+    olur. Değişmez bir sonraki iterasyona aynen korunarak aktarılmıştır.
+    \item \textbf{Sonlanma:} Döngü $i = n + 1$ olduğu anda sonlanır ($i \le n$ bozulur). Değişmezimizde $i$ yerine $n + 1$ yazarsak:
+    \[ T = \sum_{k=1}^{(n+1)-1} k = \sum_{k=1}^{n} k \]
+    elde edilir. Döngü durduğunda $T$ tam olarak $1$'den $n$'ye kadar olan sayıların toplamına eşittir.
+\end{itemize}
+\end{proof}
+
+\begin{example}[Basamaklar Toplamı]
+Pozitif bir $n$ tam sayısının onluk tabandaki basamaklarının toplamını hesaplayan bir algoritma yazınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Fikri somut bir sayıyla görelim: $n = 374$.
+Sayının birler basamağını koparmak için 10'a bölerek kalana bakarız: $374 \bmod 10 = 4$.
+Bu basamağı toplama ekleriz.
+Basamağı sayıdan ayırmak için sayıyı 10'a böleriz: $\lfloor 374 / 10 \rfloor = 37$.
+Aynı işlemi tekrarlarız:
+\begin{itemize}
+    \item $37 \bmod 10 = 7$ (toplama ekle), $\lfloor 37 / 10 \rfloor = 3$.
+    \item $3 \bmod 10 = 3$ (toplama ekle), $\lfloor 3 / 10 \rfloor = 0$.
+    \item Sayı $0$ olduğunda döngü biter.
+\end{itemize}
+Toplam: $4 + 7 + 3 = 14$.
+\end{proof}
+
+Sözde kod:
+\begin{center}
+\begin{minipage}{1.0\textwidth}
+\begin{tabular}{p{2.4cm}p{9.4cm}}
+\hline
+\multicolumn{2}{l}{\textbf{Algoritma:} $\text{BASAMAK\_TOPLAMI}(n)$} \\
+\hline
+\textbf{Girdi:} & Pozitif tam sayı $n$ \\
+\textbf{Çıktı:} & $n$'nin basamakları toplamı \\
+1: & $toplam \leftarrow 0$ \\
+2: & \textbf{iken} $n > 0$ \textbf{yap:} \\
+3: & \quad $basamak \leftarrow n \bmod 10$ \\
+4: & \quad $toplam \leftarrow toplam + basamak$ \\
+5: & \quad $n \leftarrow \lfloor n / 10 \rfloor$ \\
+6: & \textbf{döndür} $toplam$ \\
+\hline
+\end{tabular}
+\end{minipage}
+\end{center}
+
+\begin{example}[Fibonacci Dizisi Hesabı]
+Bölüm 9'da yineleme bağıntıları bağlamında incelediğimiz Fibonacci dizisi $F_0 = 0$, $F_1 = 1$ ve her $n \ge 2$ için $F_n = F_{n-1} + F_{n-2}$ şeklinde tanımlanır. Verilen bir $n$ tam sayısı ($n \ge 2$) için $F_n$'i hesaplayan bir algoritma tasarlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Fibonacci dizisinde bir sonraki terimi bulmak için daima son iki değer yeterlidir. Eski terimleri $a$ ve $b$ değişkenlerinde tutalım: başlangıçta $a = F_0 = 0$, $b = F_1 = 1$.
+Bir sonraki terim $yeni = a + b$ olur.
+Ardından bir adım sağa kayarız: $a$'nın yerine eski $b$ geçer, $b$'nin yerine ise az önce hesaplanan $yeni$ değeri atanır.
+Bu kaydırma işlemini $n-1$ defa tekrarladığımızda $b$ değişkeni tam olarak $F_n$'e eşit olur.
+\end{proof}
+
+Sözde kod:
+\begin{center}
+\begin{minipage}{1.0\textwidth}
+\begin{tabular}{p{2.4cm}p{9.4cm}}
+\hline
+\multicolumn{2}{l}{\textbf{Algoritma:} $\text{FIBONACCI}(n)$} \\
+\hline
+\textbf{Girdi:} & Pozitif tam sayı $n$ ($n \ge 1$) \\
+\textbf{Çıktı:} & $n$. Fibonacci sayısı $F_n$ \\
+1: & \textbf{eğer} $n = 1$ \textbf{ise döndür} 1 \\
+2: & $a \leftarrow 0$ \\
+3: & $b \leftarrow 1$ \\
+4: & \textbf{için} $i \leftarrow 2$ \textbf{'den} $n$ \textbf{'ye kadar yap:} \\
+5: & \quad $yeni \leftarrow a + b$ \\
+6: & \quad $a \leftarrow b$ \\
+7: & \quad $b \leftarrow yeni$ \\
+8: & \textbf{döndür} $b$ \\
+\hline
+\end{tabular}
+\end{minipage}
+\end{center}
+
+\begin{example}[Sadece Çıkarma Kullanarak Bölme ve Kalan Bulma]
+Çarpma ve bölme operatörlerini kullanmadan, yalnızca çıkarma ve toplama ile pozitif iki tam sayı $A$ ve $B$ için $A$'nın $B$'ye bölümünden elde edilen bölüm ($Q$) ve kalan ($R$) değerlerini bulan algoritmayı tasarlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölüm 11'de ele aldığımız bölme mantığını anımsarsak; bölme işlemi esasen art arda yapılan bir çıkarma işlemidir. $A$'dan $B$'yi kaç kez çıkarabiliyorsak bölüm odur; geriye çıkaramayacağımız kadar küçük bir miktar kaldığında o miktar kalandır.
+Örneğin $A = 14, B = 3$:
+\begin{itemize}
+    \item $14 - 3 = 11$ (1. çıkarma)
+    \item $11 - 3 = 8$ (2. çıkarma)
+    \item $8 - 3 = 5$ (3. çıkarma)
+    \item $5 - 3 = 2$ (4. çıkarma)
+    \item $2 < 3$ olduğundan daha fazla çıkarma yapılamaz.
+    \item Çıkarma sayısı: 4 (Bölüm $Q = 4$), Kalan: 2 ($R = 2$).
+\end{itemize}
+\end{proof}
+
+Sözde kod:
+\begin{center}
+\begin{minipage}{1.0\textwidth}
+\begin{tabular}{p{2.4cm}p{9.4cm}}
+\hline
+\multicolumn{2}{l}{\textbf{Algoritma:} $\text{TAM\_BOLME}(A, B)$} \\
+\hline
+\textbf{Girdi:} & Pozitif tam sayılar $A$ ve $B$ \\
+\textbf{Çıktı:} & Bölüm $Q$ ve Kalan $R$ ($A = Q \cdot B + R$ ve $0 \le R < B$) \\
+1: & $Q \leftarrow 0$ \\
+2: & $R \leftarrow A$ \\
+3: & \textbf{iken} $R \ge B$ \textbf{yap:} \\
+4: & \quad $R \leftarrow R - B$ \\
+5: & \quad $Q \leftarrow Q + 1$ \\
+6: & \textbf{döndür} $(Q, R)$ \\
+\hline
+\end{tabular}
+\end{minipage}
+\end{center}
+
+Burada döngü değişmezimiz şudur: Döngünün her adımında $A = Q \cdot B + R$ bağıntısı tam olarak korunur. Döngü bittiğinde ise $R < B$ şartı sağlanır; bu da bölme algoritmasının tekliğini kanıtlar.
+
+\subsection{Sözde Koddan Gerçek Koda Geçiş}
+
+Tasarladığımız algoritmaları bilgisayara işletmek için bir programlama diline dökeriz. Yukarıda tasarladığımız Öklid EBOB algoritmasının C dilindeki karşılığına ve ardından sözde kod biçimine bakalım:
+
+\begin{lstlisting}[language=CTemel]
+// C Dili ile EBOB Algoritmasi
+#include <stdio.h>
+
+int ebob(int a, int b) {
+    while (b != 0) {
+        int kalan = a % b;
+        a = b;
+        b = kalan;
+    }
+    return a;
+}
+
+int main() {
+    int x = 48, y = 18;
+    printf("EBOB(%d, %d) = %d\n", x, y, ebob(x, y));
+    return 0;
+}
+\end{lstlisting}
+
+Aynı algoritmanın sözde kod karşılığı ise şöyledir:
+
+\begin{lstlisting}
+FUNCTION gcd(a, b)
+    WHILE b != 0 DO
+        remainder = a MOD b
+        a = b
+        b = remainder
+    END WHILE
+    RETURN a
+END FUNCTION
+
+x = 48
+y = 18
+PRINT "GCD(" + x + ", " + y + ") = " + gcd(x, y)\end{lstlisting}
+
+Görüldüğü üzere mantık ve algoritma tamamen aynıdır; yalnızca dillerin yazım kuralları (sözdizimi) farklılık gösterir.
+
+\begin{caution}
+\textbf{En sık yapılan hata (Off-by-one Hatası):} Döngü sınırlarında ``bir eksik ya da bir fazla'' adım atmaktır. Örneğin $n$ elemanlı bir diziyi gezerken sayacı $0$'dan mı başlatmalıyız yoksa $1$'den mi? Şartımız $i < n$ mi olmalıdır yoksa $i \le n$ mi? 
+C dilinde diziler $0$'dan başladığı için sınırlar $0 \le i < n$ olurken, matematikte ve sözde kodda genellikle $1 \le i \le n$ tercih edilir. Bu sınırları birbirine karıştırmak kodlama ve algoritma sorularında en yaygın mantık hatalarındandır.
+\end{caution}

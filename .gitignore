@@ -1,0 +1,62 @@
+# Gizli anahtarlar ve yerel yapılandırma
+.env
+
+# Derleme çıktıları (yeniden üretilebilir)
+book_build.pdf
+book_build.tex
+book_build.aux
+book_build.toc
+book_build.log
+book_build.out
+
+# macOS
+.DS_Store
+
+# Yerel arşiv ve elle tazelenen kopyalar (üretilebilir / makineye özel).
+# `_eski_output/` betiklerin yedek klasörüdür (bkz. scripts/fix_*.py); eski
+# bölüm dosyalarının kopyalarını taşıdığı için depoda tutulmaz.
+_eski_output/
+# Kökteki elle tazelenen PDF kopyası; yayımlanan nüsha `site/` içindedir.
+BILGISAYAR_OLIMPIYATLARI.pdf
+
+# Ajan oturumlarının yerel çalıştırma dosyaları (depoyu ilgilendirmez).
+_run_*.sh
+
+# --- Üretim (generation) katmanı: depoda PAYLAŞILMAZ (bkz. KARARLAR.md → D71) ---
+# Bu dosyalar yazarın/ajanın ortamında kalır ve çalışmaya devam eder; yalnızca
+# depoya işlenmez. Gerekçe: kitabın metni paylaşılır, onu üreten boru hattı ve
+# API anahtarı taşıyan betikler paylaşılmaz. Aşağıdaki dosyaları sildirmeyin!
+.env.example
+/config/CALISMA_PLANI.md
+/config/topic_prompt.md
+/config/gorevler/
+/scripts/content_factory.py
+/scripts/convert_python.py
+/scripts/write_chapter.py
+/scripts/write_frontmatter.py
+/scripts/polish.py
+/scripts/review_chapter.py
+/scripts/fix_findings.py
+/scripts/fix_literal*.py
+/scripts/fix_tasks_*.py
+/scripts/fix_bolum_suffixes.py
+/scripts/fix_compound_refs.py
+/scripts/fix_markdown_bold.py
+/scripts/fix_standalone_rule.py
+/scripts/generate_tasks.py
+/scripts/upd_generate_tasks_log.py
+/scripts/upd_mufredat_log.py
+/scripts/verify_claims.py
+
+# Yedek/dosya artıkları (üretim betikleri .bak bırakır).
+*.tex.bak
+*.bak
+
+# Python
+__pycache__/
+*.pyc
+
+# ÖNEMLİ: site/ YAYINLANACAK çıktıdır ve depoda BULUNMALIDIR.
+# Netlify/Vercel, derleme yapmadan depodaki site/ klasörünü yayımlar; buraya
+# "site/" satırı EKLEMEYİN. Eklenirse yayın
+# "Deploy directory 'site' does not exist" hatasıyla düşer (bkz. config/KARARLAR.md → D35).

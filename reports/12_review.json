@@ -1,0 +1,25 @@
+{
+  "file": "12_asal_sayilar.tex",
+  "findings": [
+    {
+      "file": "12_asal_sayilar.tex",
+      "line_hint": 223,
+      "type": "duplicated_example",
+      "severity": "major",
+      "excerpt": "\\begin{example}[IMO 1959]\nHer $n$ pozitif tamsayısı için\n\\[ \\frac{21n + 4}{14n + 3} \\]\nkesrinin sadeleştirilemez olduğunu gösteriniz.\n\\end{example}",
+      "issue": "Bu örnek (IMO 1959 Soru 1: (21n+4)/(14n+3) kesrinin indirgenemezliği), Bölüm 13'te (13_ebob_ve_ekok.tex) '[1959 Uluslararası Matematik Olimpiyatı - Soru 1]' başlığı altında birebir aynı problem olarak çözülmektedir.",
+      "suggested_fix": "Bu örnek Bölüm 13'e (Öklid Algoritması) daha uygundur. Bölüm 12'deki bu örnek yerine aralarında asallığı pekiştiren farklı bir olimpiyat örneği (örneğin $\\gcd(2n+1, 3n+2) = 1$ veya $\\gcd(a, b)=1 \\implies \\gcd(a+b, a^2-ab+b^2) \\in \\{1, 3\\}$) eklenmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "12_asal_sayilar.tex",
+      "line_hint": 418,
+      "type": "bad_reference",
+      "severity": "minor",
+      "excerpt": "Bölüm 16'da ele aldığımız parite kontrolü: $(x+y) + (x-y) = 2x$ (çift) olduğundan",
+      "issue": "Bölüm 16 (Parite ve Simetri) henüz işlenmemiş sonraki bir bölümdür; metinde ise sanki daha önce işlenmiş gibi geçmiş zaman ('ele aldığımız') kullanılmıştır.",
+      "suggested_fix": "'Bölüm 16'da ayrıntılı göreceğimiz parite (teklik-çiftlik) özelliği:' veya doğrudan 'Parite (teklik-çiftlik) kontrolü:' şeklinde düzeltilmelidir.",
+      "confidence": "high"
+    }
+  ]
+}

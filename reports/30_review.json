@@ -1,0 +1,15 @@
+{
+  "file": "30_diziler_stringler_ve_pointer.tex",
+  "findings": [
+    {
+      "file": "30_diziler_stringler_ve_pointer.tex",
+      "line_hint": 147,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "include <stdio.h>",
+      "issue": "C programlama dilinde standart kütüphane başlık dosyaları '#include <stdio.h>' önişlemci yönergesi ile dahil edilir. Kod parçalarında başındaki '#' (diyez) karakteri eksik bırakılmıştır (kod bloklarında 'include <stdio.h>' olarak yazılmıştır).",
+      "suggested_fix": "Kod bloklarındaki 'include <stdio.h>' ifadelerini '#include <stdio.h>' olarak düzeltiniz.",
+      "confidence": "high"
+    }
+  ]
+}

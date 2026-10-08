@@ -1,0 +1,25 @@
+{
+  "file": "28_c_ye_giris_ve_kontrol_akisi.tex",
+  "findings": [
+    {
+      "file": "28_c_ye_giris_ve_kontrol_akisi.tex",
+      "line_hint": 57,
+      "type": "factual",
+      "severity": "major",
+      "excerpt": "\\item \\texttt{\\textbackslash{}\\%d} veya \\texttt{\\textbackslash{}\\%i}: İşaretli 32-bit tam sayı (\\texttt{int}).",
+      "issue": "Biçim belirteçleri metin içinde listelenirken ve açıklanırken (57-65, 144, 155, 156, 167, 169. satırlar) `\\textbackslash{}\\%` yazılmıştır. Bu komut PDF derlemesinde ekrana ters bölü (`\\`) basarak belirteçlerin C dilindeki gerçek biçimi olan `%d`, `%u`, `%lld`, `%lf`, `%f`, `%c`, `%s` yerine `\\%d`, `\\%u`, `\\%lld`, `\\%lf` olarak görünmesine neden olmaktadır. C dilinde format belirteçleri ters bölü içermez.",
+      "suggested_fix": "`\\textbackslash{}\\%` yerine doğrudan `\\%` kullanılmalıdır (örn. `\\texttt{\\%d}`, `\\texttt{\\%u}`, `\\texttt{\\%lld}`, `\\texttt{\\%lf}`, `\\texttt{\\%f}`, `\\texttt{\\%c}`, `\\texttt{\\%s}`).",
+      "confidence": "high"
+    },
+    {
+      "file": "28_c_ye_giris_ve_kontrol_akisi.tex",
+      "line_hint": 189,
+      "type": "factual",
+      "severity": "major",
+      "excerpt": "\\text{\\texttt{if (A \\textbackslash{}\\&\\textbackslash{}\\& B)}} \\iff \\text{\\texttt{if (A) \\textbackslash{}\\{ if (B) \\textbackslash{}\\{ ... \\textbackslash{}\\}} \\textbackslash{}\\}}}",
+      "issue": "Kısa devre değerlendirmesinin denklik gösteriminde `\\&` ve süslü parantezlerin önüne fazladan `\\textbackslash{}` eklenmiştir. Bu durum derlenen çıktıda C dilinde bulunmayan ters bölü karakterlerinin görünmesine (`if (A \\&\\& B) <=> if (A) \\{ if (B) \\{ ... \\} \\}`) ve C sözdiziminin bozulmasına yol açmaktadır.",
+      "suggested_fix": "İfade şu şekilde düzeltilmelidir: `\\text{\\texttt{if (A \\&\\& B)}} \\iff \\text{\\texttt{if (A) \\{ if (B) \\{ ... \\} \\}}}`",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,292 @@
+\chapter[Güvercin Yuvası İlkesi · \textit{Temel}]{Güvercin Yuvası İlkesi}
+\chaptermark{Güvercin Yuvası İlkesi}
+
+Bazı problemlerde nesnelerin tam olarak nereye yerleştiğini bilmeyiz; hatta yerleşim tamamen rastgele görünebilir. Buna rağmen yalnızca sayıların büyüklüğünden hareketle, kaçınılmaz bir çakışma olduğunu kanıtlayabiliriz. Güvercin yuvası ilkesi bu fikrin en yalın hâlidir: Güvercin sayısı yuva sayısından fazlaysa, en az bir yuvada birden çok güvercin bulunmak zorundadır.
+
+İlkenin gücü, gerçek güvercinlerle sınırlı olmamasıdır. Öğrencileri doğdukları aylara, sayıları belirli çiftlere, noktaları küçük bölgelere, nesneleri renklerine veya son basamaklarına göre sınıflandırdığımızda; öğrenciler, sayılar ve noktalar ``güvercin'', sınıflar ise ``yuva'' rolünü üstlenir. Asıl ustalık, problemi doğru sınıflara ayırmaktır. Burada önce temel çelişkiyi kuracak, ardından ilkenin niceliksel genellemesini ve klasik uygulamalarda uygun yuvaları belirleme yollarını inceleyeceğiz.
+
+% ============================================================
+% 7.1 TEMEL İLKE
+% ============================================================
+\section{Temel İlke}
+
+Bir çekmecede kırmızı ve mavi olmak üzere iki renkte çorap bulunduğunu düşünelim. Oda tamamen karanlıksa ilk iki çorabın farklı renk olması mümkündür. Fakat üçüncü çorap çekildiğinde, iki renkten birine ait iki çorabın mutlaka elimizde olacağını biliriz. Bu sonuca çorapların hangi sırayla geldiğini inceleyerek değil, yalnızca iki renk sınıfına üç çorap dağıtıldığını fark ederek ulaştık.
+
+\begin{definition}[Güvercin ve yuva]
+Bir güvercin yuvası probleminde sınıflandırılan nesnelere \textbf{güvercin}, nesnelerin yerleştirildiği sınıflara ise \textbf{yuva} denir. Bu adlar yalnızca benzetmedir; güvercinler sayılar, kişiler veya noktalar; yuvalar da renkler, aylar, aralıklar ya da başka uygun sınıflar olabilir.
+\end{definition}
+
+\begin{theorem}[Güvercin yuvası ilkesi]
+$n+1$ güvercin $n$ yuvaya yerleştirilirse, en az bir yuvada en az iki güvercin bulunur.
+\end{theorem}
+
+\begin{proof}
+İddianın tersini varsayalım: Her yuvada en fazla bir güvercin bulunsun. $n$ yuva olduğuna göre yerleştirilebilecek güvercin sayısı en fazla
+\[
+1+1+\cdots+1=n
+\]
+olabilir. Oysa elimizde $n+1$ güvercin vardır. Bu, varsayımımızla çelişir. Demek ki en az bir yuvada iki ya da daha fazla güvercin bulunmak zorundadır.
+\end{proof}
+
+İspatın dikkat çekici yönü, hangi yuvanın dolacağını söylememesidir. İlke yalnızca varlık bildirir: ``Böyle bir yuva vardır.'' Olimpiyat problemlerinde çoğu zaman aranan da tam olarak budur. Bir örnekte iki öğrencinin hangi ayda doğduğunu bulmamız gerekmez; en az iki öğrencinin aynı ayda doğduğunu kanıtlamamız yeterlidir.
+
+\subsection{Çözümlü örnekler}
+
+\begin{example}
+Bir odada $13$ kişi varsa, en az iki kişinin aynı ayda doğduğunu gösteriniz.
+\end{example}
+\begin{proof}[Çözüm]
+Güvercin olarak $13$ kişiyi, yuva olarak yılın $12$ ayını seçelim. Her kişi doğduğu aya tam olarak bir kez yerleştirilir. $13$ kişi, $12$ aya dağıtıldığı için güvercin yuvası ilkesi en az bir ayda en az iki kişinin doğmuş olmasını zorunlu kılar.
+
+Burada kişilerin doğum günlerini veya yıllarını bilmemiz gerekmez. Yalnızca ay sayısının $12$ ve kişi sayısının $13$ olması yeterlidir.
+\end{proof}
+
+\begin{example}
+Bir sınıfta $31$ öğrenci bulunmaktadır. En az üç öğrencinin aynı doğum ayında doğduğunu bu ilkeden yararlanarak kanıtlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+İki öğrencinin aynı ayda doğması için $13$ öğrenci yeterliydi. Ancak burada ``en az üç'' isteniyor; temel ilkenin doğrudan biçimi bunu tek başına söylemez. Tersini düşünelim: Her ayda en fazla iki öğrenci doğmuş olsun. O zaman $12$ ayda bulunabilecek öğrenci sayısı en fazla
+\[
+12\cdot2=24
+\]
+olurdu. Sınıfta $31$ öğrenci bulunduğundan bu imkânsızdır. Dolayısıyla en az bir ayda en az üç öğrenci doğmuştur.
+
+Bu düşünce, bir sonraki kısımda formülleştireceğimiz genelleştirilmiş ilkenin zeminini hazırlar.
+\end{proof}
+
+\begin{example}
+$1$ ile $20$ arasından seçilen $11$ tam sayı arasında aynı tekliğe--çiftliğe sahip iki sayı bulunduğunu gösteriniz.
+\end{example}
+\begin{proof}[Çözüm]
+Bu kez yuvalar yalnızca iki tanedir: tek sayılar ve çift sayılar. Seçilen her sayı tam olarak bu iki sınıftan birine girer. $11$ sayı iki yuvaya dağıtıldığı için, özellikle en az bir yuvada iki sayı bulunur. Böylece seçilen sayılardan en az ikisi ya ikisi de tek ya da ikisi de çifttir.
+
+Bu sonuç zayıf görünebilir; fakat doğru sınıflandırma seçildiğinde çok daha keskin sonuçlara dönüşebilir. Bölüm 17'de tekliğin--çiftliğin imkânsızlık ispatlarında nasıl etkili bir araç olduğunu ayrıntılı biçimde ele alacağız.
+\end{proof}
+
+\begin{example}
+Bir sepette yalnızca sarı, yeşil ve kırmızı bilyeler vardır. Renk dağılımı bilinmiyor olsa bile, sepetten çekilen $4$ bilye arasında aynı renk iki bilye bulunduğunu ispatlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Üç renk, üç yuvadır; çekilen dört bilye ise dört güvercindir. Dört güvercini üç yuvaya yerleştirdiğimizde en az bir yuvada iki güvercin bulunur. Bu da çekilen bilyelerden en az ikisinin aynı renkte olması demektir.
+\end{proof}
+
+\textbf{Sık yapılan hata:} İlkede ``nesne sayısı yuva sayısına eşitse'' zorunlu olarak çakışma olmaz. Örneğin $12$ kişi, yılın $12$ farklı ayında doğmuş olabilir. Kesinlik için güvercin sayısının yuva sayısından \emph{fazla} olması gerekir.
+
+% ============================================================
+% 7.2 GENELLEŞTİRİLMİŞ İLKE
+% ============================================================
+\section{Genelleştirilmiş İlke}
+
+Temel ilke, bir yuvada en az iki nesne bulunacağını söyler. Fakat nesne sayısı yuva sayısından çok daha büyükse daha kuvvetli bir sonuç bekleriz. Örneğin $100$ kitabı $7$ rafa yerleştirirsek, yalnızca bir rafta iki kitap bulunduğunu söylemek yetersizdir; aslında bazı raflarda en az $15$ kitap bulunmak zorundadır.
+
+Bu zorunlu sayıyı bulmak için toplam nesne sayısını yuva sayısına böleriz. Bölüm sonucu tam sayı değilse, kesri yukarı yuvarlamamız gerekir. Çünkü ``en az'' ifadesi bir tam sayı değerini belirtir.
+
+\begin{theorem}[Genelleştirilmiş güvercin yuvası ilkesi]
+$N$ güvercin $k$ yuvaya yerleştirilirse, en az bir yuvada en az
+\[
+\left\lceil\frac{N}{k}\right\rceil
+\]
+güvercin bulunur.
+\end{theorem}
+
+\begin{proof}
+\[
+t=\left\lceil\frac{N}{k}\right\rceil
+\]
+olsun. Tersini varsayalım; yani her yuvada en fazla $t-1$ güvercin bulunsun. O zaman bütün yuvalardaki güvercinlerin sayısı en fazla $k(t-1)$ olur.
+
+$t$, $N/k$ sayısından büyük veya ona eşit olan en küçük tam sayı olduğundan $t-1<N/k$'dır. Her iki tarafı pozitif $k$ sayısıyla çarparsak
+\[
+k(t-1)<N
+\]
+elde ederiz. Bu, yuvalarda en fazla $k(t-1)$ güvercin varken toplamda $N$ güvercin bulunduğu varsayımıyla çelişir. Demek ki en az bir yuvada en az $t=\left\lceil N/k\right\rceil$ güvercin vardır.
+\end{proof}
+
+Bu teorem, en az kaç nesnenin bir arada bulunacağını verir. Bazen problem ters yönde sorulur: Her yuvada en fazla $r$ nesne olmasını istiyorsak, $k$ yuvaya en fazla $kr$ nesne yerleştirebiliriz. Bir nesne daha eklemek, yani $kr+1$ nesneye çıkmak, bir yuvada en az $r+1$ nesneyi zorunlu kılar.
+
+\subsection{Çözümlü örnekler}
+
+\begin{example}
+$100$ kitabın $7$ rafa yerleştirildiği bir kütüphanede, en az bir rafta en az kaç kitap bulunur?
+\end{example}
+\begin{proof}[Çözüm]
+Kitaplar güvercin, raflar yuva olsun. Genelleştirilmiş ilke doğrudan
+\[
+\left\lceil\frac{100}{7}\right\rceil
+=\left\lceil14+\frac{2}{7}\right\rceil=15
+\]
+sonucunu verir. Raflardan en az birinde en az $15$ kitap bulunur.
+
+$14$'ün yeterli olmadığını görmek önemlidir: Yedi rafa $14$'er kitap koyarsak yalnızca $98$ kitap yerleştiririz; kalan iki kitabın raflardan birine veya ikisine eklenmesi gerekir.
+\end{proof}
+
+\begin{example}
+$73$ öğrenci altı çalışma grubuna dağıtılacaktır. En az bir grupta en az $13$ öğrenci bulunacağını gösteriniz.
+\end{example}
+\begin{proof}[Çözüm]
+Ortalama öğrenci sayısı $73/6=12+1/6$'dır. Öğrenci sayısı kesirli olamayacağı için ortalamanın üstündeki ilk tam sayı olan $13$ zorunludur:
+\[
+\left\lceil\frac{73}{6}\right\rceil=13.
+\]
+Tersinden de kontrol edebiliriz: Her grupta en çok $12$ öğrenci olsaydı toplam öğrenci sayısı en fazla $6\cdot12=72$ olurdu. Bu, $73$ öğrenciyi yerleştirmeye yetmez.
+\end{proof}
+
+\begin{example}
+Bir laboratuvarda $51$ ölçüm, sıcaklık değerinin tam kısmına göre $10$ sınıfa ayrılmıştır: $0$'dan $9$'a kadar. En az bir sınıfta en az kaç ölçüm bulunduğu kesindir?
+\end{example}
+\begin{proof}[Çözüm]
+On sıcaklık sınıfı yuva, $51$ ölçüm güvercindir. Bu nedenle en dolu sınıfta en az
+\[
+\left\lceil\frac{51}{10}\right\rceil=6
+\]
+ölçüm vardır. Beşer ölçüm on sınıfta ancak $50$ ölçüm eder; elli birinci ölçüm sınıflardan birini altıya çıkarır.
+\end{proof}
+
+\begin{example}
+Bir kutuda $8$ farklı renk etiketi vardır. En az $25$ nesne etiketlenirse, aynı etiketi taşıyan en az dört nesne bulunacağını kanıtlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Nesneleri etiketlerinin rengine göre sekiz yuvaya ayıralım. Genelleştirilmiş ilke
+\[
+\left\lceil\frac{25}{8}\right\rceil=4
+\]
+verir. Sezgisel bir kontrol de şudur: Her renkten en fazla üç nesne olsaydı toplam nesne sayısı en fazla $8\cdot3=24$ olurdu. Yirmi beşinci nesne, renklerden birinin dördüncü örneği olmak zorundadır.
+\end{proof}
+
+\textbf{Uyarı:} $\left\lceil N/k\right\rceil$ sonucu, ``her yuvada bu kadar nesne vardır'' anlamına gelmez. Sadece \emph{en az bir} yuvanın bu sayıya ulaştığını söyler. $100$ kitap örneğinde bazı raflar boş bile kalabilir.
+
+\subsection{Garanti sayısını tersine bulmak}
+
+Genelleştirilmiş ilke, ``$N$ nesne dağıtıldıysa ne kadar kalabalık bir yuva vardır?'' sorusunu yanıtlar. Aynı fikri tersine çevirmek, daha sık karşılaşılan bir soruyu çözer: Bir yuvada en az $r$ nesne bulunmasını \emph{garanti etmek} için kaç nesne gerekir?
+
+Her yuvada en fazla $r-1$ nesne kalacak en kötü senaryoyu ele alalım. $k$ yuvanın her birine $r-1$ nesne koyabiliriz; böylece toplam
+\[
+k(r-1)
+\]
+nesne yerleştirilir ve hiçbir yuvada $r$ nesne bulunmaz. Bir nesne daha eklediğimiz anda, yani $k(r-1)+1$ nesneye ulaştığımızda, en az bir yuva $r$ nesneye çıkmak zorundadır.
+
+\begin{theorem}[Kesin garanti eşiği]
+$k$ yuvadan birinde en az $r$ güvercin bulunmasını garanti etmek için $k(r-1)+1$ güvercin yeterlidir; daha azı yeterli değildir.
+\end{theorem}
+
+\begin{proof}
+$k(r-1)+1$ güvercini $k$ yuvaya dağıtalım. Her yuvada en fazla $r-1$ güvercin bulunduğunu varsayarsak toplam en fazla $k(r-1)$ olurdu. Bu, elimizdeki güvercin sayısından bir eksiktir; dolayısıyla bir yuvada en az $r$ güvercin vardır.
+
+Öte yandan $k(r-1)$ güvercin için her yuvaya tam $r-1$ güvercin koymak mümkündür. Bu düzende hiçbir yuva $r$ güvercine ulaşmaz. Demek ki eşikteki ``$+1$'' gereklidir.
+\end{proof}
+
+\begin{example}
+Yılın ayları bakımından en az dört kişinin aynı ayda doğmasını garanti etmek için bir odada en az kaç kişi bulunmalıdır?
+\end{example}
+\begin{proof}[Çözüm]
+Yuvalar $12$ ay, hedef ise aynı yuvadaki $r=4$ kişidir. Kesin garanti eşiği
+\[
+12(4-1)+1=12\cdot3+1=37
+\]
+kişidir.
+
+$36$ kişinin neden yetmediği de açıktır: Her ayda tam üç kişi doğmuş olabilir. Bu düzen $36$ kişiyi içerir, fakat hiçbir ayda dört kişi bulunmaz. Otuz yedinci kişi ise mutlaka aylardan birinin dördüncü kişisi olur.
+\end{proof}
+
+\begin{example}
+Beş farklı renkte kalemin bulunduğu bir kutudan, aynı renkten en az altı kalem çekmeyi garanti etmek için en az kaç kalem çekilmelidir?
+\end{example}
+\begin{proof}[Çözüm]
+Beş renk yuva, aynı renkten altı kalem hedef olduğundan $k=5$, $r=6$ alırız:
+\[
+5(6-1)+1=26.
+\]
+İlk $25$ kalemde en kötü ihtimalle her renkten beşer tane çekilmiş olabilir. Yirmi altıncı kalem, renklerden birinin altıncısı olmak zorundadır.
+\end{proof}
+
+% ============================================================
+% 7.3 UYGULAMALAR
+% ============================================================
+\section{Uygulamalar}
+
+Güvercin yuvası ilkesi hazır bir formülü yerine koymaktan ibaret değildir. Çözümde ilk hamle şu olmalıdır: Nesneleri hangi ortak özelliğe göre sınıflandırırsak aradığımız iki nesnenin aynı sınıfa düşmesi anlamlı bir sonuç üretir? Bazen yuvalar renkler kadar belirgindir; bazen ise toplamı sabit yapan ikililer, bir sayının içindeki tek çarpan veya düzlemi bölen küçük kareler olarak gizlenir.
+
+\subsection{Sayıları doğru yuvalara ayırmak}
+
+\begin{example}
+$1,2,\ldots,2n$ sayıları arasından seçilen herhangi $n+1$ sayı içinde, toplamı $2n+1$ olan iki sayı bulunduğunu gösteriniz.
+\end{example}
+\begin{proof}[Çözüm]
+Sayıları toplamı $2n+1$ olan çiftler hâlinde gruplandıralım:
+\[
+\{1,2n\},\ \{2,2n-1\},\ \ldots,\ \{n,n+1\}.
+\]
+Tam $n$ yuva vardır ve her yuvada iki sayı bulunur. Seçilen $n+1$ sayı güvercin olsun; her sayı ait olduğu çifte yerleştirilir. $n+1$ sayı $n$ yuvaya dağıtıldığı için seçilen iki sayı aynı yuvaya düşer. Aynı yuvadaki iki sayının toplamı tanım gereği $2n+1$'dir.
+
+Buradaki püf noktası, yuvaları tek ve çift sayılar olarak ayırmamaktır. Böyle bir seçim yalnızca aynı tekliğe sahip iki sayı verirdi; istenen toplamı garanti etmezdi.
+\end{proof}
+
+\begin{example}
+$1$ ile $2n$ arasından seçilen herhangi $n+1$ sayı arasında, biri diğerini tam bölen iki sayı bulunduğunu gösteriniz.
+\end{example}
+\begin{proof}[Çözüm]
+Her pozitif tam sayı, $2$'nin kuvveti ile bir tek sayının çarpımı biçiminde tek bir şekilde yazılabilir. Örneğin
+\[
+12=2^2\cdot3,\qquad 40=2^3\cdot5,\qquad 7=2^0\cdot7.
+\]
+Her sayının bu yazılışındaki tek çarpanını yuva olarak belirleyelim. $1$ ile $2n$ arasındaki olası tek çarpanlar
+\[
+1,3,5,\ldots,2n-1
+\]
+olduğundan tam $n$ tanedir.
+
+Seçilen $n+1$ sayı bu $n$ yuvaya dağıtılınca ikisinin tek çarpanı aynı olur. Bu iki sayıyı $2^pm$ ve $2^qm$ biçiminde yazalım; burada $m$ aynı tek sayıdır. Gerekirse adlandırmayı düzenleyip $p\le q$ diyelim. O zaman
+\[
+2^qm=2^{q-p}(2^pm)
+\]
+olduğundan $2^pm$ sayısı $2^qm$ sayısını tam böler. Böylece seçilen iki sayıdan biri diğerini böler.
+\end{proof}
+
+Bu örnekte tek çarpan yaklaşımı ilk bakışta yapay görünebilir. Ancak bir sayının içindeki bütün $2$ çarpanlarını ayırdığımızda, aynı tek çarpanı taşıyan sayılar $m,2m,4m,\ldots$ biçiminde bir zincir oluşturur. Aynı zincirden seçilen iki sayının bölme ilişkisi taşıması kaçınılmazdır. Bölünebilmenin temel araçları Bölüm 11'de incelenecektir.
+
+\begin{example}
+On bir tam sayı veriliyor. Bu sayıların ikisinin, $10$'a bölündüğünde aynı birler basamağına sahip olduğunu gösteriniz.
+\end{example}
+\begin{proof}[Çözüm]
+Birler basamağı için yalnızca on olasılık vardır: $0,1,2,\ldots,9$. Bu on olasılığı yuva, verilen on bir sayıyı güvercin kabul edelim. Her tam sayı birler basamağına göre tam bir yuvaya düşer. On bir sayı on yuvaya dağıtıldığı için iki sayının birler basamağı aynıdır.
+\end{proof}
+
+\subsection{Geometrik yuvalar}
+
+Geometrik problemlerde güvercinler çoğunlukla noktalardır. Yuvalar ise şeklin küçük parçalara bölünmesiyle elde edilir. İki noktanın aynı küçük parçaya düşmesi, aralarındaki uzaklığın o parçanın çapı kadar veya daha küçük olmasını sağlar.
+
+\begin{example}
+Birim kenarlı bir karenin içine yerleştirilen $5$ nokta arasında, uzaklığı en fazla $\sqrt{2}/2$ olan iki nokta bulunduğunu gösteriniz.
+\end{example}
+\begin{proof}[Çözüm]
+Büyük kareyi kenar uzunluğu $1/2$ olan dört eş kareye ayıralım. Bu dört küçük kare yuvalar, beş nokta ise güvercinlerdir. Güvercin yuvası ilkesi gereğince iki nokta aynı küçük kareye düşer.
+
+Aynı küçük karede bulunabilecek iki noktanın birbirinden en uzak olduğu durum, karşılıklı iki köşede yer aldıkları andır. Küçük karenin köşegeni Pisagor bağıntısıyla
+\[
+\sqrt{\left(\frac12\right)^2+\left(\frac12\right)^2}
+=\frac{\sqrt2}{2}
+\]
+olur. Dolayısıyla aynı küçük karedeki iki noktanın uzaklığı en fazla $\sqrt2/2$'dir.
+\end{proof}
+
+\begin{example}
+Kenar uzunluğu $2$ olan bir karenin içinde bulunan $10$ noktadan ikisinin uzaklığının en fazla $\sqrt2$ olduğunu gösteriniz.
+\end{example}
+\begin{proof}[Çözüm]
+Kareyi kenarı $1$ olan dört eş kareye bölelim. On nokta, dört küçük kareye dağılır. Genelleştirilmiş ilke en az bir küçük karede en az $\lceil10/4\rceil=3$ nokta olduğunu söyler; ancak çözüm için iki nokta yeterlidir.
+
+Aynı birim kareye düşen iki nokta arasındaki uzaklık, bu küçük karenin köşegeninden fazla olamaz. Köşegen uzunluğu $\sqrt{1^2+1^2}=\sqrt2$ olduğundan istenen çift bulunur.
+\end{proof}
+
+\begin{example}
+Bir kenarı $3$ olan karenin içine $10$ nokta yerleştirilmiştir. Bu noktalardan ikisinin uzaklığının en fazla $\sqrt2$ olduğunu kanıtlayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Büyük kareyi dokuz adet birim kareye bölmek uygundur. Dokuz küçük kare yuva, on nokta güvercindir. Temel ilkeye göre iki nokta aynı birim karede yer alır. Birim karenin köşegeni $\sqrt2$ olduğundan bu iki noktanın uzaklığı en fazla $\sqrt2$ olur.
+
+Burada kilit nokta, birim uzunluğun hangi bölmede işe yarayacağını önceden belirlemektir. Yuva sayısını nokta sayısından az tutarken, her yuvanın çapını soruda istenen uzaklığa denk getirdik.
+\end{proof}
+
+\textbf{Yuvaları seçme stratejisi:} Sayı sorularında istenen ilişkiyi sağlayan denklik sınıflarını kurgulayın; geometri sorularında ise şekli, küçük parçaların çapı hedeflenen uzaklığa uyacak biçimde bölün. İlkenin kendisi doğrudan uygulanır; asıl zihinsel emek doğru yuvaları belirleme aşamasındadır.
+
+Bu bölümde güvercin yuvası ilkesinin, olası tüm durumları tek tek listelemeden nasıl zorunlu bir çakışma verdiğini ele aldık. Bölüm 8'de ise kümelerin kesişimlerindeki tekrar eden elemanları sistematik olarak hesaba katan içerme-dışarma ilkesini inceleyeceğiz.

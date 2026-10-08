@@ -1,0 +1,788 @@
+\chapter{Karma Çözümlü Problemler}
+
+TÜBİTAK Bilgisayar Olimpiyatı birinci aşama sınavında karşımıza çıkan en belirleyici sorular, genellikle tek bir konunun sınırları içine hapsedilemeyen sorulardır. Bir kombinatorik sorusunu çözerken Bölüm 14'teki modüler aritmetik araçlarına ihtiyaç duyabilir, bir graf probleminde prefix sums ile Bölüm 17 ve 18'de ele aldığımız parite ve değişmezleri kullanarak sonuca gidebiliriz. Benzer şekilde, dinamik programlama geçişlerini kurarken Bölüm 8'deki içerme-dışarma ilkesinden veya Bölüm 24'teki ikili arama tekniğinden faydalanmak gerekebilir.
+
+Bu bölümde, önceki konularda edindiğimiz kuramsal ve algoritmik birikimi sentezleyecek; farklı disiplinlerin kesişim noktasında duran, olimpiyat standardındaki karma problemleri adım adım inceleyeceğiz.
+
+\section{Konulararası Çözümlü Problemler}
+
+Bir problemi çözerken ilk aşama, sorunun arkasındaki matematiksel yapıyı doğru teşhis etmektir. Bir tahta oyunu bir graf olarak modellenebilir mi? Bir dizilim problemi, matris çarpımı veya bitwise işlemlerle optimize edilebilecek bir rekürsiyon bağıntısına indirgenebilir mi? Çözümlerde şu adımları izleyeceğiz:
+\begin{enumerate}
+    \item \textbf{Küçük Örneklerle Sezgi Kazanma:} Formüle odaklanmadan önce $n=1, 2, 3$ gibi küçük parametrelerle durumu elle analiz etmek.
+    \item \textbf{Değişmez ve Yarı-Değişmez Arama:} Bölüm 18'de gördüğümüz üzere durum uzayında sabit kalan veya tek yönlü değişen büyüklükleri tespit etmek.
+\item \textbf{Köprü Kurma:} Problemi bilinen soyut bir yapıya (graf, modüler denklik sınıfı, rekürsiyon tablosu) dönüştürmek.
+    \item \textbf{Çözüm ve Karmaşıklık Analizi:} Matematiksel ispatı tamamlayıp algoritmanın zaman ve bellek karmaşıklığını belirlemek.
+\end{enumerate}
+
+\subsection{Problem 1: Halka Üzerinde Düğme Değişimi ve Parite}
+
+\begin{example}
+Dairesel bir masa etrafında dizilmiş $n$ adet lamba bulunmaktadır. Başlangıçta lambaların her biri açık ($1$) ya da kapalı ($0$) durumdadır. Her adımda tüm lambalar \textbf{aynı anda} şu kurala göre durum değiştirir: $i$'inci lamba ($0 \le i < n$), eğer kendisi ile saat yönündeki komşusu olan $(i+1) \bmod n$'inci lambanın durumları birbirinden farklıysa yeni adımda açık ($1$), durumları aynıysa kapalı ($0$) hâle gelir.
+\begin{itemize}
+    \item[(a)] $n=4$ için başlangıçta tek bir lamba açık, diğerleri kapalıysa en fazla kaç adım sonra tüm lambalar aynı anda söner (hepsi $0$ olur)?
+    \item[(b)] Hangi $n$ pozitif tam sayıları için, başlangıç durumu ne olursa olsun, sonlu sayıda adım sonra tüm lambaların sönmesi garanti altındadır?
+\end{itemize}
+\end{example}
+
+Soruda verilen kuralı cebirsel olarak ifade edelim. $t$'inci adımdaki lambaların durumunu $a_i^{(t)} \in \{0, 1\}$ ile gösterelim. Yeni durum:
+\[
+a_i^{(t+1)} = 
+\begin{cases}
+1, & a_i^{(t)} \neq a_{(i+1) \bmod n}^{(t)} \\
+0, & a_i^{(t)} = a_{(i+1) \bmod n}^{(t)}
+\end{cases}
+\]
+Bu kural, doğrudan iki tabanında toplama, yani XOR işlemidir:
+\[
+a_i^{(t+1)} = (a_i^{(t)} + a_{(i+1) \bmod n}^{(t)}) \bmod 2
+\]
+İşlemin mod $2$'de toplama olması, Bölüm 14'teki modüler aritmetik ve Bölüm 6'daki binom açılımının mod $2$'deki özelliklerini akla getirir.
+
+Somut olarak $n=4$ için tek bir lambanın açık olduğu durumu adım adım yazalım. Başlangıç durumu $(1, 0, 0, 0)$ olsun:
+\begin{align*}
+t = 0: & \quad (1, 0, 0, 0) \\
+t = 1: & \quad (1\oplus 0, 0\oplus 0, 0\oplus 0, 0\oplus 1) = (1, 0, 0, 1) \\
+t = 2: & \quad (1\oplus 0, 0\oplus 0, 0\oplus 1, 1\oplus 1) = (1, 0, 1, 0) \\
+t = 3: & \quad (1\oplus 0, 0\oplus 1, 1\oplus 0, 0\oplus 1) = (1, 1, 1, 1) \\
+t = 4: & \quad (1\oplus 1, 1\oplus 1, 1\oplus 1, 1\oplus 1) = (0, 0, 0, 0)
+\end{align*}
+Görüldüğü üzere tam 4 adımda tüm lambalar kapandı. Peki bu her $n$ için geçerli midir? $n=3$ için tek bir lamba açıkken denersek: $(1, 0, 0) \to (1, 0, 1) \to (1, 1, 0) \to (0, 1, 1) \to (1, 0, 1) \dots$ Sistem bir döngüye girer ve hiçbir zaman $(0, 0, 0)$ durumuna ulaşamaz.
+
+Buradaki temel belirleyici, $t$ adım sonraki genel terimin katsayılarının binom katsayıları olmasıdır.
+
+\begin{proof}[Çözüm]
+İşlemi bir doğrusal operatör olarak ele alabiliriz. Dairesel dizide bir adım ilerleme operatörünü $S$ ile gösterelim: $(S \cdot a)_i = a_{(i+1) \bmod n}$. Bu durumda dönüşüm $T = I + S \pmod 2$ şeklindedir (burada $I$ birim operatördür).
+
+$T$'nin $k$'ıncı kuvvetini binom açılımı ile yazarsak:
+\[
+T^k = (I + S)^k = \sum_{j=0}^k \binom{k}{j} S^j \pmod 2
+\]
+Bölüm 15'te gördüğümüz Lucas parite teoremine göre, eğer $k = 2^m$ ($2$'nin bir kuvveti) ise, $0 < j < 2^m$ için $\binom{2^m}{j}$ çift sayıdır, yani:
+\[
+\binom{2^m}{j} \equiv 0 \pmod 2 \quad (0 < j < 2^m)
+\]
+Dolayısıyla mod $2$ aritmetiğinde:
+\[
+T^{2^m} \equiv I^{2^m} + S^{2^m} \equiv I + S^{2^m} \pmod 2
+\]
+Eğer halka uzunluğu $n$, $2$'nin bir kuvveti ise, yani $n = 2^m$ seçilirse:
+\[
+S^{2^m} = S^n = I
+\]
+olur; çünkü dairesel dizide $n$ adım kaydırma diziyi kendisine götürür. Buradan:
+\[
+T^n = T^{2^m} \equiv I + I \equiv 2I \equiv 0 \pmod 2
+\]
+elde edilir. Bu sonuç kritik bir gerçeği ortaya koyar: Operatörün $n$'inci kuvveti sıfır operatörüdür. Yani $n = 2^m$ olduğunda, hangi başlangıç durumu seçilirse seçilsin, en fazla $n$ adım sonra tüm elemanlar $0$ olmak zorundadır. $n=4$ için maksimum adım sayısı 4'tür.
+
+Peki ya $n$, $2$'nin bir kuvveti değilse? O halde $n = 2^m \cdot d$ ($d > 1$ tek sayı) olarak yazılabilir. Dizi üzerinde $d$ uzunluğunda periyodik bir örüntü kurulabilir. Örneğin tek bir lambanın sıfırlanamadığı $n=3$ döngüsünü $d$ periyodu olarak kullanırsak, durum uzayında sıfır harici bir döngü mevcuttur. Çekirdek (kernel) analizi veya polinomların ortak böleni incelendiğinde, $x^n - 1$ ile $(1+x)^k$ polinomlarının mod $2$'de ortak kök barındırması için $n$'in $2$'nin kuvveti olması şarttır.
+
+Dolayısıyla tüm lambaların her zaman sıfırlanmasını garanti eden $n$ değerleri yalnızca $n = 2^m$ ($m \ge 1$) biçimindeki sayılardır.
+\end{proof}
+
+Aşağıdaki C++ kodu, verilen bir dizinin kaç adımda sıfırlandığını simüle eder ve periyot analizi yapar:
+
+\begin{lstlisting}[language=CppTemel]
+#include <iostream>
+#include <vector>
+#include <map>
+#include <string>
+using namespace std;
+
+// Verilen durumun kac adimda sifirlandigini ya da ne zaman donguye
+// girdigini simule eder.
+string simulate(vector<int> cur) {
+    int n = cur.size();
+    map<vector<int>, int> goruldu;            // durum -> ilk goruldugu adim
+    for (int adim = 0; ; adim++) {
+        if (goruldu.count(cur))               // bu durum daha once goruldu
+            return to_string(goruldu[cur]) + ". adimdan " + to_string(adim)
+                 + ". adima dongu olustu (Periyot: "
+                 + to_string(adim - goruldu[cur]) + ").";
+        goruldu[cur] = adim;
+        vector<int> sonraki(n);
+        for (int i = 0; i < n; i++)
+            sonraki[i] = cur[i] ^ cur[(i + 1) % n];
+        if (sonraki == vector<int>(n, 0))
+            return to_string(adim + 1) + " adimda sifirlandi.";
+        cur = sonraki;
+    }
+}
+
+int main() {
+    cout << "n=4: " << simulate({1, 0, 0, 0}) << "\n";
+    cout << "n=5: " << simulate({1, 0, 0, 0, 0}) << "\n";
+    return 0;
+}\end{lstlisting}
+
+\subsection{Problem 2: Graf Modellemesi ile Sayılar Teorisinin Kesişimi: Frobenius ve Modülo Grafları}
+
+\begin{example}
+Elinizde yalnızca $a$ ve $b$ gramlık ağırlıklar bulunmaktadır ($\gcd(a, b) = 1$). Bu iki ağırlıktan istendiği kadar (sıfır veya daha fazla) kullanılarak tartılamayan en büyük ağırlık nedir? Tartılamayan toplam kaç farklı pozitif tam sayı ağırlığı vardır?
+\end{example}
+
+Literatürde \emph{Frobenius Madeni Para Problemi} olarak bilinen bu klasik soru; Bölüm 11 ve 12'deki bölünebilme kuralları, Bölüm 14'teki modüler aritmetik ve en kısa yol mantığının kesişiminde etkili bir çözüme sahiptir.
+
+Önce somut bir örnekle başlayalım: $a = 3, b = 5$.
+Kombinasyonlar: $3x + 5y$ ($x, y \ge 0$).
+\begin{itemize}
+    \item $0$: $3(0) + 5(0)$
+    \item $1, 2$: tartılamaz.
+    \item $3$: $3(1) + 5(0)$
+    \item $4$: tartılamaz.
+    \item $5$: $3(0) + 5(1)$
+    \item $6$: $3(2) + 5(0)$
+    \item $7$: tartılamaz.
+    \item $8$: $3(1) + 5(1)$
+    \item $9$: $3(3) + 5(0)$
+    \item $10$: $3(0) + 5(2)$
+    \item $11$: $3(2) + 5(1)$
+    \item $12$: $3(4) + 5(0)$
+\end{itemize}
+Burada $8, 9, 10$ olmak üzere art arda üç sayı elde edildiğine dikkat edelim. $a=3$ olduğundan, peş peşe 3 sayı üretildikten sonra bunlara istenen sayıda $3$ eklenerek sonraki \textbf{bütün} tam sayılar oluşturulabilir.
+Tartılamayan en büyük sayı $7$'dir.
+Tartılamayanlar kümesi: $\{1, 2, 4, 7\}$, yani toplam $4$ elemanlıdır.
+Formül uygulandığında $a=3, b=5$ için $3 \cdot 5 - 3 - 5 = 7$ ve $\frac{(3-1)(5-1)}{2} = \frac{2 \cdot 4}{2} = 4$ bulunur. Bu durum genel bir teoremin sonucudur.
+
+\begin{proof}[Çözüm]
+Problemi mod $a$ kalanları üzerinde düşünelim.
+Tüm tam sayıları mod $a$'daki denklik sınıflarına ($0, 1, \dots, a-1$) ayıralım.
+Her bir $r \in \{0, 1, \dots, a-1\}$ kalanı için, $ax + by$ biçiminde yazılabilen \textbf{en küçük} sayıyı bulmak isteriz.
+
+Bir sayı $ax + by$ biçimindeyse:
+\[
+ax + by \equiv by \pmod a
+\]
+olur. Bölüm 13'te ele aldığımız üzere $\gcd(a, b) = 1$ olduğundan, $y \in \{0, 1, \dots, a-1\}$ değerleri için $b \cdot y \pmod a$ sonuçları $0, 1, \dots, a-1$ kalanlarının her birini \textbf{tam olarak bir kez} üretir (bu bir bijeksiyondur).
+
+Belirli bir $r$ kalanı için en küçük değer, $y$'nin $0 \le y < a$ aralığındaki tekil değeriyle elde edilen $m_r = b \cdot y$ sayısıdır ($x \ge 0$ koşulunda sayıyı en küçük yapmak için $x=0$ seçilir).
+
+O halde $r \equiv b \cdot y \pmod a$ sınıfındaki sayılar şunlardır:
+\[
+b \cdot y, \quad b \cdot y + a, \quad b \cdot y + 2a, \quad \dots
+\]
+Bu sınıfta $b \cdot y$'den küçük olup $r$ kalanını veren hiçbir pozitif sayı yazılamaz. Demek ki bu sınıfta üretilemeyen en büyük sayı:
+\[
+b \cdot y - a
+\]
+olur. Tüm kalan sınıfları üzerinden bu değerlerin maksimumunu arıyoruz. $b \cdot y - a$ ifadesi $y$ büyüdükçe artar. $y$'nin alabileceği en büyük değer ise $y = a - 1$'dir.
+Böylece tartılamayan en büyük sayı:
+\[
+g(a, b) = b(a - 1) - a = ab - a - b
+\]
+olarak bulunur.
+
+Şimdi tartılamayan toplam sayı adedini hesaplayalım.
+Her bir $y \in \{0, 1, \dots, a-1\}$ için, o sınıfta $b \cdot y$ değerinden küçük ve pozitif olan sayılar $b \cdot y - ka$ ($k \ge 1$) formundadır. Bu formdaki pozitif sayı adedi $\lfloor \frac{b \cdot y}{a} \rfloor$ tanedir.
+Toplam tartılamayan sayı adedi:
+\[
+N = \sum_{y=0}^{a-1} \left\lfloor \frac{b \cdot y}{a} \right\rfloor
+\]
+Bu toplamı hesaplamak için Bölüm 10'da ele aldığımız iki yoldan sayma ve simetri mantığından yararlanalım. $y$ yerine $a - 1 - y$ koyarsak:
+\[
+\left\lfloor \frac{b \cdot y}{a} \right\rfloor + \left\lfloor \frac{b(a - y)}{a} \right\rfloor = \left\lfloor \frac{b \cdot y}{a} \right\rfloor + \left\lfloor b - \frac{by}{a} \right\rfloor
+\]
+$\gcd(a, b) = 1$ olduğundan $1 \le y \le a-1$ için $\frac{by}{a}$ hiçbir zaman tam sayı olamaz. Gerçel sayılar için $\alpha \notin \mathbb{Z}$ iken $\lfloor \alpha \rfloor + \lfloor -\alpha \rfloor = -1$ eşitliği geçerlidir. Buradan:
+\[
+\left\lfloor \frac{by}{a} \right\rfloor + \left( b + \left\lfloor -\frac{by}{a} \right\rfloor \right) = b - 1
+\]
+elde edilir. $1 \le y \le a-1$ aralığındaki $a-1$ terimi ikişerli eşlersek, her çiftin toplamı $b - 1$ olur:
+\[
+2N = (a - 1)(b - 1) \implies N = \frac{(a - 1)(b - 1)}{2}
+\]
+Böylece ispat tamamlanır.
+\end{proof}
+
+\begin{lstlisting}[language=CTemel]
+// 3 veya daha fazla degisken icin Frobenius Dijkstra ile O(a * log a)
+#include <stdio.h>
+#define INF 1000000000000000000LL
+
+long long dist[100005];
+int visited[100005];
+
+long long frobenius_iki(long long a, long long b) {
+    // a ve b aralarinda asal ise
+    return a * b - a - b;
+}
+
+int main() {
+    long long a = 3, b = 5;
+    printf("En buyuk tartilamayan: %lld\n", frobenius_iki(a, b));
+    printf("Toplam tartilamayan: %lld\n", (a - 1) * (b - 1) / 2);
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{Problem 3: Prefix Sums ve Güvercin Yuvası: Bölünebilir Alt Diziler}
+
+\begin{example}
+$n$ elemanlı pozitif tam sayılardan oluşan bir $A = [a_1, a_2, \dots, a_n]$ dizisi veriliyor.
+\begin{itemize}
+    \item[(a)] Toplamı $n$ ile tam bölünen ardışık bir alt dizinin ($a_l + a_{l+1} + \dots + a_r$) daima var olduğunu ispatlayınız ($1 \le l \le r \le n$).
+    \item[(b)] Toplamı $n$ ile tam bölünen ardışık alt dizi sayısını $O(n)$ zamanda bulan bir algoritma tasarlayınız.
+\end{itemize}
+\end{example}
+
+Ardışık toplamları incelerken akla gelen ilk yöntem, Bölüm 22'de ele aldığımız \textbf{prefix sums} dizisidir.
+$S_0 = 0$ ve $1 \le i \le n$ için $S_i = \sum_{k=1}^i a_k$ diyelim.
+Herhangi bir ardışık parçanın toplamı:
+\[
+\sum_{k=l}^r a_k = S_r - S_{l-1}
+\]
+Bu toplamın $n$'e bölünmesi şu anlama gelir:
+\[
+S_r - S_{l-1} \equiv 0 \pmod n \iff S_r \equiv S_{l-1} \pmod n
+\]
+Soru böylece şu biçime dönüşür: Mod $n$'de aynı değere sahip iki farklı prefix sumın varlığı garanti midir?
+
+\begin{proof}[Çözüm]
+(a) Prefix sums dizisini sıralayalım:
+\[
+S_0, S_1, S_2, \dots, S_n
+\]
+Bu listede tam $n + 1$ adet sayı bulunmaktadır.
+
+Bu sayıların mod $n$'deki kalanlarını inceleyelim. Mod $n$'de mümkün olan kalanlar kümesi $\{0, 1, 2, \dots, n-1\}$ olup tam $n$ elemandan oluşur.
+
+Elimizde $n+1$ adet sayı ve $n$ adet kalan sınıfı vardır. Bölüm 7'de incelediğimiz \textbf{Güvercin Yuvası İlkesi} gereğince, kalanları aynı olan en az iki indeks bulunmak zorundadır.
+Yani öyle $0 \le j < k \le n$ indeksleri vardır ki:
+\[
+S_k \equiv S_j \pmod n
+\]
+Buradan $S_k - S_j = \sum_{i=j+1}^k a_i$ toplamı $n$'in katı olur. $l = j+1$ ve $r = k$ seçildiğinde $1 \le l \le r \le n$ koşulu sağlanır ve aranan alt dizi elde edilir.
+
+(b) Bölünebilen tüm alt dizileri bulmak için aynı kalan sınıfına düşen $S$ değerlerini sayarız.
+Bir $r \in \{0, 1, \dots, n-1\}$ kalanı için, modu $r$ olan $c_r$ tane prefix sum varsa; bu sınıftan seçilecek herhangi iki indeks ($j < k$), toplamı $n$'e bölünen geçerli bir alt dizi verir.
+Böylece toplam geçerli alt dizi sayısı:
+\[
+\text{Toplam} = \sum_{r=0}^{n-1} \binom{c_r}{2}
+\]
+Diziyi baştan sona tek geçişte tararken prefix sumı ve frekans tablosunu güncelleyebiliriz. Tek geçiş $O(n)$ sürer, frekansların kombinasyonunu hesaplamak da $O(n)$ zaman alır. Toplam zaman karmaşıklığı $O(n)$, ek bellek karmaşıklığı mod dizisi için $O(n)$'dir.
+\end{proof}
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+long long bolunebilen_alt_diziler(int arr[], int n) {
+    long long sayac[n];
+    for (int i = 0; i < n; i++) sayac[i] = 0;
+    
+    // S_0 = 0 baslangicta mevcuttur
+    sayac[0] = 1;
+    
+    long long toplam = 0;
+    for (int i = 0; i < n; i++) {
+        toplam = (toplam + arr[i]) % n;
+        // Negatif mod durumunu onle
+        if (toplam < 0) toplam += n;
+        sayac[toplam]++;
+    }
+    
+    long long sonuc = 0;
+    for (int r = 0; r < n; r++) {
+        if (sayac[r] >= 2) {
+            sonuc += sayac[r] * (sayac[r] - 1) / 2;
+        }
+    }
+    return sonuc;
+}
+\end{lstlisting}
+
+\begin{caution}
+Prefix sums dizisiyle çalışırken en sık yapılan hata, $S_0 = 0$ durumunu göz ardı etmektir; bu, dizinin en başından başlayan ($l=1$) ve tek başına $n$'e bölünen alt dizilerin sayılmamasına yol açar. Frekans tablosunda \texttt{sayac[0]} değeri başlangıçta mutlaka $1$ olarak ayarlanmalıdır.
+\end{caution}
+
+\subsection{Problem 4: Ağaçta Yol İşlemleri ve Bit Düzeyinde XOR Özellikleri}
+
+\begin{example}
+$n$ düğümlü bir ağaçta her kenarın üzerinde pozitif bir tam sayı ağırlık bulunmaktadır.
+İki düğüm $u$ ve $v$ arasındaki basit yol üzerindeki kenarların ağırlıklarının XOR toplamını $d(u, v)$ ile gösterelim.
+Tüm $1 \le u < v \le n$ çiftleri için $d(u, v) = 0$ olan çiftlerin sayısını $O(n \log n)$ veya $O(n)$ zamanda bulan bir algoritma geliştiriniz.
+\end{example}
+
+Bir ağaçta $u$ ile $v$ arasındaki yol tekildir; $u$'dan en yakın ortak ataya (LCA) çıkar, oradan $v$'ye iner. Kenar ağırlıklarını tek tek toplamak karmaşık görünse de, işlemimiz \textbf{XOR} ($\oplus$) işlemidir.
+XOR işleminin temel özellikleri şunlardır:
+\begin{enumerate}
+    \item $x \oplus x = 0$ (Her sayı kendisini sıfırlar).
+    \item $x \oplus 0 = x$.
+    \item Değişme ve birleşme özellikleri geçerlidir.
+\end{enumerate}
+Rastgele bir kök seçelim (örneğin düğüm $1$). Kökten herhangi bir $w$ düğümüne giden yol üzerindeki kenarların XOR toplamını $X[w]$ olarak tanımlayalım.
+$u$ ile $v$ arasındaki yolu kök üzerinden ifade edebilir miyiz?
+$u$'dan köke çıkıp kökten $v$'ye inen hayali bir yol düşünelim. Kök ile $\operatorname{LCA}(u, v)$ arasındaki kenarlar iki kez geçilecektir. XOR işleminde çift sayıda geçen kenarlar birbirini sıfırlar:
+\[
+d(u, v) = X[u] \oplus X[v]
+\]
+Bu dönüşüm problemi önemli ölçüde sadeleştirir; ağaç yapısı üzerinde LCA arama zorunluluğu tamamen ortadan kalkar.
+$d(u, v) = 0$ olması ne anlama gelir?
+\[
+X[u] \oplus X[v] = 0 \iff X[u] = X[v]
+\]
+Problem, kökten tüm düğümlere hesaplanan $X[w]$ değerleri içinde birbirine eşit olan eleman çiftlerini saymaya dönüşür.
+
+\begin{proof}[Çözüm]
+\textbf{Algoritma Adımları:}
+\begin{enumerate}
+    \item Ağaçta $1$ numaralı düğümü kök kabul edelim.
+    \item Bölüm 28'de gördüğümüz Derinlik Öncelikli Arama (DFS) ile her $u$ düğümü için $X[u]$ değerini hesaplayalım:
+    \[
+    X[\text{kök}] = 0, \quad X[v] = X[u] \oplus w(u, v)
+    \]
+    \item Elde edilen $X[1], X[2], \dots, X[n]$ dizisini sıralayalım ($O(n \log n)$) veya bir hash table'a ekleyelim ($O(n)$).
+    \item Her bir farklı değerin kaç kez tekrar ettiğini ($k$) bularak $\binom{k}{2} = \frac{k(k-1)}{2}$ değerlerini toplayalım.
+\end{enumerate}
+Tüm ağacı DFS ile dolaşmak $O(n)$ sürer. Değerleri sıralamak $O(n \log n)$, frekansları toplamak $O(n)$ zaman alır. Toplam zaman karmaşıklığı $O(n \log n)$, ek bellek karmaşıklığı $O(n)$'dir.
+\end{proof}
+
+\begin{lstlisting}[language=CppTemel]
+#include <iostream>
+#include <vector>
+#include <stack>
+#include <algorithm>
+using namespace std;
+
+long long xor_sifir_cift_sayisi(int n, const vector<vector<pair<int,int>>>& adj) {
+    vector<int> X(n + 1), ziyaret(n + 1);
+    stack<pair<int,int>> st;                  // (dugum, kokten gelen XOR)
+    st.push({1, 0});
+    ziyaret[1] = 1;
+    while (!st.empty()) {
+        int u = st.top().first, cur = st.top().second;
+        st.pop();
+        X[u] = cur;
+        for (auto k : adj[u]) {               // k: (komsu, kenar agirligi)
+            int v = k.first, w = k.second;
+            if (!ziyaret[v]) {
+                ziyaret[v] = 1;
+                st.push({v, cur ^ w});
+            }
+        }
+    }
+
+    sort(X.begin() + 1, X.end());             // X[0] bos, kullanilmiyor
+    long long toplam = 0, adet = 1;
+    for (int i = 2; i <= n; i++) {
+        if (X[i] == X[i - 1]) adet++;
+        else { toplam += adet * (adet - 1) / 2; adet = 1; }
+    }
+    toplam += adet * (adet - 1) / 2;
+    return toplam;
+}
+
+int main() {
+    int n = 4;                                // 3 kenar: (1-2,5), (2-3,5), (3-4,2)
+    vector<vector<pair<int,int>>> adj(n + 1);
+    adj[1].push_back({2, 5}); adj[2].push_back({1, 5});
+    adj[2].push_back({3, 5}); adj[3].push_back({2, 5});
+    adj[3].push_back({4, 2}); adj[4].push_back({3, 2});
+
+    cout << "XOR toplami 0 olan cift sayisi: "
+         << xor_sifir_cift_sayisi(n, adj) << "\n";
+    return 0;
+}\end{lstlisting}
+
+\subsection{Problem 5: Uç Değer İlkesi ve Turnuva Grafları}
+
+\begin{example}
+$n$ kişinin katıldığı bir turnuvada her oyuncu diğer her oyuncuyla tam olarak bir maç yapmıştır ve hiçbir maç berabere bitmemiştir.
+Bir oyuncunun diğerini yendiği durumları yönlü kenar olarak gösterelim (bu yapı bir \emph{turnuva grafı} oluşturur).
+
+Tüm katılımcıları öyle bir $p_1, p_2, \dots, p_n$ sırasında diziniz ki; her $i$ ($1 \le i < n$) için $p_i$ oyuncusu $p_{i+1}$ oyuncusunu yenmiş olsun (yönlü Hamilton yolu). Böyle bir dizilimin her zaman var olduğunu ispatlayıp $O(n^2)$ zamanda bulan bir algoritma veriniz.
+\end{example}
+
+Genel yönlü graflarda Hamilton yolu bulmak NP-tam bir problemdir. Ancak turnuva grafları \textbf{tam graflardır}; yani herhangi iki tepe arasında mutlaka bir yönde kenar bulunur.
+Bu yapısal özellik çözümü doğrudan kolaylaştırır.
+Tümevarım veya Bölüm 19'da gördüğümüz \textbf{Uç Değer İlkesi} üzerinden düşünelim:
+Varsayalım ki $k$ uzunluğunda bir yol kurduk: $v_1 \to v_2 \to \dots \to v_k$.
+Dışarıda kalan bir $u$ tepesini bu yolun içine dahil edebilir miyiz?
+\begin{itemize}
+    \item Eğer $u$, baştaki $v_1$'i yeniyorsa: $u \to v_1 \to \dots \to v_k$ yaparak yolu başa doğru uzatabiliriz.
+    \item Eğer sondaki $v_k$, $u$'yu yeniyorsa: $v_1 \to \dots \to v_k \to u$ yaparak yolu sona doğru uzatabiliriz.
+    \item Peki ya $v_1 \to u$ ve $u \to v_k$ ise? Yani $u$ baştakine yenilmiş, sondakini ise yenmişse?
+\end{itemize}
+Bu durumda yol boyunca ilerlerken okların yön değiştirdiği bir nokta bulunmalıdır: $v_i \to u$ iken hemen ardından $u \to v_{i+1}$ olan ardışık iki tepe mutlaka vardır.
+
+\begin{proof}[Çözüm]
+İspatı $n$ üzerinden matematiksel tümevarım ile kuralım.
+
+\textbf{Temel Adım ($n=2$):}
+İki oyuncu arasında tek bir maç oynanmıştır; yenen $p_1$, yenilen $p_2$ seçilirse $p_1 \to p_2$ yolu doğrudan kurulur.
+
+\textbf{Tümevarım Adımı:}
+$k$ oyunculu herhangi bir turnuvada yönlü Hamilton yolunun var olduğunu varsayalım: $P = (v_1, v_2, \dots, v_k)$.
+Sisteme $(k+1)$'inci bir $u$ oyuncusu ekleyelim.
+Üç durum ortaya çıkar:
+\begin{enumerate}
+    \item $u \to v_1$ ise: $u$, yolun en başına eklenir: $(u, v_1, v_2, \dots, v_k)$.
+    \item $v_k \to u$ ise: $u$, yolun en sonuna eklenir: $(v_1, v_2, \dots, v_k, u)$.
+    \item Yukarıdaki iki durum da geçerli değilse, $v_1 \to u$ ve $u \to v_k$ olmalıdır.
+    Yol üzerindeki indisleri inceleyelim. $v_i \to u$ koşulunu sağlayan en büyük indisi $i$ olarak seçelim.
+    $v_1 \to u$ olduğundan böyle bir $i \ge 1$ mutlaka vardır.
+    $i = k$ olamaz; çünkü $u \to v_k$ olduğunu biliyoruz. Demek ki $1 \le i < k$'dir.
+$i$'nin maksimal seçilmesinden ötürü $v_{i+1} \to u$ olamaz; graf bir turnuva olduğundan maç berabere bitemez, dolayısıyla zorunlu olarak $u \to v_{i+1}$ olmalıdır.
+    O halde $u$ tepesini $v_i$ ile $v_{i+1}$ arasına yerleştirebiliriz:
+    \[
+    v_1 \to \dots \to v_i \to u \to v_{i+1} \to \dots \to v_k
+    \]
+\end{enumerate}
+Her durumda $(k+1)$ uzunluğunda geçerli bir yönlü yol elde edilir ve tümevarım tamamlanır.
+
+\textbf{Algoritmik Karmaşıklık:}
+Bu yöntem, Bölüm 23'te incelediğimiz \emph{Araya Ekleme Sıralaması} (Insertion Sort) mantığıyla örtüşür. $k$'ıncı elemanı sıralanmış $k-1$ elemanlı yola yerleştirmek için en fazla $k$ karşılaştırma yapılır.
+Toplam işlem sayısı:
+\[
+\sum_{k=1}^{n-1} k = \frac{n(n-1)}{2} = O(n^2)
+\]
+karşılaştırmadır. İkili arama kullanılarak karşılaştırma sayısı $O(n \log n)$ seviyesine çekilebilir (dizi kaydırma maliyeti yine $O(n^2)$ kalır).
+\end{proof}
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+#include <stdlib.h>
+
+// matris[i][j] = 1 ise i, j'yi yenmistir
+void hamilton_yolu_bul(int n, int matris[100][100], int yol[]) {
+    yol[0] = 0; // Ilk dugumle basla
+    int boyut = 1;
+    
+    for (int u = 1; u < n; u++) {
+        // Durum 1: u en basa gelir mi?
+        if (matris[u][yol[0]]) {
+            for (int j = boyut; j > 0; j--) yol[j] = yol[j - 1];
+            yol[0] = u;
+        }
+        // Durum 2: u en sona gelir mi?
+        else if (matris[yol[boyut - 1]][u]) {
+            yol[boyut] = u;
+        }
+        // Durum 3: Araya ekleme
+        else {
+            int pos = -1;
+            for (int i = 0; i < boyut - 1; i++) {
+                if (matris[yol[i]][u] && matris[u][yol[i + 1]]) {
+                    pos = i + 1;
+                    break;
+                }
+            }
+            for (int j = boyut; j > pos; j--) yol[j] = yol[j - 1];
+            yol[pos] = u;
+        }
+        boyut++;
+    }
+}
+\end{lstlisting}
+
+\subsection{Problem 6: İçerme-Dışarma ve Dinamik Programlama: Yasaklı Pozisyonlu Permütasyonlar}
+
+\begin{example}
+$1, 2, \dots, n$ sayılarının bir $\pi$ permütasyonunda hiçbir $i$ ($1 \le i \le n$) için $\pi(i) = i$ olmaması durumuna \emph{deranjman} (düzensiz permütasyon) denir.
+Şimdi kısıtı genişletelim:
+Boyutu $n$ olan bir permütasyonda her $i$ için hem $\pi(i) \neq i$ hem de $\pi(i) \neq i+1$ ($1 \le i < n$) olmasını istiyoruz.
+Böyle permütasyonların sayısını hesaplayan bir yöntem geliştiriniz.
+\end{example}
+
+Bu soru, klasik \emph{Problème des ménages} probleminin temel yapısıdır.
+Kombinatorikte "hiçbiri sağlanmasın" koşulunu doğrudan saymak zordur; çünkü yasakların birbiriyle çakışma ihtimalleri yüksektir.
+Bunun yerine Bölüm 8'de kurduğumuz \textbf{İçerme-Dışarma İlkesi} devreye girer:
+\[
+N(\text{hiçbiri}) = \sum_{k=0}^{n} (-1)^k \cdot r_k \cdot (n - k)!
+\]
+Burada $r_k$, konulabilecek $k$ adet bağımsız "yasaklı pozisyonu" tahtaya yerleştirme sayısıdır. Yasaklar yerleştirildikten sonra geriye kalan $n-k$ serbest eleman $(n-k)!$ farklı biçimde dağıtılır.
+
+Yasaklı hücreleri bir $n \times n$ tahta üzerinde düşünebiliriz:
+$(i, i)$ ana köşegeni ve $(i, i+1)$ üst yan köşegeni yasaktır. Toplam $2n - 1$ adet yasaklı kare vardır.
+Bu karelerden aynı satırda veya aynı sütunda olmayan (yani birbirini kale gibi tehdit etmeyen) $k$ tanesini seçmeliyiz.
+Bu karelerin dizilimi incelendiğinde, ardışık bağımlılıklar bir yol oluşturur.
+Bir doğru üzerinde yan yana olmayan elemanları seçme problemi ise Bölüm 5'teki temel seçim teknikleriyle çözülebilir.
+
+\begin{proof}[Çözüm]
+Yasaklı kareleri sıralayalım:
+\[
+(1, 1), (1, 2), (2, 2), (2, 3), (3, 3), \dots, (n-1, n), (n, n)
+\]
+Burada toplam $M = 2n - 1$ adet yasaklı hücre vardır:
+\begin{itemize}
+    \item $(1, 1)$ ile $(1, 2)$ aynı satırdadır, birlikte seçilemez.
+    \item $(1, 2)$ ile $(2, 2)$ aynı sütundadır, birlikte seçilemez.
+\end{itemize}
+Genel olarak, sıralanan bu $M$ karede \textbf{yan yana gelen herhangi iki kare} ya aynı satırda ya da aynı sütundadır. Dolayısıyla aynı anda seçilemezler.
+
+Böylece soru şu tanıdık probleme dönüşür:
+$M = 2n - 1$ elemanlı bir sırada, hiçbir ikisi ardışık olmayan $k$ eleman kaç farklı biçimde seçilebilir?
+
+Bu seçim sayısı ayraç yöntemiyle hesaplanır:
+\[
+r_k = \binom{M - k + 1}{k} = \binom{(2n - 1) - k + 1}{k} = \binom{2n - k}{k}
+\]
+Seçilen bu $k$ yasaklı karenin her biri farklı satır ve sütunda olduğundan, kalan $n - k$ eleman kendi aralarında $(n - k)!$ şekilde yerleşir.
+
+İçerme-dışarma ilkesi gereğince, hiçbir yasaklı kareye denk gelmeyen permütasyonların sayısı:
+\[
+P_n = \sum_{k=0}^n (-1)^k \binom{2n - k}{k} (n - k)!
+\]
+olarak kapalı formda elde edilir. Bu toplam $O(n)$ adımda hesaplanabilir.
+\end{proof}
+
+\begin{lstlisting}[language=CppTemel]
+#include <iostream>
+#include <vector>
+using namespace std;
+
+const long long MOD = 1000000007;
+
+long long us_mod(long long taban, long long ust) {
+    long long sonuc = 1;
+    while (ust > 0) {
+        if (ust % 2 == 1) sonuc = sonuc * taban % MOD;
+        taban = taban * taban % MOD;
+        ust /= 2;
+    }
+    return sonuc;
+}
+
+long long binom(int n, int k, const vector<long long>& fak, const vector<long long>& ters) {
+    if (k < 0 || k > n) return 0;
+    return fak[n] * ters[k] % MOD * ters[n - k] % MOD;
+}
+
+long long kisitli_permutasyon(int n) {
+    int m = 2 * n + 1;
+    vector<long long> fak(m + 1), ters(m + 1);
+    fak[0] = 1;
+    for (int i = 1; i <= m; i++) fak[i] = fak[i - 1] * i % MOD;
+    ters[m] = us_mod(fak[m], MOD - 2);
+    for (int i = m - 1; i >= 0; i--) ters[i] = ters[i + 1] * (i + 1) % MOD;
+
+    long long toplam = 0;
+    for (int k = 0; k <= n; k++) {
+        long long terim = binom(2 * n - k, k, fak, ters) * fak[n - k] % MOD;
+        if (k % 2 == 1) toplam = (toplam - terim + MOD) % MOD;
+        else            toplam = (toplam + terim) % MOD;
+    }
+    return toplam;
+}
+
+int main() {
+    cout << "n = 4 icin sonuc: " << kisitli_permutasyon(4) << "\n";
+    return 0;
+}\end{lstlisting}
+
+\subsection{Problem 7: İkili Arama ve Yarı-Değişmezler: Medyanların Medyanı Matrisi}
+
+\begin{example}
+$N \times N$ boyutunda bir matrisin her satırı soldan sağa, her sütunu yukarıdan aşağıya kesin artandır.
+Bu matrisin tüm elemanları tek boyutlu bir dizide sıralansaydı ortanca (medyan) eleman hangisi olurdu?
+Elemanlara yalnızca satır ve sütun erişimi yapabildiğimiz varsayımıyla, matrisin medyanını $O(N \log(\text{MAX} - \text{MIN}))$ zaman karmaşıklığında bulan bir algoritma tasarlayınız.
+\end{example}
+
+Matristeki toplam eleman sayısı $N^2$'dir. Medyan, kendisinden küçük veya eşit eleman sayısı en az $\lceil N^2 / 2 \rceil$ olan en küçük değerdir.
+Tüm matrisi bir diziye aktarıp sıralamak $O(N^2 \log N)$ zaman ve $O(N^2)$ bellek gerektirir; bu yaklaşım büyük boyutlu matrislerde verimsiz kalır.
+
+Burada Bölüm 24'te gördüğümüz \textbf{cevap üzerinde ikili arama} (binary search on answer) tekniğinden yararlanabiliriz:
+Belirli bir $X$ sayısı için matriste $X$'ten küçük veya eşit kaç eleman olduğunu hızla sayabilir miyiz?
+Matrisin satırları ve sütunları sıralı olduğundan, sayma işlemini $O(N)$ zamanda tamamlayabiliriz:
+Sol alt köşeden ($(N-1, 0)$) başlarız.
+Eğer bulunulan hücredeki eleman $\le X$ ise, o sütundaki üst elemanların tümü de $\le X$ olmak zorundadır. O sütundaki katkıyı doğrudan ekleyip sağa ($j++$) geçeriz.
+Eğer eleman $> X$ ise, yukarı ($i--$) çıkarız.
+Bu adım en fazla $2N$ hamle sürer.
+
+\begin{proof}[Çözüm]
+\textbf{Monotonluk Doğrulaması:}
+$f(X)$, matriste değeri $\le X$ olan elemanların sayısı olsun.
+$X$ değeri arttıkça $f(X)$ değeri de azalmaz (monotondur):
+\[
+X_1 \le X_2 \implies f(X_1) \le f(X_2)
+\]
+Dolayısıyla ikili arama uygulanabilir. Aranan medyan eleman, $f(X) \ge \frac{N^2 + 1}{2}$ koşulunu sağlayan en küçük $X$'tir.
+
+\textbf{Sayma Algoritması ($O(N)$):}
+\begin{enumerate}
+    \item $i = N - 1$ (en alt satır), $j = 0$ (en sol sütun), $\text{adet} = 0$.
+    \item $i \ge 0$ ve $j < N$ olduğu sürece:
+    \begin{itemize}
+        \item Eğer $M[i][j] \le X$ ise: Bu sütundaki $0$'dan $i$'ye kadar olan tüm elemanlar (toplam $i + 1$ tane) kesinlikle $\le X$'tir. $\text{adet} += (i + 1)$ yapılır ve sonraki sütuna geçilir ($j++$).
+        \item Eğer $M[i][j] > X$ ise: Bu eleman $X$'ten büyüktür, daha küçük elemanlar bulmak için yukarı satıra çıkılır ($i--$).
+    \end{itemize}
+    \item Döngü tamamlandığında $\text{adet}$, matristeki $\le X$ olan eleman sayısını verir.
+\end{enumerate}
+
+Her adımda ya $i$ bir azalır ya da $j$ bir artar. Toplam adım sayısı en fazla $2N$'dir; dolayısıyla sayma işlemi $O(N)$ karmaşıklıktadır.
+İkili arama aralığı $[M[0][0], M[N-1][N-1]]$ olup adım sayısı $\log(\text{MAX} - \text{MIN})$ kadardır.
+Toplam zaman karmaşıklığı:
+\[
+O(N \log(\text{MAX} - \text{MIN}))
+\]
+Ek bellek karmaşıklığı ise yalnızca $O(1)$'dir.
+\end{proof}
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+// Belirli bir X degerinden kucuk veya esit eleman sayisini O(N)'de sayar
+int kucuk_esit_sayisi(int N, int M[100][100], int X) {
+    int adet = 0;
+    int i = N - 1;
+    int j = 0;
+    
+    while (i >= 0 && j < N) {
+        if (M[i][j] <= X) {
+            adet += (i + 1);
+            j++;
+        } else {
+            i--;
+        }
+    }
+    return adet;
+}
+
+int matris_medyani(int N, int M[100][100]) {
+    int sol = M[0][0];
+    int sag = M[N - 1][N - 1];
+    int hedef_sira = (N * N + 1) / 2;
+    int cevap = sag;
+    
+    while (sol <= sag) {
+        int orta = sol + (sag - sol) / 2;
+        if (kucuk_esit_sayisi(N, M, orta) >= hedef_sira) {
+            cevap = orta;
+            sag = orta - 1; // Daha kucuk bir deger medyan olabilir mi?
+        } else {
+            sol = orta + 1;
+        }
+    }
+    return cevap;
+}
+\end{lstlisting}
+
+\subsection{Problem 8: Sayılar Teorisi ve Dinamik Programlama: Bölünebilirlik Grafında En Uzun Yol}
+
+\begin{example}
+$S = \{1, 2, \dots, n\}$ kümesi veriliyor. Bu kümeden seçilen elemanlarla öyle bir $x_1 < x_2 < \dots < x_k$ dizisi oluşturulacaktır ki; her $i$ ($1 \le i < k$) için $x_i \mid x_{i+1}$ ($x_i$, $x_{i+1}$'i tam böler) olacaktır.
+\begin{itemize}
+    \item[(a)] Böyle bir zincirin maksimum eleman sayısı ($k$) nedir?
+    \item[(b)] Bu maksimum uzunluğa sahip kaç farklı zincir kurulabilir?
+\end{itemize}
+\end{example}
+
+Zincirdeki her eleman bir sonrakini tam bölmelidir (Bölüm 11): $x_{i+1} = c_i \cdot x_i$ ($c_i \ge 2$ bir tam sayı).
+Zinciri olabildiğince uzatmak için her adımda sayıyı en küçük tam sayı çarpanı olan $2$ ile çarpmak gerekir.
+Başlangıçta $x_1 = 1$ alırsak:
+\[
+1, 2, 4, 8, 16, \dots, 2^m \le n
+\]
+Maksimum uzunluk doğrudan $2$'nin kuvveti ile belirlenir: $k = \lfloor \log_2 n \rfloor + 1$.
+Peki bu uzunlukta kaç farklı zincir vardır?
+Yalnızca $2$ çarpanı mı kullanılabilir?
+Bir adımda $2$ yerine $3$ çarpanı seçilirse ne olur?
+Örneğin $n=12$ için:
+$k = \lfloor \log_2 12 \rfloor + 1 = 3 + 1 = 4$.
+Uzunluğu 4 olan zincirler:
+\begin{itemize}
+    \item $1 \to 2 \to 4 \to 8$ (çarpanlar: $2, 2, 2$)
+    \item $1 \to 2 \to 4 \to 12$ (çarpanlar: $2, 2, 3$)
+    \item $1 \to 2 \to 6 \to 12$ (çarpanlar: $2, 3, 2$)
+    \item $1 \to 3 \to 6 \to 12$ (çarpanlar: $3, 2, 2$)
+\end{itemize}
+Çarpanlar kümesinde $3$ çarpanı yer alabilir; çünkü $2 \cdot 2 \cdot 3 = 12 \le 12$'dir. Ancak $2 \cdot 3 \cdot 3 = 18 > 12$ olduğundan iki adet $3$ çarpanı bulunamaz.
+Problem, çarpanların permütasyonuna ve dinamik programlama sayımına dönüşür.
+
+\begin{proof}[Çözüm]
+Zincirin eleman sayısı $k$ olsun. Zincirin son elemanı $x_k \le n$ olmalıdır.
+$x_k$'nin asal çarpanlarına ayrılmış biçimi:
+\[
+x_k = p_1^{a_1} p_2^{a_2} \dots p_r^{a_r}
+\]
+olmak üzere, $x_1 = 1$ kabul edildiğinde zincirin uzunluğu çarpanların asal üslerinin toplamının bir fazlasıdır:
+\[
+k = 1 + \sum_{i=1}^r a_i
+\]
+Bu toplamı maksimize etmek için en küçük asal olan $2$'yi seçmeliyiz. O halde:
+\[
+k_{\max} = \lfloor \log_2 n \rfloor + 1
+\]
+olur. $m = k_{\max} - 1 = \lfloor \log_2 n \rfloor$ diyelim.
+
+En uzun zincirin son elemanı $x_k \le n$ şu iki yapıdan birinde olmalıdır:
+\begin{enumerate}
+    \item Sadece $2$'lerden oluşanlar: $x_k = 2^m$.
+    \item Tam olarak bir tane $3$ asalına ve $m-1$ tane $2$ asalına sahip olanlar: $x_k = 2^{m-1} \cdot 3$. ($2^{m-1} \cdot 3 \le n$ ise bu durum mümkündür; $2^{m-2} \cdot 3^2 > 2^m$ olduğundan birden fazla $3$ bulunamaz; ayrıca $5 > 4 = 2^2$ olduğundan $5$ asalı iki adet $2$'nin yerini tutamaz).
+\end{enumerate}
+
+Şimdi bu zincirlerin sayısını hesaplayalım:
+\begin{itemize}
+    \item \textbf{Durum 1: Yalnızca $2$ çarpanları ($x_k = 2^m \cdot a$):}
+    İlk eleman $x_1 = a$ olabilir ($a \cdot 2^m \le n$ koşuluyla).
+    Her $a \in [1, \lfloor n / 2^m \rfloor]$ için $a \to 2a \to 4a \dots \to 2^m a$ şeklinde tek bir zincir kurulur.
+    Buradan $\lfloor \frac{n}{2^m} \rfloor$ adet zincir elde edilir.
+
+    \item \textbf{Durum 2: Bir adet $3$ ve $m-1$ adet $2$ çarpanı ($x_k = 2^{m-1} \cdot 3 \cdot a \le n$):}
+    Çarpanlar kümesi $\{3, 2, 2, \dots, 2\}$ biçimindedir.
+    $3$ çarpanının hangi adımda kullanılacağı serbesttir; toplam $m$ adımdan herhangi birinde yer alabilir.
+    Bölüm 4'te ele aldığımız tekrarlı permütasyon mantığıyla $m$ farklı sıra mümkündür:
+    \[
+    \binom{m}{1} = m
+    \]
+    Bu durumdaki her geçerli $a$ ($1 \le a \le \lfloor \frac{n}{2^{m-1} \cdot 3} \rfloor$) için $m$ farklı zincir oluşur.
+    Buradan $m \cdot \lfloor \frac{n}{2^{m-1} \cdot 3} \rfloor$ adet zincir gelir.
+\end{itemize}
+
+Toplam zincir sayısı:
+\[
+\text{Toplam} = \left\lfloor \frac{n}{2^m} \right\rfloor + m \cdot \left\lfloor \frac{n}{2^{m-1} \cdot 3} \right\rfloor
+\]
+olarak $O(1)$ zamanda hesaplanır.
+\end{proof}
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+typedef struct {
+    long long max_length;
+    long long count;
+} Result;
+
+Result longest_divisibility_chains(long long n) {
+    if (n == 1) {
+        Result r = {1, 1};
+        return r;
+    }
+
+    long long m = 0;
+    while ((1ULL << (m + 1)) <= (unsigned long long)n) {
+        m++;
+    }
+
+    long long max_length = m + 1;
+    long long count = n / (1ULL << m);
+
+    if (m >= 1) {
+        unsigned long long threshold = (1ULL << (m - 1)) * 3ULL;
+        if (threshold <= (unsigned long long)n) {
+            count += m * (n / threshold);
+        }
+    }
+
+    Result r = {max_length, count};
+    return r;
+}
+
+int main(void) {
+    Result res12 = longest_divisibility_chains(12);
+    printf("n = 12: (%lld, %lld)\n", res12.max_length, res12.count);
+
+    Result res20 = longest_divisibility_chains(20);
+    printf("n = 20: (%lld, %lld)\n", res20.max_length, res20.count);
+
+    return 0;
+}\end{lstlisting}
+
+\subsection{Bölüm Özeti ve Olimpiyat İçin Stratejik Tavsiyeler}
+
+Bu bölümde incelediğimiz problemler, olimpiyat sorularının ayırt edici özelliklerini açıkça ortaya koymaktadır:
+\begin{itemize}
+    \item \textbf{Modüler Dönüşümler ve Bit Aritmetiği:} Toplama ve çıkarmanın mod $2$'de XOR işlemine karşılık gelmesi, dairesel yapılar ile binom katsayılarının Bölüm 15'teki Lucas parite teoremi üzerinden kurduğu bağı sıkça karşımıza çıkarır.
+\item \textbf{Graf Soyutlaması:} Doğrudan bir graf olarak verilmeyen durum uzayları (Frobenius madeni para problemi, turnuva sıralamaları), tepe ve yönlü kenarlarla modellendiğinde Dijkstra veya Hamilton yolu gibi standart algoritmalara indirgenebilir.
+    \item \textbf{Kombinatorik Kısıtları Ayrıştırma:} Yasaklı permütasyonlar ve dizi yerleşimlerinde doğrudan sayım yapmak yerine içerme-dışarma ve bağımsız küme dönüşümleri tercih edilmelidir.
+    \item \textbf{Monotonluk ve İkili Arama:} Bir optimizasyon veya sayma probleminde aranan değer arttıkça sağlanan koşul tek yönlü (monoton) bir değişim gösteriyorsa, doğrudan değer uzayında ikili arama kurgulanmalıdır.
+\end{itemize}

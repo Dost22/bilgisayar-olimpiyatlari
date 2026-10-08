@@ -1,0 +1,257 @@
+% ============================================================
+%  Bilgisayar Olimpiyatlarına Hazırlık — Kitap Şablonu
+%  Derleyici: pdflatex (iki geçişli, içindekiler için)
+% ============================================================
+\documentclass[11pt, twoside, openany]{book}
+
+% ---------- Kodlama ve dil ----------
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  % Kod fontu (KARARLAR.md → D51): Latin Modern Mono/CM Typewriter'ın "&" işareti
+  % italik "et" biçimindedir; kod bloklarında (a & b, &&, &x) yamuk durur.
+  % TeX Gyre Cursor'un dik "&" işareti vardır. Sistem TeX dağıtımında kuruluysa
+  % onu kullan, yoksa klasik Typewriter'da kal (zarif geri düşüş).
+  \IfFileExists{tgcursor.sty}{%
+    \usepackage[matchlowercase]{tgcursor}%  qcr'yi varsayılan tt yapar, x-yüksekliğine göre ölçekler
+    \renewcommand\bfdefault{bx}%            sty global olarak 'b' yapmıştı; geneli eski hâline getir
+  }{}
+\else
+  % XeLaTeX (tectonic) / LuaLaTeX: Unicode doğal, modern yazı tipi.
+  % Kod fontu (KARARLAR.md → D51): aynı gerekçeyle TeX Gyre Cursor. Tectonic'in
+  % demeti bu fontu İÇERMEDİĞİ için repo içindeki fonts/ klasöründen yüklenir;
+  % bu yüzden derleme repo kökünden yapılmalıdır (compile_book.py zaten
+  % cwd=kök ile çağırır).
+  \usepackage{fontspec}
+  \setmonofont[
+    Path=fonts/,
+    Extension=.otf,
+    Scale=MatchLowercase,
+    UprightFont=texgyrecursor-regular,
+    BoldFont=texgyrecursor-bold,
+    ItalicFont=texgyrecursor-italic,
+    BoldItalicFont=texgyrecursor-bolditalic
+  ]{TeX Gyre Cursor}
+\fi
+\usepackage[turkish]{babel}
+\usepackage{etoolbox}
+% Babel'in Türkçe noktalama shorthands'leri kod bloklarındaki =, :, ; gibi
+% karakterleri bozmasın diye yalnızca lstlisting içinde kapat.
+\AtBeginEnvironment{lstlisting}{\shorthandoff{=:}}
+% TikZ şekillerinde de `=` ve `:` karakterleri (scale=..., at (x,y) gibi)
+% Türkçe babel shorthands yüzünden bozulmasın diye kapat.
+\AtBeginEnvironment{tikzpicture}{\shorthandoff{=:}}
+
+% ---------- Sayfa boyutu ve düzeni (B5) ----------
+\usepackage[b5paper, margin=2cm, headheight=14pt]{geometry}
+\usepackage{microtype}
+\emergencystretch=3em
+
+% ---------- Matematik ----------
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+
+% ---------- Kod listeleme ----------
+\usepackage{listings}
+\usepackage{xcolor}
+
+% ---------- Tıklanabilir içindekiler ve bağlantılar ----------
+\usepackage[colorlinks=true, linkcolor=blue, urlcolor=cyan, citecolor=blue, unicode]{hyperref}
+
+% PDF künyesi: kitap dijital olarak paylaşıldığında okuyucunun/arama motorlarının
+% başlığı ve yazarı görmesi için meta veriyi dolduruyoruz (aksi hâlde boş kalır).
+\hypersetup{
+  pdftitle={Bilgisayar Olimpiyatlarına Hazırlık},
+  pdfauthor={Dost Seferoğlu},
+  pdfsubject={TÜBİTAK Bilgisayar Olimpiyatı 1. Aşama sınavına hazırlık},
+  pdfkeywords={TÜBİTAK, bilgisayar olimpiyatı, kombinatorik, sayılar teorisi, algoritma, veri yapıları, C programlama, e-ISBN 978-625-00-5243-3},
+  pdfcreator={LaTeX}
+}
+
+% ---------- Üstbilgi / altbilgi ----------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+% Uzun bölüm başlıkları, karşı uçtaki kitap adıyla aynı satırda çakışmasın
+% diye üstbilginin tamamını bölüm başlığına ayırıyoruz.
+\fancyhead[LE,RO]{\nouppercase{\small\leftmark}}
+\fancyhead[RE,LO]{}
+\fancyfoot[CE,CO]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ---------- Diğer paketler ----------
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc}
+
+% ---------- Görsel sözleşmesi (bkz. KARARLAR.md → D54) ----------
+% Kitaptaki tüm TikZ şekilleri bu ortak üslubu kullanır: gri tonlama tabanlı
+% palet + TEK vurgu rengi (koyu mavi; gri baskıda da ayırt edilir), 0.8pt
+% temel / 1.1pt vurgu çizgi, footnotesize etiketler. Kurallar:
+%  (1) YÖNLÜ kenarlar (oklar): düğümleri ADLANDIR, okları düğümlerden SONRA
+%      \draw (A) -- (B) biçiminde çiz — TikZ çizgiyi düğüm sınırına kırpar,
+%      ok ucu sınırda görünür. Ham koordinatla ve düğümden önce çizilen okun
+%      ucu düğüm dolgusunun ALTINDA kalır (yön kaybolur).
+%      Yönsüz kenarlar: ham koordinatlarla düğümlerden ÖNCE çizilebilir
+%      (düğüm dolgusu çizgiyi keser); adlandırılmış düğümle çizilecekse yine
+%      düğümlerden sonra çizilir.
+%  (2) Her etiketi bölgenin görsel merkezine koy; çizgilerden en az ~3pt açık.
+%      Dikkat: `positioning` kütüphanesinin `of` anahtarı PARANTEZLİ koordinat
+%      kabul etmez (`below=2mm of (0,0)` → hata) — yalnızca adlandırılmış
+%      düğümle kullan (`below=2mm of A`); serbest konum için `at (x,y)`.
+%  (3) Yeni kalıp gerekirse buraya .style olarak ekle; bölüm içinde özel
+%      stil tanımlama.
+\definecolor{kitapvurgu}{HTML}{1F5FA8}
+\colorlet{kitapvurguacik}{kitapvurgu!20}
+
+\tikzset{
+  kitap-cizgi/.style={line width=0.8pt},
+  kitap-ok/.style={kitap-cizgi, -{Stealth[length=2.4mm, width=2.2mm]}},
+  dugum/.style={circle, draw=black, fill=white, inner sep=1pt,
+                minimum size=8.5mm, font=\small, line width=0.8pt},
+  kutu/.style={draw=black, fill=white, minimum size=8.5mm,
+               inner sep=1pt, line width=0.8pt},
+  kenar/.style={kitap-cizgi},
+  vurgulu/.style={draw=kitapvurgu, fill=kitapvurguacik, line width=1.1pt},
+  vurgulu-kenar/.style={draw=kitapvurgu, line width=1.1pt},
+  etiket/.style={font=\footnotesize},
+}
+
+% Fonksiyon grafikleri için ortak eksen üslubu (pgfplots; Bölüm 21 vb.):
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+\pgfplotsset{
+  kitapeksen/.style={
+    grid=major, grid style={gray!25, line width=0.3pt},
+    tick label style={font=\footnotesize},
+    every axis label/.append style={font=\small},
+    legend style={font=\footnotesize},
+  }
+}
+\usepackage{enumitem}
+
+% ---------- Kod görünümü ----------
+\lstset{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{orange},
+  numbers=none,
+  frame=single,
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  extendedchars=true
+}
+% pdfLaTeX (T1) Türkçe harfler için aksan komutlarına ihtiyaç duyar; XeTeX (tectonic)
+% Unicode'u doğal işlediği için literale gerek yoktur.
+\ifPDFTeX
+  \lstset{literate={ö}{{\"o}}1 {ü}{{\"u}}1 {ğ}{{\u{g}}}1 {ş}{{\c{s}}}1 {ç}{{\c{c}}}1 {ı}{{\i}}1 {←}{{$\leftarrow$}}1 {Ç}{{\c{C}}}1 {İ}{{\.{I}}}1 {Ş}{{\c{S}}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1 {Ğ}{{\u{G}}}1}
+\fi
+
+% Türkçe babel + listings uyumsuzluğu nedeniyle yerleşik "C" dili sorunlu çalışır;
+% bu yüzden kendi C dilimizi tanımlıyoruz (kod bloklarında language=CTemel kullanılır).
+\lstdefinelanguage{CTemel}{
+  morekeywords={auto,break,case,char,const,continue,default,do,double,else,
+    enum,extern,float,for,goto,if,int,long,register,return,short,signed,
+    sizeof,static,struct,switch,typedef,union,unsigned,void,volatile,while,
+    include,define},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]"
+}
+
+% C++ kod blokları için de aynı gerekçeyle özel dil (bkz. KARARLAR.md → D64):
+% yerleşik language=C++ Türkçe babel ile çakışır (D3). C++ yalnızca kodun
+% C ile gereksiz yere uzayacağı yerlerde kısalık için kullanılır.
+\lstdefinelanguage{CppTemel}{
+  morekeywords={alignas,alignof,and,and_eq,asm,auto,bitand,bitor,bool,break,
+    case,catch,char,class,compl,concept,const,constexpr,const_cast,continue,
+    decltype,default,delete,do,double,dynamic_cast,else,enum,explicit,export,
+    extern,false,float,for,friend,goto,if,inline,int,long,mutable,namespace,
+    new,noexcept,not,not_eq,nullptr,operator,or,or_eq,private,protected,public,
+    register,reinterpret_cast,return,short,signed,sizeof,static,static_assert,
+    static_cast,struct,switch,template,this,thread_local,throw,true,try,typedef,
+    typeid,typename,union,unsigned,using,virtual,void,volatile,wchar_t,while,
+    xor,xor_eq,include,define,std,string,vector,map,set,stack,queue,pair,
+    cout,cin,endl,sort,next_permutation,to_string,push_back,begin,end},
+  sensitive=true,
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+  morestring=[b]'
+}
+
+% ---------- Teorem benzeri ortamlar ----------
+\newtheorem{theorem}{Teorem}[chapter]
+\newtheorem{lemma}[theorem]{Önerme}
+\newtheorem{corollary}[theorem]{Sonuç}
+\newtheorem{definition}[theorem]{Tanım}
+\newtheorem{example}[theorem]{Örnek}
+% İçerik yazan ajanların kullandığı ek "uyarı" kutuları (D8'e bakınız).
+% Bunlar teorem sayacına bağlanmaz; ayrı ve sade başlıklı kutulardır.
+\newtheorem{caution}{Uyarı}
+\newtheorem{remark}{Not}
+\newtheorem{note}{Not}
+
+% ---------- Bölüm öncelik etiketi (fihristte gösterilir) ----------
+% Öncelik etiketleri İÇİNDEKİLER'de, bölüm başlığının yanında görünür:
+% her bölüm dosyası şu biçimdedir:
+%     \chapter[Başlık · \textit{Temel}]{Başlık}
+%     \chaptermark{Başlık}        % üstbilgi, etiketsiz temiz başlığı taşır
+% Değerler: Temel / Orta / İleri — tanımlar için bkz. config/mufredat.md
+% ("Öncelik Etiketleri" bölümü). TEK KAYNAK mufredat.md'dir; bu biçim
+% scripts/oncelik_etiketle.py ile üretilir/güncellenir (bkz. KARARLAR.md → D43, D44).
+% Not: etiket, bölüm başlığının ALTINA satır olarak BASILMAZ.
+
+% ---------- Paragraf düzeni ----------
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{0.25em plus 1pt}
+
+% Fihristte (içindekiler) kısım gruplarını gösteren satır — gövdeye HİÇBİR şey
+% basmaz; yalnızca .toc dosyasına kalın bir grup başlığı yazar. compile_book.py,
+% her kısmın ilk bölüm dosyasından önce bu komutu üretir; kısım adları TEK
+% KAYNAK olan config/mufredat.md'den okunur (bkz. KARARLAR.md → D67).
+\newcommand{\kisimfihrist}[1]{%
+  \addtocontents{toc}{%
+    \protect\vspace{1.05em}%
+    \protect\par\protect\noindent{\protect\bfseries #1}\protect\par\protect\nopagebreak
+    \protect\vspace{0.35em}}}
+
+\begin{document}
+
+% ---------- Kapak (başlık sayfası, sade) ----------
+\begin{titlepage}
+  \centering
+  \null
+  \vfill
+  {\Huge\bfseries Bilgisayar Olimpiyatlarına Hazırlık\par}
+  \vspace{1.2em}
+  {\color{black!60}\rule{0.5\textwidth}{0.6pt}\par}
+  \vfill
+  {\large\bfseries Dost Seferoğlu\par}
+  \vfill
+\end{titlepage}
+
+% ---------- Künye (kapağın arkası, tek sayfa) ----------
+% e-ISBN, yayın türü ve yayın yılı bilgisi burada yer alır (bkz. KARARLAR.md → D41).
+\input{frontmatter/kunye.tex}
+
+% ---------- Önsöz ve Hakkında (yazar tarafından yazılır) ----------
+\input{frontmatter/onsuz.tex}
+\input{frontmatter/hakkinda.tex}
+
+% ---------- İçindekiler ----------
+\tableofcontents
+\clearpage
+
+% === İÇERİK BÖLÜMLERİ BURAYA \input satırları olarak eklenir (compile_book.py) ===
+
+\end{document}

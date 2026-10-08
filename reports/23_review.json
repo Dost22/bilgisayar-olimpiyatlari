@@ -1,0 +1,15 @@
+{
+  "file": "23_ikili_arama.tex",
+  "findings": [
+    {
+      "file": "23_ikili_arama.tex",
+      "line_hint": 302,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "include <stdio.h>",
+      "issue": "C dilinde önişlemci yönergesi eksik yazılmıştır; 'include <stdio.h>' yerine '#include <stdio.h>' olmalıdır.",
+      "suggested_fix": "#include <stdio.h>",
+      "confidence": "high"
+    }
+  ]
+}

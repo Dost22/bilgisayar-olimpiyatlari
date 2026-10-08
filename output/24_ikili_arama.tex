@@ -1,0 +1,557 @@
+\chapter[İkili Arama · \textit{Temel}]{İkili Arama}
+\chaptermark{İkili Arama}
+
+Bilgisayar biliminde ve matematikte en sık karşılaşılan temel problem türlerinden biri, geniş bir aday kümesi içinden belirli bir koşulu sağlayan elemanı veya değeri bulmaktır. Doğal akla gelen ilk yöntem, tüm adayları tek tek inceleyen \emph{doğrusal arama} (linear search) yaklaşımıdır. Ancak arama uzayının büyüklüğü $n$ olduğunda, $n = 10^9$ ya da $n = 10^{18}$ gibi yarışmalarda sıkça görülen boyutlara ulaşıldığında doğrusal tarama kabul edilemez bir zaman maliyetine yol açar.
+
+İkili arama (\emph{binary search}), yapılandırılmış (sıralı veya monoton) bir uzayda her bir adımla arama uzayını yarıya indiren, $O(n)$ maliyetli bir doğrusal aramayı $O(\log n)$ seviyesine düşüren oldukça etkili bir tekniktir. Bu bölümde ikili aramanın diziler üzerindeki temel işleyişini, Bölüm 18'de ele aldığımız değişmez (\emph{invariant}) ilkesinin buradaki rolünü, sınır koşullarını ve ardından bu tekniği kapsamlı bir problem çözme aracına dönüştüren \emph{cevap üzerinde ikili arama} yöntemini ele alacağız.
+
+\section{Sıralı Dizide Arama}
+
+\subsection{Motivasyon ve Sezgi: Sayı Tahmin Oyunu}
+
+İkili aramanın arkasındaki temel mantığı kavramak için klasik bir oyunla başlayalım: Arkadaşınız $1$ ile $100$ arasında (sınırlar dahil) gizli bir $x$ tam sayısı tutmuş olsun. Her tahmininizde arkadaşınız size yalnızca üç cevaptan birini verebilir: ``Daha büyük'', ``Daha küçük'' veya ``Doğru''.
+
+Bu oyunu en az hamlede garantili olarak bitirmek için nasıl bir strateji izlersiniz?
+Eğer $1, 2, 3, \dots$ diye sırayla sorarsanız, arkadaşınız $100$ tuttuğunda $100$ soru sormanız gerekir. Fakat ilk tahmin olarak aralığın tam ortasındaki sayıyı, yani $50$'yi seçerseniz:
+\begin{itemize}
+    \item Arkadaşınız ``Doğru'' derse oyun $1$ hamlede biter.
+    \item Arkadaşınız ``Daha büyük'' derse, gizli sayının $1$ ile $50$ arasında olamayacağını kesin olarak anlarsınız. Aday kümeniz bir anda $\{51, 52, \dots, 100\}$ aralığına iner. Aday sayısı $100$'den $50$'ye düşmüştür.
+    \item Arkadaşınız ``Daha küçük'' derse, benzer şekilde aday kümeniz $\{1, 2, \dots, 49\}$ olur.
+\end{itemize}
+Her tahminde aralığın ortasını seçerek geriye kalan arama uzayının boyutunu yarıya indirirsiniz. $100$ aday ile başlayıp her seferinde ikiye böldüğümüzde:
+\[ 100 \xrightarrow{1} 50 \xrightarrow{2} 25 \xrightarrow{3} 12 \xrightarrow{4} 6 \xrightarrow{5} 3 \xrightarrow{6} 1 \]
+En kötü durumda dahi $7$ soruda gizli sayıyı kesinlikle bulursunuz. İkili aramanın özü tam olarak budur: Bilgi taşıyan tek bir karşılaştırma ile arama uzayının yarısını doğrudan elemek.
+
+\subsection{Sıralı Dizide Arama Mekanizması}
+
+Bu mantığı tamsayı dizilerine uygulayabilmemizin tek bir önkoşulu vardır: Dizinin \emph{sıralı} olması (sıralama algoritmaları için Bölüm 23'e bakılabilir).
+
+$n$ elemanlı artan sırada bir $A$ dizisi verilmiş olsun:
+\[ A[0] \le A[1] \le A[2] \le \dots \le A[n-1] \]
+Bu dizide belirli bir $hedef$ değerinin bulunup bulunmadığını kontrol etmek istiyoruz.
+
+Arama yapacağımız geçerli indis aralığını $[sol, sag]$ olarak tanımlayalım. Başlangıçta hedef eleman dizinin herhangi bir yerinde olabileceğinden $sol = 0$ ve $sag = n - 1$ olarak kurulur.
+
+Her adımda aralığın orta indisi hesaplanır:
+\[ orta = \left\lfloor \frac{sol + sag}{2} \right\rfloor \]
+Bu noktada $A[orta]$ değeri ile $hedef$ karşılaştırılır:
+\begin{enumerate}
+    \item \textbf{Eşitlik durumu ($A[orta] = hedef$):} Aranan eleman bulunmuştur; $orta$ indisi döndürülür.
+    \item \textbf{Hedef sağda ($A[orta] < hedef$):} Dizi küçükten büyüğe sıralı olduğundan, $orta$ indisindeki ve onun solundaki tüm elemanlar $hedef$'ten kesinlikle küçüktür:
+    \[ A[i] \le A[orta] < hedef \quad (\forall i \le orta) \]
+    Dolayısıyla sol yarıda $hedef$'in bulunması imkânsızdır. Arama aralığı sağ yarıya daraltılır: $sol = orta + 1$.
+    \item \textbf{Hedef solda ($A[orta] > hedef$):} Benzer mantıkla, $orta$ ve onun sağındaki tüm elemanlar $hedef$'ten kesinlikle büyüktür:
+    \[ A[i] \ge A[orta] > hedef \quad (\forall i \ge orta) \]
+    Bu durumda sağ yarı elenir ve arama aralığı sol yarıya daraltılır: $sag = orta - 1$.
+\end{enumerate}
+Bu işlem, eleman bulunana kadar veya arama aralığı boşalıncaya dek ($sol > sag$) devam eder.
+
+\begin{definition}[Arama Aralığı Değişmezi]
+İkili arama döngüsünün her adımının başında şu değişmez (\emph{invariant}) korunur:
+Eğer $hedef$ değeri $A[0 \dots n-1]$ dizisinde mevcutsa, kesinlikle $A[sol \dots sag]$ alt dizisinin içindedir.
+\end{definition}
+
+\begin{theorem}[İkili Aramanın Zaman Karmaşıklığı]
+$n$ elemanlı sıralı bir dizide ikili arama algoritması en kötü durumda en fazla $\lfloor \log_2 n \rfloor + 1$ adet karşılaştırma yapar ve $O(\log n)$ zaman karmaşıklığı ile çalışır.
+\end{theorem}
+
+\begin{proof}
+Başlangıçtaki aralık boyutu $L_0 = n$'dir. Algoritmanın her adımında yeni aralık boyutu $L_{k+1} \le \lfloor L_k / 2 \rfloor$ olur.
+Aralık boyutu $1$'e ulaştığında en fazla bir karşılaştırma daha yapılır.
+$k$ adım sonra aralık boyutu en fazla $\lfloor n / 2^k \rfloor$ olur.
+Algoritmanın sonlanması için $\lfloor n / 2^k \rfloor < 1$, yani $2^k > n$ olması yeterlidir.
+Buradan $k = \lfloor \log_2 n \rfloor + 1$ elde edilir. Her adımda yapılan işlemler (toplama, bölme, karşılaştırma) $O(1)$ sürede gerçekleştiğinden, toplam çalışma zamanı $O(\log n)$ olur.
+\end{proof}
+
+\subsection{Somut Bir Yürütme Örneği}
+
+Algoritmanın adımlarını $n = 9$ elemanlı şu sıralı dizi üzerinde izleyelim:
+\[ A = [3, \, 7, \, 11, \, 15, \, 19, \, 24, \, 31, \, 42, \, 55] \]
+Dizide $hedef = 24$ değerini arayalım.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \foreach \i/\v in {0/3,1/7,2/11,3/15,4/19,5/24,6/31,7/42,8/55} {
+    \node[kutu] (k\i) at (\i*1.05,0) {\v};
+    \node[etiket] at (\i*1.05,-0.6) {\i};
+  }
+  \node[kutu, fill=kitapvurgu!12] (k4) at (4*1.05,0) {19};
+  \node[etiket, gray] at (0,-1.15) {sol $= 0$};
+  \node[etiket, kitapvurgu] at (4*1.05,-1.15) {orta $= 4$};
+  \node[etiket, gray] at (8*1.05,-1.15) {sag $= 8$};
+\end{tikzpicture}
+\caption{İkili aramanın 1. adımı: orta $= 4$ ve $A[4] = 19 < 24$ olduğundan arama
+sağ yarıya kayar (yeni sol $= 5$); vurgulu hücre karşılaştırılan elemandır.}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{1. Adım:} $sol = 0$, $sag = 8$.
+    \[ orta = \lfloor (0 + 8) / 2 \rfloor = 4 \implies A[4] = 19 \]
+    $19 < 24$ olduğundan hedef sağ yarıdadır. Yeni sol sınır: $sol = orta + 1 = 5$.
+    \item \textbf{2. Adım:} $sol = 5$, $sag = 8$.
+    \[ orta = \lfloor (5 + 8) / 2 \rfloor = 6 \implies A[6] = 31 \]
+    $31 > 24$ olduğundan hedef sol yarıdadır. Yeni sağ sınır: $sag = orta - 1 = 5$.
+    \item \textbf{3. Adım:} $sol = 5$, $sag = 5$.
+    \[ orta = \lfloor (5 + 5) / 2 \rfloor = 5 \implies A[5] = 24 \]
+    $A[5] = 24 = hedef$ bulundu. Algoritma $3$ karşılaştırmada $5$ indisini döndürür.
+\end{itemize}
+
+Şimdi aynı dizide bulunmayan bir değeri, $hedef = 20$'yi arayalım:
+\begin{itemize}
+    \item \textbf{1. Adım:} $sol = 0, sag = 8 \implies orta = 4$, $A[4] = 19 < 20 \implies sol = 5$.
+    \item \textbf{2. Adım:} $sol = 5, sag = 8 \implies orta = 6$, $A[6] = 31 > 20 \implies sag = 5$.
+    \item \textbf{3. Adım:} $sol = 5, sag = 5 \implies orta = 5$, $A[5] = 24 > 20 \implies sag = 4$.
+    \item \textbf{4. Adım:} $sol = 5, sag = 4$. Artık $sol > sag$ şartı sağlandığından döngü biter. Elemanın dizide bulunmadığı ($ -1 $) anlaşılır.
+\end{itemize}
+
+Dikkat edilirse, arama başarısız bittiğinde $sol$ göstergesi ($5$), $20$'den büyük en küçük elemanın indisini ($A[5]=24$) işaret etmektedir. Bu gözlem bizi doğrudan bir sonraki kavrama götürür.
+
+\subsection{Alt ve Üst Sınır Aramaları (Lower Bound ve Upper Bound)}
+
+Yarışmalarda nadiren bir dizide yalnızca elemanın var olup olmadığı sorulur. Genellikle tekrarlı elemanlar içeren dizilerde şu iki sorguyla karşılaşırız:
+\begin{enumerate}
+    \item \textbf{Alt sınır (\emph{lower bound}):} Dizide değeri $\ge x$ olan ilk elemanın indisi.
+    \item \textbf{Üst sınır (\emph{upper bound}):} Dizide değeri $> x$ olan ilk elemanın indisi.
+\end{enumerate}
+
+Örneğin $A = [2, 4, 4, 4, 7, 9]$ dizisinde $x = 4$ için:
+\begin{itemize}
+    \item $A[i] \ge 4$ koşulunu sağlayan ilk indis $1$'dir ($A[1] = 4$).
+    \item $A[i] > 4$ koşulunu sağlayan ilk indis $4$'tür ($A[4] = 7$).
+\end{itemize}
+Bu iki indis arasındaki fark ($4 - 1 = 3$), $4$ değerinin dizide kaç kez tekrarlandığını doğrudan verir.
+
+\begin{lstlisting}[language=CTemel]
+// Dizide eleman >= hedef olan ilk indisi dondurur.
+// Eger boyle bir eleman yoksa n dondurur.
+int alt_sinir(int A[], int n, int hedef) {
+    int sol = 0, sag = n - 1;
+    int sonuc = n;
+    while (sol <= sag) {
+        int orta = sol + (sag - sol) / 2;
+        if (A[orta] >= hedef) {
+            sonuc = orta;    // Aday bulundu, daha sola bak
+            sag = orta - 1;
+        } else {
+            sol = orta + 1;  // Bu eleman cok kucuk, saga bak
+        }
+    }
+    return sonuc;
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+FUNCTION lowerBound(A, target)
+    left = 0
+    right = length(A) - 1
+    result = length(A)
+
+    WHILE left <= right DO
+        mid = left + floor((right - left) / 2)
+        IF A[mid] >= target THEN
+            result = mid
+            right = mid - 1
+        ELSE
+            left = mid + 1
+        END IF
+    END WHILE
+
+    RETURN result
+END FUNCTION\end{lstlisting}
+
+\subsection{Uygulamada En Sık Yapılan Hatalar}
+
+İkili arama algoritması kavramsal olarak çok basit görünse de, Donald Knuth'un belirttiği gibi doğru kodlanması şaşırtıcı derecede dikkat ister. Karşılaşılan tipik tuzaklar şunlardır:
+
+\begin{enumerate}
+    \item \textbf{Tamsayı Taşması (Integer Overflow):}
+    Orta indis hesaplanırken yazılan \texttt{(sol + sag) / 2} ifadesi, $sol$ ve $sag$ büyük değerler aldığında (örneğin $10^9$ mertebesinde) toplamlarının $32$-bit işaretli tamsayı sınırını ($2^{31}-1 \approx 2.14 \times 10^9$) aşmasına ve negatif bir sayıya dönüşmesine sebep olur.
+    Güvenli yazım biçimi şudur:
+    \[ orta = sol + \left\lfloor \frac{sag - sol}{2} \right\rfloor \]
+
+    \item \textbf{Sonsuz Döngü (Off-by-One Hataları):}
+    Aralık daraltılırken \texttt{sol = orta} veya \texttt{sag = orta} yazıldığında, aralık boyutu $2$ iken ($sol + 1 = sag$) tamsayı bölmesi tabana yuvarladığı için $orta = sol$ olur. Eğer koşul gereği $sol = orta$ dallanmasına girilirse, aralık hiç değişmez ve algoritma sonsuz döngüye girer.
+    Aralık kapalı tutuluyorsa ($[sol, sag]$), adımlar kesinlikle $sol = orta + 1$ veya $sag = orta - 1$ olmalıdır.
+
+    \item \textbf{Aralık Kapanış Koşulu:}
+    Döngü koşulu \texttt{while (sol <= sag)} iken aralık daraltması \texttt{sag = orta - 1} olmalıdır. Eğer döngü \texttt{while (sol < sag)} şeklinde yarı-açık aralık için yazılmışsa daraltma kuralları farklı tasarlanmalıdır. İki farklı yaklaşımı birbirine karıştırmak en yaygın hata kaynağıdır.
+\end{enumerate}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Sıralı bir dizi, bilinmeyen bir pivot indisi etrafında dairesel olarak döndürülmüştür (örneğin $[0, 1, 2, 4, 5, 6, 7]$ dizisi $[4, 5, 6, 7, 0, 1, 2]$ haline gelmiştir). Tüm elemanların birbirinden farklı olduğu bilindiğine göre, dizinin en küçük elemanını $O(\log n)$ zamanda bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Dizi bütünüyle sıralı olmasa da temel bir yapı korunmuştur: Dizi iki sıralı parçadan oluşur ve sağdaki parçanın tüm elemanları soldaki parçanın tüm elemanlarından küçüktür. Aranan en küçük eleman, bu iki parçanın kırılma noktasıdır.
+
+Orta eleman $A[orta]$ ile sağ uç eleman $A[sag]$ karşılaştırıldığında:
+\begin{itemize}
+    \item Eğer $A[orta] > A[sag]$ ise, minimum eleman kesinlikle $orta$'nın sağında kalmalıdır; çünkü standart sıralı bir dizide sol eleman sağdakinden büyük olamaz. Kırılma sağdadır: $sol = orta + 1$.
+    \item Eğer $A[orta] < A[sag]$ ise, $orta$'dan $sag$'a kadar olan kısım düzenli artandır. Minimum eleman $A[orta]$ olabilir veya onun solunda yer alır: $sag = orta$.
+\end{itemize}
+Tüm elemanlar farklı olduğundan $A[orta] = A[sag]$ durumu sadece $sol = sag$ iken gerçekleşir.
+
+Bu mantıkla çalışan algoritma her adımda aralığı yarıya indirir:
+\begin{lstlisting}[language=CTemel]
+int minimum_bul(int A[], int n) {
+    int sol = 0, sag = n - 1;
+    while (sol < sag) {
+        int orta = sol + (sag - sol) / 2;
+        if (A[orta] > A[sag]) {
+            sol = orta + 1;
+        } else {
+            sag = orta;
+        }
+    }
+    return A[sol];
+}
+\end{lstlisting}
+Her adımda aralık boyutu en az yarıya indiğinden karmaşıklık $O(\log n)$ olur.
+\end{proof}
+
+\begin{example}
+Bir $A$ dizisi ``dağ dizisi'' (\emph{mountain array}) olarak adlandırılır eğer öyle bir $k$ ($0 < k < n-1$) indisi varsa ki:
+\[ A[0] < A[1] < \dots < A[k-1] < A[k] > A[k+1] > \dots > A[n-1] \]
+Elemanları bu kurala uyan bir dizide zirve noktasının ($A[k]$) değerini $O(\log n)$ karşılaştırma ile bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Zirve noktasında dizinin komşu farkları işaret değiştirir.
+Herhangi bir $orta$ indisi için $A[orta]$ ile $A[orta + 1]$ elemanlarını karşılaştıralım:
+\begin{itemize}
+    \item Eğer $A[orta] < A[orta + 1]$ ise, henüz zirveye ulaşılmamıştır; dağın tırmanış yamacındayız. Zirve kesinlikle $orta + 1$ veya daha sağdadır. Bu nedenle $sol = orta + 1$ yaparız.
+    \item Eğer $A[orta] > A[orta + 1]$ ise, iniş yamacındayız veya tam zirvedeyiz. Zirve $orta$ olabilir veya solunda kalır. Dolayısıyla aralığı $sag = orta$ yaparak sınırlarız.
+\end{itemize}
+
+Aralık boyutu $1$'e indiğinde ($sol = sag$), elimizde kalan tek indis kesinlikle zirvedir.
+
+\begin{lstlisting}
+FUNCTION findPeak(A)
+    left = 0
+    right = length(A) - 1
+
+    WHILE left < right DO
+        mid = left + floor((right - left) / 2)
+        IF A[mid] < A[mid + 1] THEN
+            left = mid + 1
+        ELSE
+            right = mid
+        END IF
+    END WHILE
+
+    RETURN A[left]
+END FUNCTION\end{lstlisting}
+Arama uzayı her adımda küçüldüğünden çözüm $O(\log n)$ zamanda zirveyi bulur.
+\end{proof}
+
+\section{Cevap Üzerinde İkili Arama}
+
+\subsection{Motivasyon: Aramayı Genelleştirmek}
+
+İkili arama çoğunlukla bellekte doğrudan tanımlı bir dizide arama yapmak olarak ele alınır. Oysa yarışmalarda bu tekniğin asıl gücü \textbf{cevap üzerinde ikili arama} (\emph{binary search on answer}) yaklaşımında ortaya çıkar.
+
+Birçok optimizasyon problemi şu kalıpta karşımıza çıkar:
+\begin{center}
+``Belirli kısıtları sağlayan \textbf{en küçük} (veya \textbf{en büyük}) $x$ değerini bulunuz.''
+\end{center}
+
+Doğrudan en uygun $x$'i hesaplamak güç olabilir. Ancak problemi tersine çevirip şu karar sorusuna dönüştürürsek:
+\begin{center}
+``Herhangi bir $x$ değeri verildiğinde, kısıtlar sağlanabilir mi?''
+\end{center}
+Bu kontrol sorusuna (genellikle Bölüm 27'deki greedy yaklaşımlarla veya bir simülasyonla) hızlı yanıt verilebiliyorsa ve kontrol fonksiyonu \emph{monoton} bir davranış sergiliyorsa, aradığımız cevabı ikili arama ile bulabiliriz.
+
+\subsection{Monotonluk İlkesi}
+
+Bir $P(x)$ doğruluk fonksiyonu tanımlayalım: $P(x) \in \{\text{DOĞRU}, \text{YANLIŞ}\}$.
+
+\begin{definition}[Monoton Koşul]
+Bir $P(x)$ fonksiyonu, tüm $x \le y$ değerleri için $P(x) \implies P(y)$ şartını sağlıyorsa monoton artandır.
+Benzer şekilde, tüm $x \le y$ için $P(y) \implies P(x)$ şartı sağlanıyorsa fonksiyon monoton azalandır.
+\end{definition}
+
+Arama uzayındaki her $x$ değeri için $P(x)$ çıktısı sıralandığında şu iki desenden biri oluşmalıdır:
+\[ \text{YANLIŞ}, \, \text{YANLIŞ}, \, \dots, \, \text{YANLIŞ}, \, \mathbf{DOu{G}RU}, \, \text{DOĞRU}, \, \dots, \, \text{DOĞRU} \]
+veya
+\[ \text{DOĞRU}, \, \text{DOĞRU}, \, \dots, \, \mathbf{DOu{G}RU}, \, \text{YANLIŞ}, \, \text{YANLIŞ}, \, \dots, \, \text{YANLIŞ} \]
+
+Burada amaç, iki bölge arasındaki \textbf{sınır noktasını} (ilk DOĞRU veya son DOĞRU değerini) bulmaktır. Değerler dizisi bellekte peşinen yer almaz; her bir eleman, $P(x)$ fonksiyonu o anda çalıştırılarak üretilir.
+
+\begin{theorem}[Cevap Üzerinde İkili Arama Doğruluğu]
+Eğer $P(x)$ fonksiyonu $[L, R]$ tamsayı aralığında monoton ise ve tek bir girdi için çalışma karmaşıklığı $O(f(n))$ ise, $P(x) = \text{DOĞRU}$ yapan en küçük (veya en büyük) $x$ değeri $O(f(n) \cdot \log(R - L))$ zamanda bulunabilir.
+\end{theorem}
+
+\begin{proof}
+Her adımda orta nokta $x_{orta} = \lfloor (L + R) / 2 \rfloor$ hesaplanır ve $P(x_{orta})$ değerlendirilir.
+Monotonluk gereği:
+\begin{itemize}
+    \item Eğer $P(x_{orta}) = \text{DOĞRU}$ ise, aranan ilk DOĞRU değeri $x_{orta}$ veya daha soldadır. Dolayısıyla sağ yarı elenir: $R = x_{orta} - 1$ (veya adayın saklanmasıyla).
+    \item Eğer $P(x_{orta}) = \text{YANLIŞ}$ ise, aranan değer kesinlikle $x_{orta}$'dan büyüktür. Sol yarı elenir: $L = x_{orta} + 1$.
+\end{itemize}
+Aralık boyutu her adımda yarıya indiğinden en fazla $\lceil \log_2(R - L + 1) \rceil$ adet değerlendirme yapılır. Her değerlendirme $O(f(n))$ sürdüğünden toplam karmaşıklık $O(f(n) \log(R - L))$ olur.
+\end{proof}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}[Kablo Kesme Problemi]
+Elimizde uzunlukları sırasıyla $L_1, L_2, \dots, L_n$ olan $n$ adet kablo bulunmaktadır. Bu kablolardan eşit uzunlukta en az $k$ adet parça elde etmek istiyoruz. Kablolar birbirine eklenemez, yalnızca kesilebilir. Elde edilebilecek bir parçanın tamsayı cinsinden \textbf{en büyük} uzunluğu ne kadar olabilir?
+
+Veriler: $n = 4$, $k = 11$, kablo uzunlukları: $[802, 743, 457, 539]$.
+\end{example}
+
+\begin{proof}[Çözüm]
+Doğrudan en büyük parça uzunluğu $x$'i cebirsel olarak kurmak yerine karar sorusuna odaklanalım:
+``Her bir parçanın uzunluğu $x$ seçilirse, toplamda en az $k$ parça elde edilebilir mi?''
+
+Uzunluğu $L_i$ olan bir kablodan boyu $x$ olan en fazla $\lfloor L_i / x \rfloor$ adet parça kesilebilir.
+O halde $x$ uzunluğunda elde edilebilecek toplam parça sayısı:
+\[ C(x) = \sum_{i=1}^n \left\lfloor \frac{L_i}{x} \right\rfloor \]
+olur. Kontrol fonksiyonumuz:
+\[ P(x) = (C(x) \ge k) \]
+
+\textbf{Monotonluk Kontrolü:}
+Eğer parça uzunluğu $x$'ten daha büyük bir $y$ değerine çıkarılırsa ($y > x$), her kablodan elde edilen parça sayısı azalır veya sabit kalır ($\lfloor L_i / y \rfloor \le \lfloor L_i / x \rfloor$). Dolayısıyla $C(y) \le C(x)$ olur.
+Eğer $x$ uzunluğunda $k$ parça elde \textbf{edilemiyorsa}, daha uzun bir $y$ parçasında hiç elde edilemez.
+Yani doğruluk dizilimi:
+\[ \underbrace{\text{DO\u{G}RU}, \, \dots, \, \text{DO\u{G}RU}}_{x \le x^*}, \, \underbrace{\text{YANLI\c{S}}, \, \dots, \, \text{YANLI\c{S}}}_{x > x^*} \]
+biçimindedir; aranan monotonluk geçerlidir.
+
+\textbf{Aralıkların Belirlenmesi:}
+\begin{itemize}
+    \item Alt sınır: $sol = 1$ (parça uzunluğu en az $1$ olmalıdır).
+    \item Üst sınır: $sag = \max(L_i) = 802$ (hiçbir parça eldeki en uzun kablodan uzun olamaz).
+\end{itemize}
+
+Verilen örnek için ikili aramayı adım adım işletelim:
+\begin{itemize}
+    \item $sol = 1, sag = 802 \implies orta = 401$:
+    \[ C(401) = \lfloor 802/401 \rfloor + \lfloor 743/401 \rfloor + \lfloor 457/401 \rfloor + \lfloor 539/401 \rfloor = 2 + 1 + 1 + 1 = 5 \]
+    $5 < 11$ olduğundan YANLIŞ. Demek ki $401$ çok büyük, $sag = 400$.
+    \item Birkaç adım sonra aralık daralır ve $orta = 200$ denenir:
+    \[ C(200) = 4 + 3 + 2 + 2 = 11 \ge 11 \implies \text{DOĞRU} \]
+    $200$ geçerli bir cevaptır. Ancak daha büyüğü olabilir mi? $cevap = 200$, $sol = 201$.
+    \item Arama bu şekilde devam ettiğinde $x = 200$ için $11$ parça, $x = 201$ için:
+    \[ C(201) = 3 + 3 + 2 + 2 = 10 < 11 \implies \text{YANLIŞ} \]
+    olduğu görülür.
+\end{itemize}
+Böylece ulaşılabilecek en büyük parça uzunluğu $200$ olarak bulunur.
+
+Karmaşıklık: Her adımda dizi bir kez taranır ($O(n)$) ve arama aralığı $[1, \max L]$ olduğundan toplam süre $O(n \log(\max L))$ olur.
+\end{proof}
+
+\begin{example}[Ressam Bölüştürme / Kitap Dağıtımı Problemi]
+$n$ adet kitap yan yana dizilmiştir. $i$. kitabın sayfa sayısı $A[i]$'dir. Bu kitaplar sırası bozulmadan $m$ öğrenciye paylaştırılacaktır. Her öğrenciye ardışık bir kitap bloğu verilmelidir ve her kitap tam olarak bir öğrenciye verilmelidir.
+
+Bir öğrenciye düşen toplam sayfa sayısının \textbf{en fazla} olduğu değeri \textbf{en küçük} (minimax) yapacak dağıtımı bulunuz.
+
+Dizi: $A = [12, 34, 67, 90]$, Öğrenci sayısı: $m = 2$.
+\end{example}
+
+\begin{proof}[Çözüm]
+En çok sayfa alan öğrencinin yükünü olabildiğince azaltmak istiyoruz. Doğrudan tüm bölme noktalarını denemek yerine cevap üzerinde ikili arama uygulayalım:
+``Herhangi bir öğrenciye en fazla $S$ sayfa verilmesine izin verilirse, bu kitaplar en fazla $m$ öğrenciye dağıtılabilir mi?''
+
+$P(S)$ kontrol fonksiyonunu Bölüm 27'de göreceğimiz greedy (\emph{greedy}) yöntemle yazabiliriz:
+İlk öğrenciden başlayarak, $S$ limitini aşmadığı sürece kitapları sırayla veririz. Bir sonraki kitabı eklediğimizde toplam $S$'yi aşacaksa yeni bir öğrenciye geçeriz. Bir kitabın sayfa sayısı tek başına $S$'den büyükse hiçbir öğrenci bu kitabı alamaz ($P(S) = \text{YANLIŞ}$).
+
+\textbf{Monotonluk:}
+Sayfa limiti $S$ artırılırsa öğrencilerin kapasitesi genişler ve gereken öğrenci sayısı azalır veya sabit kalır. Dolayısıyla $m$ öğrenciye yetme koşulu bozulmaz:
+\[ \text{YANLIŞ}, \, \dots, \, \text{YANLIŞ}, \, \mathbf{DOu{G}RU}, \, \dots, \, \text{DOĞRU} \]
+Hedefimiz ilk DOĞRU değerini veren en küçük $S$'yi bulmaktır.
+
+\textbf{Aralıkların Belirlenmesi:}
+\begin{itemize}
+    \item Alt sınır: En azından en kalın tekil kitabı bir öğrenci alabilmelidir: $sol = \max(A[i]) = 90$.
+    \item Üst sınır: Tüm kitaplar tek bir öğrenciye verilseydi toplam sayfa sayısı gerekirdi: $sag = \sum A[i] = 12 + 34 + 67 + 90 = 203$.
+\end{itemize}
+
+Aramanın adımları:
+\begin{itemize}
+    \item $sol = 90, sag = 203 \implies orta = 146$:
+    Limit $146$ olsun.
+    \begin{itemize}
+        \item 1. Öğrenci: $12 + 34 + 67 = 113 \le 146$. ($90$ eklenirse $203 > 146$, bitti).
+        \item 2. Öğrenci: $90 \le 146$.
+    \end{itemize}
+    Toplam $2$ öğrenci yetti; $m = 2$ sınırı aşılmadı ($P(146) = \text{DOĞRU}$).
+    Daha küçük bir limit arayalım: $sag = 145$, $cevap = 146$.
+    \item $sol = 90, sag = 145 \implies orta = 117$:
+    \begin{itemize}
+        \item 1. Öğrenci: $12 + 34 + 67 = 113 \le 117$.
+        \item 2. Öğrenci: $90 \le 117$.
+    \end{itemize}
+    Yine $2$ öğrenci yetti ($P(117) = \text{DOĞRU}$). $sag = 116$, $cevap = 117$.
+    \item $sol = 90, sag = 116 \implies orta = 103$:
+    \begin{itemize}
+        \item 1. Öğrenci: $12 + 34 = 46 \le 103$ ($67$ eklenirse $113 > 103$).
+        \item 2. Öğrenci: $67 \le 103$ ($90$ eklenirse $157 > 103$).
+        \item 3. Öğrenci: $90 \le 103$.
+    \end{itemize}
+    $3$ öğrenci gerekti; elimizde ise yalnızca $2$ öğrenci var ($P(103) = \text{YANLIŞ}$).
+    Limit yetersiz kaldı, artırmalıyız: $sol = 104$.
+    \item Kalan adımlar tamamlandığında sınırın $113$ olduğu görülür:
+    $S = 113$ için: $[12, 34, 67] \to 113$, $[90] \to 90$. Kitaplar tam $2$ öğrenciye dağıtılır.
+\end{itemize}
+En küçük maksimum toplam $113$'tür.
+\end{proof}
+
+\subsection{Gerçel Sayılarda İkili Arama (Bisection Yöntemi)}
+
+İkili arama yalnızca tamsayılar üzerinde değil, sürekli fonksiyonların köklerini veya ekstremum noktalarını bulmada da kullanılır. Sayısal analizde bu yaklaşım \emph{bisection} (ikiye bölme) yöntemi olarak adlandırılır.
+
+Sürekli bir $f(x)$ fonksiyonu için $f(a)$ ve $f(b)$ zıt işaretli ise ($f(a) \cdot f(b) < 0$), Bolzano Teoremi gereği $[a, b]$ aralığında en az bir $x^*$ kökü ($f(x^*) = 0$) bulunmalıdır.
+
+Gerçel sayılarda çalışırken iki önemli fark ortaya çıkar:
+\begin{enumerate}
+    \item İndis artırımı ($+1$ veya $-1$) yapılmaz; doğrudan $sol = orta$ veya $sag = orta$ atanır.
+    \item Döngü sonlandırma koşulu iki türlü yazılabilir:
+    \begin{itemize}
+        \item Hata payı (\emph{tolerans}): $|sag - sol| > \epsilon$ (örneğin $\epsilon = 10^{-7}$).
+        \item Sabit adım sayısı: Doğrudan $100$ veya $80$ adımlık bir \texttt{for} döngüsü çalıştırmak. $80$ adım sonra aralık boyutu $2^{-80} \approx 10^{-24}$ kat küçülür; bu da $64$-bitlik \texttt{double} veri tipinin makine hassasiyetinden bile daha yüksek bir doğruluk sağlar. Yarışmalarda sabit adım sayısı kullanmak, kayan nokta hatalarından kaynaklanabilecek sonsuz döngüleri engellediği için daha güvenlidir.
+    \end{itemize}
+\end{enumerate}
+
+\begin{example}
+$f(x) = x^3 + x - 5 = 0$ denkleminin gerçel kökünü $[1, 2]$ aralığında $10^{-6}$ hassasiyetle bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Fonksiyonun türevi $f'(x) = 3x^2 + 1 > 0$ olduğundan $f(x)$ tüm gerçel eksende kesin artandır (monotondur).
+Uç noktalarda:
+\[ f(1) = 1 + 1 - 5 = -3 < 0 \]
+\[ f(2) = 8 + 2 - 5 = 5 > 0 \]
+Fonksiyon artan olduğundan ve işaret değiştirdiğinden $[1, 2]$ aralığında tam olarak bir kök vardır.
+
+Algoritmayı C dilinde sabit döngü sayısı ile kuralım:
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+double f(double x) {
+    return x * x * x + x - 5.0;
+}
+
+double kok_bul() {
+    double sol = 1.0, sag = 2.0;
+    // 80 adim, araligi 2^{-80} oraninda daraltir.
+    for (int adim = 0; adim < 80; adim++) {
+        double orta = sol + (sag - sol) / 2.0;
+        if (f(orta) <= 0.0) {
+            sol = orta;  // Kok daha sagda veya tam orta noktada
+        } else {
+            sag = orta;  // Kok daha solda
+        }
+    }
+    return sol;
+}
+\end{lstlisting}
+Yaklaşık $1.515980$ değeri aranan kök olarak bulunur.
+\end{proof}
+
+\subsection{Kapsamlı Bir Problem: Agresif İnekler}
+
+Cevap üzerinde ikili arama yönteminin sık karşılaşılan klasik uygulamalarından biri ``Agresif İnekler'' (Aggressive Cows) problemidir.
+
+\begin{example}
+Düz bir hat üzerinde bulunan $n$ adet ahırın koordinatları $x_1, x_2, \dots, x_n$ tam sayılarıdır. Elimizde $c$ adet agresif inek bulunmaktadır. İnekleri bu ahırlara öyle yerleştirmek istiyoruz ki, birbirine en yakın iki inek arasındaki mesafe mümkün olan \textbf{en büyük} değere ulaşsın. Bu maksimum mesafeyi bulunuz.
+
+Örnek girdi: $n = 5$ ahır, koordinatlar: $[1, 2, 8, 4, 9]$, inek sayısı: $c = 3$.
+\end{example}
+
+\begin{proof}[Çözüm]
+Öncelikle Bölüm 23'teki sıralama yöntemlerinden biriyle koordinatları küçükten büyüğe dizelim:
+\[ x = [1, 2, 4, 8, 9] \]
+Yerleştirilecek $c = 3$ ineğimiz var. Amacımız ardışık inekler arasındaki mesafelerin minimumu olan $d$'yi olabildiğince büyütmektir.
+
+Soruyu karar biçimine dönüştürelim:
+``Herhangi iki inek arasındaki mesafe en az $d$ olacak şekilde $c$ adet ineği ahırlara yerleştirebilir miyiz?''
+
+$P(d)$ kontrol fonksiyonunu greedy yaklaşımla kurabiliriz:
+İlk ineği daima en soldaki ahıra ($x[0]$) koymak en avantajlı seçimdir; bu tercih sonraki ineklere mümkün olan en geniş alanı bırakır.
+Sonraki her ineği, bir önceki ineğin konduğu ahırdan en az $d$ birim uzaktaki ilk uygun ahıra koyarız. Eğer tüm inekler yerleştirilebilirse $P(d) = \text{DOĞRU}$, ahırlar yetersiz kalırsa $P(d) = \text{YANLIŞ}$ olur.
+
+\textbf{Monotonluk:}
+Mesafe $d$ büyüdükçe inekler arasına bırakılması gereken boşluk genişler, bu da yerleşimi zorlaştırır. Belirli bir $d$ mesafesinde yerleşim yapılamıyorsa, daha büyük bir $d'$ mesafesinde hiç yapılamaz:
+\[ \text{DOĞRU}, \, \dots, \, \mathbf{DOu{G}RU}, \, \text{YANLIŞ}, \, \dots, \, \text{YANLIŞ} \]
+Monotonluk korunduğu için en büyük $d$ değeri ikili arama ile bulunabilir.
+
+\textbf{Sınırlar:}
+\begin{itemize}
+    \item $sol = 1$ (en küçük tamsayı mesafe).
+    \item $sag = x[n-1] - x[0] = 9 - 1 = 8$ (en sol ile en sağ ahır arasındaki mesafe).
+\end{itemize}
+
+Adımları inceleyelim:
+\begin{itemize}
+    \item $sol = 1, sag = 8 \implies orta = 4$:
+    Mesafe en az $4$ olabilir mi?
+    \begin{itemize}
+        \item 1. İnek: $x[0] = 1$
+        \item 2. İnek: En az $1 + 4 = 5$ koordinatı aranır. İlk uygun ahır $x[3] = 8$.
+        \item 3. İnek: En az $8 + 4 = 12$ koordinatı aranır. Uygun ahır kalmadı.
+    \end{itemize}
+    $3$ inek yerleştirilemedi (yalnızca $2$ inek yerleşti; $P(4) = \text{YANLIŞ}$).
+    Yeni sağ sınır: $sag = 3$.
+    \item $sol = 1, sag = 3 \implies orta = 2$:
+    Mesafe en az $2$ olabilir mi?
+    \begin{itemize}
+        \item 1. İnek: $x[0] = 1$
+        \item 2. İnek: $1 + 2 = 3 \le x[2] = 4 \implies 4$'e konur.
+        \item 3. İnek: $4 + 2 = 6 \le x[3] = 8 \implies 8$'e konur.
+    \end{itemize}
+    $3$ inek başarıyla yerleşti ($P(2) = \text{DOĞRU}$).
+    Daha büyük bir değer aranabilir: $cevap = 2$, $sol = 3$.
+    \item $sol = 3, sag = 3 \implies orta = 3$:
+    Mesafe en az $3$ olabilir mi?
+    \begin{itemize}
+        \item 1. İnek: $1$
+        \item 2. İnek: $1 + 3 = 4 \le x[2] = 4 \implies 4$'e konur.
+        \item 3. İnek: $4 + 3 = 7 \le x[3] = 8 \implies 8$'e konur.
+    \end{itemize}
+    $3$ inek yerleşti ($P(3) = \text{DOĞRU}$).
+    $cevap = 3$, $sol = 4$.
+    \item $sol = 4 > sag = 3 \implies$ Döngü tamamlandı.
+\end{itemize}
+Ulaşılabilecek en büyük minimum mesafe $3$'tür (inekler $1, 4, 8$ konumlarına yerleşir).
+
+Sıralama adımı $O(n \log n)$, ikili arama adımı $O(\log(x_{maks}))$, her kontrol ise $O(n)$ sürdüğünden toplam zaman karmaşıklığı $O(n \log n + n \log(x_{maks}))$ olur.
+\end{proof}
+
+\subsection{Cevap Üzerinde İkili Arama Şablonu}
+
+Aşağıdaki şablon, koşulu sağlayan en büyük değeri bulma problemlerinde başvurulabilecek genel yapıyı özetlemektedir:
+
+\begin{lstlisting}
+FUNCTION isValid(x, params)
+    // Monotonic decision function
+END FUNCTION
+
+FUNCTION binarySearchOnAnswer(left, right, params)
+    ans = left
+    WHILE left <= right DO
+        mid = left + FLOOR((right - left) / 2)
+        IF isValid(mid, params) THEN
+            ans = mid
+            left = mid + 1
+        ELSE
+            right = mid - 1
+        END IF
+    END WHILE
+    RETURN ans
+END FUNCTION\end{lstlisting}
+
+Eğer problem koşulu sağlayan en küçük değeri arıyorsa, kontrol başarılı olduğunda \texttt{sag = orta - 1} yapılarak daha küçük değerlere bakılmalı, başarısız olduğunda \texttt{sol = orta + 1} ile değer büyütülmelidir.
+
+\subsection{Bölüm Özeti ve Problem Çözme Kontrol Listesi}
+
+Bir problemde ikili arama yönteminin uygulanabilirliğini değerlendirirken şu adımlar izlenebilir:
+
+\begin{enumerate}
+    \item \textbf{Optimizasyon kalıbını tespit edin:} Soru bir büyüklüğün en büyük veya en küçük değerini mi arıyor?
+    \item \textbf{Karar problemine dönüştürün:} ``Cevap $x$ olabilir mi?'' sorusu üzerinden bir kontrol fonksiyonu tasarlayın.
+    \item \textbf{Monotonluğu doğrulayın:} $P(x)$ sağlandığında $P(x+1)$'in de zorunlu olarak sağlandığını (veya tam tersini) gösterin. Monotonluk kurulamazsa ikili arama uygulanamaz.
+    \item \textbf{Arama sınırlarını belirleyin:} $sol$ ve $sag$ değerlerini, aranan cevabı kesinlikle içerecek biçimde seçin.
+    \item \textbf{Taşma riskini kontrol edin:} Orta nokta hesabında $sol + (sag - sol) / 2$ formülünü kullanın; büyük aralıklarda $64$-bit tam sayılardan (\texttt{long long}) yararlanın.
+\end{enumerate}

@@ -1,0 +1,320 @@
+\chapter[Logaritma · \textit{Orta}]{Logaritma}
+\chaptermark{Logaritma}
+
+Şimdiye kadar bir sayının kuvvetini hep ileri yönde hesapladık: $2^5$'in kaç ettiğini bulmak için $2$'yi beş kez çarpmak yeterlidir. Oysa sorular bazen tam ters yönden gelir. ``$2$'nin kaçıncı kuvveti $32$ eder?'' diye sorulduğunda artık çarpma değil, \emph{üs arama} işi yaparız. Aynı ihtiyaç sayılar büyüdükçe daha da belirginleşir: $2^{100}$ sayısının kaç basamaklı olduğunu, ya da sıralı bir dizide ikili arama yaparken kaç adım atacağımızı merak ettiğimizde de karşımıza aynı soru çıkar.
+
+Bu ters sorunun cevabı \textbf{logaritma}dır. Logaritma, üs almanın ters işlemidir; tam olarak bu yüzden çarpma ile toplama arasında bir köprü kurar. Tarihsel olarak büyük çarpımları elle yapmak için icat edilmiş olması tesadüf değildir: logaritma sayesinde $100$ basamaklı iki sayıyı çarpmak, iki sayıyı toplamaya indirgenir.
+
+Bu bölümü bilinçli olarak kısa tuttuk. Amaç logaritmayı bütün ayrıntılarıyla işlemek değil; tanımını, çarpma--toplama ilişkisini ve taban değiştirmeyi rahatça kullanabilecek kadar sağlam biçimde öğrenmektir. Bu üç araç, kitabın ilerleyen bölümlerinde (özellikle Bölüm 21'de göreceğimiz $O(\log n)$ karmaşıklığında ve Bölüm 24'teki ikili aramada) sürekli karşımıza çıkacaktır.
+
+\section{Logaritma Nedir?}
+
+$2$'nin kuvvetlerini alt alta yazalım:
+\[
+2^1 = 2, \qquad 2^2 = 4, \qquad 2^3 = 8, \qquad 2^4 = 16, \qquad 2^5 = 32, \qquad 2^6 = 64.
+\]
+Bu dizide $32$ sayısı beşinci kuvvete, $64$ ise altıncı kuvvete karşılık gelir. Demek ki ``$2$'nin kaçıncı kuvveti $32$ eder?'' sorusunun cevabı $5$'tir; bunu $\log_2 32 = 5$ biçiminde yazarız ve ``$32$'nin $2$ tabanında logaritması $5$'' diye okuruz. Benzer biçimde $\log_2 64 = 6$ ve $\log_2 8 = 3$ olur.
+
+Aynı fikir $10$ tabanında daha da tanıdıktır. $10$'un kuvvetleri $10, 100, 1000, \dots$ olduğundan
+\[
+\log_{10} 10 = 1, \qquad \log_{10} 100 = 2, \qquad \log_{10} 1000 = 3
+\]
+eşitlikleri geçerlidir. Yani $10$ tabanında logaritma, kabaca ``sayıyı yazarken kaç basamak kullandığımızı'' sayar; bu gözlemi birazdan bir uygulamada yeniden kullanacağız.
+
+Somut örneklerden genel tanıma geçelim.
+
+\begin{definition}[Logaritma]
+$a > 0$ ve $a \neq 1$ bir \emph{taban}, $x > 0$ bir sayı olmak üzere $y = \log_a x$ ifadesi
+\[
+\log_a x = y \iff a^y = x
+\]
+denklemini sağlayan $y$ sayısını gösterir. Burada $a$'ya logaritmanın \textbf{tabanı} (base), $x$'e ise logaritmanın \textbf{argümanı} denir.
+\end{definition}
+
+Tanımı bir kez sindirdikten sonra şu üç sonuç doğrudan çıkar:
+
+\begin{itemize}
+    \item \textbf{Tabanın logaritması $1$'dir:} $a^1 = a$ olduğundan $\log_a a = 1$.
+    \item \textbf{Birin logaritması $0$'dır:} $a^0 = 1$ olduğundan $\log_a 1 = 0$.
+    \item \textbf{Üs ile logaritma birbirini götürür:} $\log_a x = y$ ise $a^{\log_a x} = a^y = x$ olur. Yani $a^{\log_a x} = x$'tir.
+\end{itemize}
+
+Ayrıca $\log_a a^k = k$ eşitliği de tanımın hemen bir sonucudur; çünkü $a$'nın $k$'ıncı kuvveti $a^k$'dır.
+
+\begin{caution}
+En sık yapılan hata, logaritmanın toplama üzerine dağıldığını sanmaktır. Genel olarak
+\[
+\log_a (x + y) \neq \log_a x + \log_a y
+\]
+olur. Somut bir sayı ile görelim: $\log_2 (4 + 4) = \log_2 8 = 3$ iken $\log_2 4 + \log_2 4 = 2 + 2 = 4$'tür. Logaritmayı \emph{toplamaya} değil \emph{çarpmaya} çeviren kuralı bir sonraki alt konuda ispatlayacağız.
+\end{caution}
+
+\begin{remark}
+Tanımdaki $a \neq 1$ koşulu keyfî değildir. Taban $a = 1$ seçilseydi $1^y = 1$ eşitliği her $y$ için sağlanırdı; o zaman ``$1$'in kaçıncı kuvveti $x$ eder?'' sorusunun tek bir cevabı olmazdı. Benzer biçimde argümanın $x > 0$ olması da zorunludur: $a^y$ ifadesi her zaman pozitiftir, dolayısıyla negatif bir sayının logaritması tanımlı değildir.
+\end{remark}
+
+\begin{example}
+Aşağıdaki logaritmaları tanımı kullanarak hesaplayınız:
+\[
+\text{(a) } \log_3 81, \qquad \text{(b) } \log_2 \frac{1}{32}, \qquad \text{(c) } \log_5 1, \qquad \text{(d) } \log_{10} 0{,}001.
+\]
+\end{example}
+
+\begin{proof}[Çözüm]
+(a) $81 = 3^4$ olduğundan $\log_3 81 = 4$.
+
+(b) $\frac{1}{32} = 2^{-5}$ olduğundan $\log_2 \frac{1}{32} = -5$. Görüldüğü gibi logaritma negatif de olabilir; negatif olan, argümanın $1$'den küçük olmasıdır.
+
+(c) Her tabanda $a^0 = 1$ olduğundan $\log_5 1 = 0$.
+
+(d) $0{,}001 = 10^{-3}$ olduğundan $\log_{10} 0{,}001 = -3$.
+\end{proof}
+
+\begin{example}
+$\log_2 10$ sayısının tam sayı olmadığını gösteriniz ve hangi iki ardışık tam sayı arasında bulunduğunu belirleyiniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+$2$'nin kuvvetlerini anımsayalım: $2^3 = 8$ ve $2^4 = 16$. $8 < 10 < 16$ olduğundan, $2^y = 10$ eşitliğini sağlayan $y$ değeri $3$ ile $4$ arasında olmalıdır. Öte yandan $y$ bir tam sayı olsaydı $2^y$ ya $8$ ya da en az $16$ olurdu. Demek ki $3 < \log_2 10 < 4$ olup $\log_2 10$ tam sayı değildir.
+\end{proof}
+
+\begin{example}[Basamak Sayısı]
+$2^{100}$ sayısı onluk tabanda kaç basamaklıdır?
+\end{example}
+
+\begin{proof}[Çözüm]
+$d$ basamaklı bir $N$ doğal sayısı, tam olarak $10^{d-1} \le N < 10^d$ eşitsizliğini sağlayan sayıdır. Bu eşitsizliğin tüm taraflarının $10$ tabanında logaritmasını alırsak
+\[
+d - 1 \le \log_{10} N < d
+\]
+elde ederiz; yani $d = \lfloor \log_{10} N \rfloor + 1$ olur. Şimdi $N = 2^{100}$ için $\log_{10} 2 \approx 0{,}30103$ değerini kullanalım:
+\[
+\log_{10} 2^{100} = 100 \cdot \log_{10} 2 \approx 100 \cdot 0{,}30103 = 30{,}103.
+\]
+Tam kısmı $30$ olduğundan basamak sayısı $30 + 1 = 31$'dir. Bu hesapta kullandığımız $\log_{10} 2^{100} = 100 \log_{10} 2$ eşitliğini bir sonraki alt konuda ispatlayacağız.
+\end{proof}
+
+\section{Temel Kurallar: Çarpma, Bölme ve Kuvvet}
+
+Logaritmanın bütün gücü şu tek gözlemden gelir: \emph{aynı tabanda iki kuvvet çarpılırken üsler toplanır.} Örneğin
+\[
+2^3 \cdot 2^4 = 8 \cdot 16 = 128 = 2^7
+\]
+olur ve buradaki $7$ üssü, $3 + 4$ toplamından başka bir şey değildir. Aynı eşitliği logaritma dilinde yazalım:
+\[
+\log_2 (8 \cdot 16) = \log_2 128 = 7 = 3 + 4 = \log_2 8 + \log_2 16.
+\]
+Görüldüğü gibi logaritma, soldaki \emph{çarpma} işlemini sağdaki \emph{toplama} işlemine çevirdi. Bu, tanımın bir sonucudur ve aşağıdaki teoremle genelleşir.
+
+\begin{theorem}[Çarpım Kuralı]\label{thm:log-carpim}
+Her $a > 0$, $a \neq 1$ tabanı ve her $x, y > 0$ için
+\[
+\log_a (x \cdot y) = \log_a x + \log_a y
+\]
+eşitliği geçerlidir.
+\end{theorem}
+
+\begin{proof}
+$m = \log_a x$ ve $n = \log_a y$ diyelim. Logaritmanın tanımı gereği bu iki eşitlik
+\[
+a^m = x \qquad \text{ve} \qquad a^n = y
+\]
+demektir. Şimdi $x$ ile $y$'yi çarpalım:
+\[
+x \cdot y = a^m \cdot a^n = a^{m+n}.
+\]
+Elde ettiğimiz $a^{m+n} = xy$ eşitliğini yeniden tanıma uygularsak $\log_a (xy) = m + n$ bulunur; bu da $\log_a x + \log_a y$ demektir.
+\end{proof}
+
+Aynı akıl yürütme, bölme için de bölümün üssünün fark olduğu gözlemiyle ($a^m / a^n = a^{m-n}$) yürütülür.
+
+\begin{corollary}[Bölüm Kuralı]\label{cor:log-bolum}
+Her $x, y > 0$ için
+\[
+\log_a \frac{x}{y} = \log_a x - \log_a y
+\]
+olur. Özel olarak $x = 1$ seçilirse $\log_a \frac{1}{y} = -\log_a y$ çıkar.
+\end{corollary}
+
+\begin{proof}
+$m = \log_a x$, $n = \log_a y$ olsun; yine $x = a^m$ ve $y = a^n$'dir. Bölümü yazalım:
+\[
+\frac{x}{y} = \frac{a^m}{a^n} = a^{m-n}.
+\]
+Tanım gereği $\log_a \frac{x}{y} = m - n = \log_a x - \log_a y$ olur. $x = 1$ durumunda $\log_a 1 = 0$ olduğundan $\log_a \frac{1}{y} = -\log_a y$ elde edilir.
+\end{proof}
+
+\begin{theorem}[Kuvvet Kuralı]\label{thm:log-kuvvet}
+Her $k$ tam sayısı ve her $x > 0$ için
+\[
+\log_a x^k = k \cdot \log_a x
+\]
+eşitliği geçerlidir. Bu kural $k = 0$ (bu durumda $x^0 = 1$) ve negatif $k$ değerleri için de doğrudur.
+\end{theorem}
+
+\begin{proof}
+Önce $k \ge 1$ olsun. $x^k = \underbrace{x \cdot x \cdots x}_{k \text{ tane}}$ çarpımına çarpım kuralını $k-1$ kez uygularsak
+\[
+\log_a x^k = \underbrace{\log_a x + \log_a x + \dots + \log_a x}_{k \text{ terim}} = k \log_a x
+\]
+bulunur. $k = 0$ için sol taraf $\log_a 1 = 0$, sağ taraf $0 \cdot \log_a x = 0$ olduğundan eşitlik korunur. Son olarak $k$ negatifse $x^k = 1/x^{-k}$ yazıp bölüm kuralını ve az önce bulduğumuz pozitif durumu kullanalım:
+\[
+\log_a x^k = -\log_a x^{-k} = -(-k)\log_a x = k \log_a x.
+\]
+Böylece kural tüm tam sayı $k$ değerleri için geçerli olur.
+\end{proof}
+
+\begin{remark}
+Kuvvet kuralı, karmaşıklık hesabında işimizi çok kolaylaştırır. Örneğin $\log_2 n^2 = 2 \log_2 n$ olduğundan, $n^2$ büyüklüğündeki bir girdide ``logaritma kadar adım'' atmak ile $n$ büyüklüğündeki bir girdide atmak, sabit bir çarpan dışında aynı iştir. Büyük $O$ gösteriminin bu yüzden $O(\log n)$ derken tabanı belirtmemesi, bir sonraki alt konuda göreceğimiz taban değiştirme formülüyle netleşecektir.
+\end{remark}
+
+\begin{example}
+Aşağıdaki ifadeleri tek bir logaritma biçiminde yazıp değerini bulunuz:
+\[
+\text{(a) } \log_{10} 2 + \log_{10} 5, \qquad \text{(b) } \log_3 54 - \log_3 2, \qquad \text{(c) } \log_2 8 + \log_2 16 - \log_2 4.
+\]
+\end{example}
+
+\begin{proof}[Çözüm]
+(a) Çarpım kuralı doğrudan $\log_{10}(2 \cdot 5) = \log_{10} 10 = 1$ verir.
+
+(b) Bölüm kuralına göre $\log_3 \frac{54}{2} = \log_3 27 = 3$ olur.
+
+(c) Terimleri sırayla sadeleştirelim: $\log_2 8 = 3$, $\log_2 16 = 4$, $\log_2 4 = 2$. Buna göre ifade $3 + 4 - 2 = 5$'tir. Doğrulaması için $2^5 = 32$ olup $\log_2 32 = 5$'tir; çarpım kuralıyla da $\log_2 \frac{8 \cdot 16}{4} = \log_2 32$ elde edilir.
+\end{proof}
+
+\begin{example}
+$\log_2 32^3$ ifadesini hesaplayınız ve bulduğunuz sonucu doğrudan doğrulayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Kuvvet kuralına göre
+\[
+\log_2 32^3 = 3 \log_2 32 = 3 \cdot 5 = 15
+\]
+bulunur. Doğrudan doğrulama: $32^3 = (2^5)^3 = 2^{15}$, dolayısıyla tanım gereği $\log_2 2^{15} = 15$'tir. Demek ki üssü öne indirmek, üssü ayrı ayrı hesaplayıp logaritma almaktan çok daha hızlıdır.
+\end{proof}
+
+\begin{example}
+$2^{\log_2 5 + \log_2 3}$ ifadesinin değerini bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Üsleri önce çarpım kuralıyla birleştirelim:
+\[
+\log_2 5 + \log_2 3 = \log_2 15.
+\]
+Böylece ifade $2^{\log_2 15}$ olur. Bir $x$ sayısı için $a^{\log_a x} = x$ olduğunu tanımdan biliyoruz; burada $a = 2$ ve $x = 15$ olduğundan cevap $15$'tir.
+\end{proof}
+
+\begin{example}
+$\log_2(x - 2) + \log_2(x + 2) = 5$ denklemini çözünüz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Denklemin anlamlı olması için her iki argümanın da pozitif olması gerekir: $x - 2 > 0$ ve $x + 2 > 0$, yani $x > 2$. Çarpım kuralını uygulayalım:
+\[
+\log_2 (x - 2)(x + 2) = 5 \implies \log_2 (x^2 - 4) = 5.
+\]
+Tanım gereği $\log_2 (x^2 - 4) = 5$, $x^2 - 4 = 2^5 = 32$ demektir. Buradan $x^2 = 36$, yani $x = 6$ veya $x = -6$ bulunur. Ancak $x > 2$ koşulu $x = -6$ değerini eler. Dolayısıyla tek çözüm $x = 6$'dır. Sağlama: $\log_2 4 + \log_2 8 = 2 + 3 = 5$.
+\end{proof}
+
+\section{Taban Değiştirme}
+
+Şimdiye kadar bütün hesapları tabanı uygun seçerek yaptık. Ama bir ifadede $2$, başka bir ifadede $4$ tabanı geçtiğinde iki sayıyı karşılaştırmak için ortak bir dile ihtiyaç duyarız. Bu ortak dili kuran araç \emph{taban değiştirme}dir.
+
+Somut bir gözlemle başlayalım. $\log_2 8 = 3$ idi. Aynı soruyu $8$ tabanında soralım: $8$'in hangi kuvveti $2$ eder? $8$'in kuvvetleri $8, 64, \dots$ biçiminde hızla büyüdüğüne göre üssün $1$'den küçük olması gerekir. Gerçekten de $8^{1/3} = 2$ olduğundan
+\[
+\log_8 2 = \frac{1}{3}
+\]
+olur. Dikkat çekici olan şudur: sonuç, $\log_2 8 = 3$ sayısının tersidir.
+
+Bir başka örnek, hem taban hem argümanın değiştiği durumu gösterir: $4^{3/2} = (\sqrt{4})^3 = 2^3 = 8$ olduğundan $\log_4 8 = \frac{3}{2}$'dir. Peki bu $3/2$ değerini, elimizdeki $\log_2$ bilgisinden bulmanın genel bir yolu var mı? Aşağıdaki teorem tam olarak bunu söyler.
+
+\begin{theorem}[Taban Değiştirme]\label{thm:log-taban}
+$a, b > 0$, $a \neq 1$, $b \neq 1$ ve $x > 0$ olsun. Bu durumda
+\[
+\log_a x = \frac{\log_b x}{\log_b a}
+\]
+eşitliği geçerlidir.
+\end{theorem}
+
+\begin{proof}
+$y = \log_a x$ diyelim. Tanım gereği $a^y = x$'tir. Şimdi bu eşitliğin her iki tarafının da $b$ tabanında logaritmasını alalım:
+\[
+\log_b a^y = \log_b x.
+\]
+Sol tarafta kuvvet kuralını uygularsak $\log_b a^y = y \cdot \log_b a$ olur; burada $a \neq 1$ olduğundan $\log_b a \neq 0$'dır ve bölme yapılabilir:
+\[
+y \cdot \log_b a = \log_b x \implies y = \frac{\log_b x}{\log_b a}.
+\]
+$y$ yerine $\log_a x$ yazarak istediğimiz eşitliği elde ederiz.
+\end{proof}
+
+\begin{corollary}\label{cor:log-ters}
+Aynı koşullar altında
+\[
+\log_a b = \frac{1}{\log_b a}
+\]
+olur. Ayrıca $\log_a b \cdot \log_b c = \log_a c$ eşitliği geçerlidir.
+\end{corollary}
+
+\begin{proof}
+İlk eşitlik için taban değiştirme formülünde $x = b$ seçilir: $\log_a b = \frac{\log_b b}{\log_b a} = \frac{1}{\log_b a}$. İkinci eşitlik için taban değiştirme formülünü $\log_a b = \frac{\log_b b}{\log_b a}$ biçiminde yazalım; $\log_b b = 1$ olduğundan bu ifade $\frac{1}{\log_b a}$'ya indirgenir. Bunu $\log_b c$ ile çarpıp son adımda taban değiştirme formülünü bir kez daha kullanalım:
+\[
+\log_a b \cdot \log_b c = \frac{1}{\log_b a} \cdot \log_b c = \frac{\log_b c}{\log_b a} = \log_a c.
+\]
+Bu son eşitlik, zincirleme sadeleşen çarpımlarda çok işe yarar.
+\end{proof}
+
+\begin{example}
+Aşağıdaki değerleri, taban değiştirme formülüyle $\log_2$ cinsinden hesaplayınız:
+\[
+\text{(a) } \log_4 8, \qquad \text{(b) } \log_{16} 2, \qquad \text{(c) } \log_{1/2} 8.
+\]
+\end{example}
+
+\begin{proof}[Çözüm]
+(a) $\log_4 8 = \frac{\log_2 8}{\log_2 4} = \frac{3}{2}$, beklendiği gibi.
+
+(b) $\log_{16} 2 = \frac{\log_2 2}{\log_2 16} = \frac{1}{4}$. Doğrulaması: $16^{1/4} = 2$.
+
+(c) Taban $1$'den küçük olduğunda da formül aynen çalışır: $\log_{1/2} 8 = \frac{\log_2 8}{\log_2 \frac{1}{2}} = \frac{3}{-1} = -3$. İkinci teyit: $\left(\frac{1}{2}\right)^{-3} = 2^3 = 8$.
+\end{proof}
+
+\begin{example}
+$\log_2 5 + \log_4 25$ ifadesini tek bir logaritma biçiminde yazınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+İki terimi de $2$ tabanına çevirelim. Birinci terim zaten $2$ tabanındadır. İkinci terim için taban değiştirme formülünü kullanalım:
+\[
+\log_4 25 = \frac{\log_2 25}{\log_2 4} = \frac{2\log_2 5}{2} = \log_2 5.
+\]
+(Doğrudan bir kısayol da vardır: hem taban hem argüman aynı anda kare alınırsa değer değişmez, yani $\log_{a^2} x^2 = \log_a x$.) Buna göre toplam
+\[
+\log_2 5 + \log_4 25 = \log_2 5 + \log_2 5 = \log_2 25
+\]
+olur.
+\end{proof}
+
+\begin{example}
+\[
+\log_2 3 \cdot \log_3 4 \cdot \log_4 5 \cdot \log_5 6 \cdot \cdots \cdot \log_{15} 16
+\]
+çarpımının değerini bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Sonuç, ilk bakışta çok karmaşık görünüyor; oysa bir önceki sonuçtaki zincirleme eşitlik problemi tek adımda çözer. Ardışık çarpanları ikili gruplayalım:
+\[
+\log_2 3 \cdot \log_3 4 = \log_2 4, \qquad \log_4 5 \cdot \log_5 6 = \log_4 6, \quad \dots
+\]
+Her grupta ``ara taban'' sadeleşip yoluna devam ediyor. Zinciri baştan sona uygularsak ara terimlerin tamamı birbirini götürür ve geriye yalnızca ilk taban ile son argüman kalır:
+\[
+\log_2 3 \cdot \log_3 4 \cdots \log_{15} 16 = \log_2 16 = 4.
+\]
+Gerçekten de bu çarpım bir teleskopik sadeleşmedir: her $\log_k (k+1)$ çarpanı, kendisinden önceki terimin argümanını bir sonraki tam sayıya taşır.
+\end{proof}
+
+Kapanış olarak, taban değiştirmenin karmaşıklık dilindeki karşılığını görelim. $\log_a n = \frac{\log_b n}{\log_b a}$ eşitliğinde $\frac{1}{\log_b a}$ çarpanı $n$'den bağımsız bir \emph{sabittir}. Bu yüzden ikili aramada adım sayısını $\log_2 n$ ile, sıralamada karşılaştırma sayısını $\log_2 n$ ile ifade etmemiz ne kadar doğalsa, hepsini $O(\log n)$ biçiminde yazmamız da o kadar doğrudur: tabanı değiştirmek yalnızca sabit bir çarpan ekler ve büyük $O$ gösterimi sabit çarpanları görmezden gelir (Bölüm 21'de göreceğimiz gibi). Bu gözlem, ileride $O(\log n)$ yazan bir karmaşıklığı okurken ``hangi taban?'' diye duraksamamanız için yeterlidir.

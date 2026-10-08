@@ -1,0 +1,800 @@
+\chapter[Diziler, Stringler ve Pointer · \textit{Temel}]{Diziler, Stringler ve Pointer}
+\chaptermark{Diziler, Stringler ve Pointer}
+
+\section{Diziler}
+
+Bilgisayar biliminde en sık karşılaşılan durumlardan biri, aynı türden çok sayıda veriyi bir arada tutmak, bu verilere hızlıca erişmek ve üzerlerinde toplu işlemler gerçekleştirmektir. Örneğin, bir sınıftaki 100 öğrencinin sınav notlarını işlemek istediğimizi düşünelim. Dizi yapısı kullanılmasaydı, programda şu şekilde ayrı ayrı tanımlamalar yapmak gerekirdi:
+\[
+\text{not}_0, \text{not}_1, \text{not}_2, \dots, \text{not}_{99}
+\]
+Bu yaklaşım iki temel soruna yol açar: İlki, 100 farklı değişken ismi tanımlamanın kodun okunabilirliğini ve bakımını zorlaştırmasıdır. İkincisi ve daha önemlisi, $i$. öğrencinin notuna bir döngü değişkeni aracılığıyla dinamik olarak erişilememesidir; yani $\text{not}_i$ biçiminde bir değişkene çalışma zamanı indisiyle doğrudan ulaşılamaz.
+
+Diziler (arrays), aynı türden verilerin bellekte kesintisiz biçimde ardışık yerleştirildiği ve her bir elemanına bir tam sayı indisi (index) yardımıyla doğrudan, sabit zamanda ($O(1)$) erişilebilen en temel veri yapısıdır.
+
+\subsection{Tek Boyutlu Diziler ve Bellek Modeli}
+
+Bir dizinin çalışma mantığını anlamak için bilgisayarın ana belleği (RAM), bayt bayt numaralandırılmış doğrusal bir cetvel gibi düşünülebilir.
+
+\begin{definition}[Tek Boyutlu Dizi]
+Aynı veri tipinden $n$ adet elemanın bellekte ardışık hücrelerde saklandığı veri yapısına \textbf{tek boyutlu dizi} denir. $T$ tipindeki elemanlardan oluşan $n$ uzunluğundaki bir dizi $A$ olsun. İndis kümesi $\{0, 1, \dots, n-1\}$ olmak üzere, $i$. eleman $A[i]$ simgesiyle gösterilir.
+\end{definition}
+
+C dilinde ve pek çok modern programlama dilinde diziler \textbf{0 tabanlı} (zero-indexed) olarak numaralandırılır. Bu kural keyfi bir tercih olmayıp donanım düzeyindeki adresleme aritmetiğinin doğrudan bir sonucudur.
+
+\begin{theorem}[Dizi Elemanının Bellek Adresi]
+Eleman boyutu $S = \operatorname{sizeof}(T)$ bayt olan bir $A$ dizisinin başlangıç adresi (ilk elemanın adresi) $\text{TabanAdres}(A)$ olsun. Bu durumda $i$. indisteki elemanın bellekteki başlangıç adresi:
+\[
+\operatorname{Adres}(A[i]) = \operatorname{TabanAdres}(A) + i \times S
+\]
+formülüyle hesaplanır.
+\end{theorem}
+
+\begin{proof}
+Dizinin elemanları bellekte boşluk bırakılmadan art arda yerleşir. İlk eleman olan $A[0]$ doğrudan başlangıç noktasında bulunduğundan ofset (öteleme) miktarı 0 bayttır:
+\[
+\operatorname{Adres}(A[0]) = \operatorname{TabanAdres}(A) + 0 \times S = \operatorname{TabanAdres}(A)
+\]
+$A[1]$ elemanı, $A[0]$'ın kapladığı $S$ baytlık alanın hemen ardından başlar; dolayısıyla adresi $\operatorname{TabanAdres}(A) + 1 \times S$ olur. Benzer şekilde, $A[i]$ elemanından önce tam $i$ adet eleman yer alır ($A[0], A[1], \dots, A[i-1]$). Bu $i$ adet elemanın her biri bellekte $S$ bayt yer kapladığından, $A[i]$ elemanının başlangıcına kadar geçilmesi gereken toplam mesafe $i \times S$ bayttır. Buradan:
+\[
+\operatorname{Adres}(A[i]) = \operatorname{TabanAdres}(A) + i \times S
+\]
+elde edilir.
+\end{proof}
+
+Bu formül, dizilerin sunduğu $O(1)$ zamanlı \textbf{rastgele erişim} (random access) garantisini açıklar. İşlemci, $A[i]$ elemanına erişmek için önceki $i-1$ elemanı tek tek dolaşmaz; yalnızca tek bir çarpma ve tek bir toplama işlemiyle hedeflenen bellek adresine doğrudan ulaşır.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \node[kutu] (a0) at (0,0) {5};
+  \node[kutu] (a1) at (1.25,0) {9};
+  \node[kutu, fill=kitapvurgu!12] (a2) at (2.5,0) {3};
+  \node[kutu] (a3) at (3.75,0) {7};
+  \node[etiket, gray] at (0,0.65) {\texttt{100}};
+  \node[etiket, gray] at (1.25,0.65) {\texttt{104}};
+  \node[etiket, gray] at (2.5,0.65) {\texttt{108}};
+  \node[etiket, gray] at (3.75,0.65) {\texttt{112}};
+  \node[etiket] at (0,-0.62) {0};
+  \node[etiket] at (1.25,-0.62) {1};
+  \node[etiket] at (2.5,-0.62) {2};
+  \node[etiket] at (3.75,-0.62) {3};
+  \node[etiket, gray] at (2.5,-1.15) {Taban $+$ $2 \times 4 = 108$};
+\end{tikzpicture}
+\caption{\texttt{int A[4] = \{5, 9, 3, 7\};} dizisinin bellek serimi: elemanlar
+ardışık 4 baytlık hücrelerde durur;
+$\operatorname{Adres}(A[i]) = \text{Taban} + i \times 4$. Örneğin $A[2]$'nin
+adresi $100 + 2 \times 4 = 108$'dir.}
+\end{figure}
+
+İndislerin 1 yerine 0 ile başlamasının temel gerekçesi de budur: İndisler 1'den başlasaydı, formül $\operatorname{TabanAdres} + (i - 1) \times S$ haline gelecek ve işlemci her dizi erişiminde fazladan bir çıkarma işlemi yapmak durumunda kalacaktı.
+
+\begin{example}
+32-bit bir mimaride bir \texttt{int} değişkeni 4 bayt yer kaplamaktadır. Bir programda \texttt{int A[10];} şeklinde bir dizi tanımlanmış ve derleyici bu dizinin başlangıç adresini onluk tabanda $2000$ olarak belirlemiştir. 
+\begin{enumerate}
+    \item[a)] $A[4]$ elemanının bellek adresi nedir?
+    \item[b)] Bellek adresi $2028$ olan elemanın indisi kaçtır?
+\end{enumerate}
+\end{example}
+
+\begin{proof}[Çözüm]
+Doğrusal adres formülünü uygularız: $\operatorname{Adres}(A[i]) = \operatorname{TabanAdres} + i \times S$. Burada $\operatorname{TabanAdres} = 2000$ ve $S = 4$ bayttır.
+
+a) $i = 4$ için:
+\[
+\operatorname{Adres}(A[4]) = 2000 + 4 \times 4 = 2000 + 16 = 2016
+\]
+Böylece $A[4]$ elemanı bellekte $2016, 2017, 2018, 2019$ numaralı baytları kaplar.
+
+b) Adresi verilen indisi bulmak için eşitlik $i$ cinsinden çözülür:
+\[
+2028 = 2000 + i \times 4 \implies 4i = 28 \implies i = 7
+\]
+Aranan eleman $A[7]$'dir.
+\end{proof}
+
+\subsection{Çok Boyutlu Diziler ve Satır Öncelikli Bellek Serimi}
+
+Matematikte matrisler veya iki boyutlu ızgaralar sıklıkla karşımıza çıkar. Örneğin $R$ satır ve $C$ sütundan oluşan bir matris iki boyutlu bir yapı sunar. Bilgisayar belleği ise iki boyutlu bir tablo değil, tek boyutlu doğrusal bir dizilimdir.
+
+C dilinde çok boyutlu diziler \textbf{satır öncelikli düzen} (row-major order) ile belleğe serilir. Önce 0. satırın tüm elemanları peş peşe yazılır, ardından 1. satırın elemanları eklenir ve bu işlem son satıra kadar devam eder.
+
+\begin{theorem}[İki Boyutlu Dizi Adres Formülü]
+$R$ satır ve $C$ sütundan oluşan $M[R][C]$ dizisinde, her bir elemanın boyutu $S$ bayt olsun. $i$. satır ve $j$. sütunda bulunan $M[i][j]$ elemanının bellek adresi:
+\[
+\operatorname{Adres}(M[i][j]) = \operatorname{TabanAdres}(M) + (i \times C + j) \times S
+\]
+formülü ile hesaplanır ($0 \le i < R$ ve $0 \le j < C$).
+\end{theorem}
+
+\begin{proof}
+$M[i][j]$ elemanına ulaşmak için:
+\begin{enumerate}
+    \item Önceki $i$ satırın tamamı atlanmalıdır ($0, 1, \dots, i-1$. satırlar). Her satırda $C$ adet eleman bulunduğundan, atlanan toplam eleman sayısı $i \times C$'dir.
+    \item $i$. satıra ulaşıldıktan sonra, bu satır içerisindeki ilk $j$ adet eleman geçilerek $j$. sütuna gelinir.
+\end{enumerate}
+Böylece $M[0][0]$ elemanından $M[i][j]$ elemanına kadar geride bırakılan toplam eleman sayısı $i \times C + j$ olur. Her eleman $S$ bayt yer tuttuğundan, toplam öteleme miktarı $(i \times C + j) \times S$ bayttır. Taban adrese bu değer eklendiğinde teorem ispatlanmış olur.
+\end{proof}
+
+\begin{example}
+\texttt{short} tipi bellekte 2 bayt kaplamaktadır. Bir programda \texttt{short M[5][8];} tanımlanmıştır. Taban adresi $1000$ olduğuna göre:
+\begin{enumerate}
+    \item[a)] $M[3][4]$ elemanının bellek adresini hesaplayınız.
+    \item[b)] Bellek adresi $1054$ olan hücre matrisin hangi indisine ($M[i][j]$) karşılık gelir?
+\end{enumerate}
+\end{example}
+
+\begin{proof}[Çözüm]
+Matris boyutları $R = 5, C = 8$ ve eleman boyutu $S = 2$'dir. Taban adres $1000$'dir.
+
+a) $i = 3, j = 4$ değerleri için formülü uygularız:
+\[
+\operatorname{Adres}(M[3][4]) = 1000 + (3 \times 8 + 4) \times 2 = 1000 + (24 + 4) \times 2 = 1000 + 28 \times 2 = 1056
+\]
+
+b) $1054$ adresindeki indisi belirleyelim:
+\[
+1054 = 1000 + (i \times 8 + j) \times 2 \implies (i \times 8 + j) \times 2 = 54 \implies i \times 8 + j = 27
+\]
+$0 \le j < 8$ kısıtı altında, Bölüm 11'de ele aldığımız bölme algoritması gereğince 27 sayısı 8'e bölünür:
+\[
+27 = 3 \times 8 + 3
+\]
+Buradan bölüm $i = 3$, kalan ise $j = 3$ bulunur. İlgili eleman $M[3][3]$'tür.
+\end{proof}
+
+Bu yapı $k$ boyuta genellenebilir. Boyutları $D_0 \times D_1 \times \dots \times D_{k-1}$ olan bir dizide $(i_0, i_1, \dots, i_{k-1})$ indisindeki elemana erişirken geride bırakılan eleman sayısı:
+\[
+\sum_{m=0}^{k-1} \left( i_m \prod_{r=m+1}^{k-1} D_r \right)
+\]
+şeklinde hesaplanır.
+
+\begin{example}
+TÜBİTAK 1. Aşama sınavlarında sıkça karşılaşılan aşağıdaki C kod parçasının ekran çıktısını belirleyiniz:
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int main() {
+    int A[3][3] = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    int *p = &A[0][0];
+    printf("%d ", *(p + 5));
+    printf("%d", p[7]);
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Dizi bellekte satır öncelikli sırada ardışık dizilmiştir. $A$ matrisi $3 \times 3$ boyutunda olduğundan bellekteki yerleşim sırası şöyledir:
+\[
+\footnotesize\begin{array}{rccccccccc}
+\text{Ofset:} & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+\text{Eleman:} & A[0][0] & A[0][1] & A[0][2] & A[1][0] & A[1][1] & A[1][2] & A[2][0] & A[2][1] & A[2][2] \\
+\text{Değer:} & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 \\
+\end{array}
+\]
+$p$ işaretçisi dizinin ilk elemanı olan $A[0][0]$'ın adresini tutmaktadır.
+\begin{itemize}
+    \item $*(p + 5)$ ifadesi, başlangıç adresinden itibaren 5 eleman ilerideki değeri okur. Ofset tablosuna göre 5. ofset $A[1][2]$ elemanıdır ve değeri $6$'dır.
+    \item $p[7]$ ifadesi, işaretçi aritmetiği kuralı gereğince $*(p + 7)$ demektir. 7. ofset $A[2][1]$ elemanıdır ve değeri $8$'dir.
+\end{itemize}
+Programın çıktısı \texttt{6 8} olur.
+\end{proof}
+
+\subsection{Dizilerde Sınır Aşımı ve Tanımsız Davranış}
+
+C dilinde dizi sınırları derleyici veya çalışma zamanı tarafından otomatik olarak denetlenmez. Dolayısıyla $n$ elemanlı bir dizide $A[n]$ veya $A[-1]$ elemanına erişildiğinde derleyici bir hata üretmeyebilir; program çalışmayı sürdürerek o bellek adresindeki mevcut baytları okur ya da üzerine yazar. Bu durum \textbf{tanımsız davranış} (undefined behavior) olarak adlandırılır.
+
+Bellek düzeyinde bakıldığında, $A[n]$ ifadesi $\operatorname{TabanAdres} + n \times S$ adresine erişmeye çalışır. Bu adres dizinin hemen sonrasında belleğe yerleşmiş başka bir değişkene ait olabilir.
+
+\begin{example}
+Aşağıdaki C kod bloğu çalıştırıldığında kuramsal olarak neden sonsuz döngüye yol açabileceğini bellek yerleşimi açısından açıklayınız:
+\begin{lstlisting}[language=CTemel]
+int i;
+int arr[4];
+for (i = 0; i <= 4; i++) {
+    arr[i] = 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Döngü $i = 0, 1, 2, 3, 4$ değerleri üzerinden ilerler. Dizi boyutu ise 4'tür ($arr[0], arr[1], arr[2], arr[3]$ geçerli indislerdir). Döngünün son adımında $i = 4$ iken $arr[4] = 0$ ataması gerçekleştirilir.
+
+Yığın (stack) mimarisinde yerel değişkenler ardışık olarak tahsis edildiğinde, derleyicinin yerleşim düzenine bağlı olarak $i$ değişkeni bellekte $arr[3]$'ün hemen ardına ($arr[4]$'ün denk geldiği adrese) yerleşmiş olabilir. Bu senaryoda:
+\[
+\operatorname{Adres}(arr[4]) = \operatorname{Adres}(i)
+\]
+olur. Döngü $i=4$ adımına geldiğinde $arr[4] = 0$ komutu çalışır ve $i$'nin saklandığı bellek gözüne $0$ yazılır. Böylece sayaç $i = 0$ değerine sıfırlanır ve döngü sonlanamaz. Sınavlarda bu tür sınır aşımları yaygın analiz soruları arasındadır.
+\end{proof}
+
+\begin{caution}
+Bir dizi \texttt{int A[N];} biçiminde bildirildiğinde, kullanılabilecek geçerli indis kümesi $\{0, 1, 2, \dots, N-1\}$ olur; $A[N]$ elemanı \textbf{tanımlı değildir}. En sık yapılan hatalardan biri, $N$ elemanlı bir diziyi $1$'den $N$'ye kadar döngüyle taramaya çalışırken $A[N]$'e erişerek bellek hatası (Segmentation Fault) veya beklenmedik hesaplamalar üretmektir.
+\end{caution}
+
+\section{Stringler}
+
+Algoritmik problemlerde sayıların yanı sıra metinsel verilerle de çalışılır. Python veya Java gibi dillerde metinler bağımsız bir temel veri türüyken, C dilinde yerleşik bir string türü bulunmaz; metinler karakter dizileri (\texttt{char[]}) olarak temsil edilir.
+
+Peki bir karakter dizisi bellekte saklandığında metnin nerede bittiği nasıl anlaşılır? Örneğin 20 karakterlik bir diziye 5 harfli \texttt{"bilgi"} kelimesi yazıldığında, kalan 15 karakterin metne dahil olmadığı nasıl ayırt edilir?
+
+\subsection{Null Sonlandırıcı (\texttt{'\textbackslash 0'}) Kavramı}
+
+C dilinde metinlerin uzunluğunu belirlemek amacıyla bir sonlandırıcı işaret (sentinel value) kullanılır. Bu işaret, sayısal ASCII değeri $0$ olan \textbf{null karakteridir} (\texttt{'\textbackslash 0'}).
+
+\begin{definition}[C-Tipi String (Karakter Dizisi)]
+Bellekte ardışık baytlar halinde saklanan ve son elemanı sayısal değeri sıfır olan null sonlandırıcı (\texttt{'\textbackslash 0'}) karakteri ile işaretlenmiş karakter dizilerine \textbf{C-string} denir.
+\end{definition}
+
+Burada sayısal değeri $0$ olan \texttt{'\textbackslash 0'} karakteri ile yazı karakteri olan \texttt{'0'} (ASCII değeri 48) birbirine karıştırılmamalıdır.
+
+\begin{theorem}[String Bellek Boyutu İlkesi]
+$L$ adet karakterden oluşan bir metni C dilinde bir string olarak saklayabilmek için en az $L + 1$ elemanlı bir \texttt{char} dizisi ayrılmalıdır.
+\end{theorem}
+
+\begin{proof}
+Metnin okunabilmesi için algoritmanın başlangıçtan itibaren ilerleyerek metnin bittiğini belirten \texttt{'\textbackslash 0'} karakterine ulaşması gerekir. Metindeki $L$ karakter ilk $L$ indise yerleştirildiğinde ($0, 1, \dots, L-1$), $L$. indise null sonlandırıcının konulması zorunludur. Dolayısıyla toplam ayrılan alan en az $L + 1$ bayt olmalıdır.
+\end{proof}
+
+Örneğin, \texttt{char s[] = "Tubitak";} tanımlaması yapıldığında, derleyici metindeki 7 harfe ek olarak dizinin sonuna görünmeyen bir \texttt{'\textbackslash 0'} yerleştirir. Bu nedenle \texttt{s} dizisi bellekte 8 bayt kaplar:
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \foreach \i/\d in {0/T,1/u,2/b,3/i,4/t,5/a,6/k} {
+    \node[kutu] (c\i) at (\i*1.05,0) {\d};
+    \node[etiket] at (\i*1.05,-0.62) {\i};
+  }
+  \node[kutu, vurgulu] (c7) at (7*1.05,0) {\texttt{\textbackslash 0}};
+  \node[etiket] at (7*1.05,-0.62) {7};
+\end{tikzpicture}
+\caption{\texttt{char s[] = "Tubitak";} bellekte 8 bayt kaplar: 7 harf + görünmeyen
+\texttt{'\textbackslash 0'} sonlandırıcı (vurgulu hücre).}
+\end{figure}
+
+\begin{example}
+Aşağıdaki C programının ekran çıktısını belirleyiniz:
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int main() {
+    char str[] = "OLIMPIYAT";
+    str[4] = '\textbackslash 0';
+    printf("%s\n", str);
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+\texttt{str} dizisinin başlangıç durumu şöyledir:
+\[
+\text{str} = ['O', 'L', 'I', 'M', 'P', 'I', 'Y', 'A', 'T', '\setminus 0']
+\]
+4. indisteki karakter başlangıçta \texttt{'P'} harfidir. \texttt{str[4] = '\textbackslash 0';} komutu ile bu konuma null sonlandırıcı atanır:
+\[
+\text{str} = ['O', 'L', 'I', 'M', '\setminus 0', 'I', 'Y', 'A', 'T', '\setminus 0']
+\]
+\texttt{printf} fonksiyonu \texttt{\%s} biçim belirteciyle çalışırken diziyi başlangıç adresinden itibaren okur ve karşılaştığı ilk \texttt{'\textbackslash 0'} karakterinde yazdırma işlemini sonlandırır. Dizinin devamındaki \texttt{'I', 'Y', 'A', 'T'} karakterleri işleme alınmaz.
+
+Dolayısıyla ekrana yalnızca \texttt{OLIM} yazdırılır.
+\end{proof}
+
+\subsection{Temel String Fonksiyonlarının İç Mantığı ve Karmaşıklığı}
+
+Standart \texttt{<string.h>} kütüphanesindeki fonksiyonlar, arka planda karakter dizileri üzerinde döngüler çalıştırır. Algoritma analizinde bu işlemlerin zaman karmaşıklığını doğru değerlendirmek önemlidir.
+
+\subsubsection{Uzunluk Bulma: \texttt{strlen}}
+
+Bir karakter dizisinin uzunluğu, baştan başlanarak \texttt{'\textbackslash 0'} karakterine kadar olan elemanların sayısıdır (null karakter uzunluğa katılmaz).
+
+\begin{lstlisting}[language=CTemel]
+size_t my_strlen(const char *s) {
+    size_t len = 0;
+    while (s[len] != '\textbackslash 0') {
+        len++;
+    }
+    return len;
+}
+\end{lstlisting}
+
+Bu fonksiyon diziyi baştan sona taradığı için zaman karmaşıklığı doğrusal, yani $O(n)$'dir ($n$ karakter sayısıdır).
+
+\begin{caution}
+Döngü koşullarında sıklıkla yapılan bir hata şudur:
+\begin{lstlisting}[language=CTemel]
+for (int i = 0; i < strlen(s); i++) {
+    // islemler
+}
+\end{lstlisting}
+Burada her adımda döngü koşulu kontrol edilirken \texttt{strlen(s)} tekrar çağrılır. Fonksiyonun kendisi $O(n)$ sürdüğünden ve döngü $n$ defa tekrar ettiğinden, toplam çalışma karmaşıklığı:
+\[
+\sum_{i=1}^{n} O(n) = O(n^2)
+\]
+seviyesine yükselir. $n = 10^5$ düzeyindeki girdilerde bu durum zaman aşımına (TLE) yol açar. Doğru yöntem, uzunluğu döngü öncesinde tek bir değişkende saklamaktır: \texttt{int n = strlen(s); for (int i = 0; i < n; i++)}.
+\end{caution}
+
+\subsubsection{Karşılaştırma: \texttt{strcmp}}
+
+İki karakter dizisinin eşitliği C dilinde \texttt{s1 == s2} biçiminde denetlenemez. Dizi isimleri bellek adreslerini temsil ettiğinden bu ifade, dizilerin içeriğini değil, bellekte aynı adresi gösterip göstermediklerini sorgular.
+
+İçerik karşılaştırması \textbf{sözlükbilimsel} (lexicographical) sırada karakter bazında gerçekleştirilir:
+\begin{lstlisting}[language=CTemel]
+int my_strcmp(const char *s1, const char *s2) {
+    while (*s1 && (*s1 == *s2)) {
+        s1++;
+        s2++;
+    }
+    return *(const unsigned char*)s1 - *(const unsigned char*)s2;
+}
+\end{lstlisting}
+İki metin birebir aynıysa fonksiyon $0$ döndürür. İlk farklı karakterde $s1$'in ASCII değeri $s2$'den küçükse negatif, büyükse pozitif bir fark üretilir.
+
+\begin{example}
+Aşağıdaki fonksiyon bir karakter dizisini yerinde (in-place) tersine çevirmektedir. Fonksiyonun adımlarını açıklayınız.
+\begin{lstlisting}[language=CTemel]
+void reverse_string(char str[]) {
+    int i = 0;
+    int j = strlen(str) - 1;
+    while (i < j) {
+        char temp = str[i];
+        str[i] = str[j];
+        str[j] = temp;
+        i++;
+        j--;
+    }
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölüm 22'de incelediğimiz two pointers yaklaşımıyla, baştaki ve sondaki elemanlar karşılıklı olarak takas edilir (swap):
+\begin{itemize}
+    \item $i$ göstergesi dizinin başını ($0$), $j$ göstergesi ise null karakterden hemen önceki son harfi ($\text{uzunluk} - 1$) işaret eder.
+    \item Her adımda \texttt{str[i]} ile \texttt{str[j]} yer değiştirir.
+    \item $i$ indisi artırılırken ($i++$), $j$ indisi azaltılır ($j--$).
+    \item Göstergeler ortada karşılaştığında ($i \ge j$) işlem biter. Toplamda $\lfloor n/2 \rfloor$ takas yapılır. Zaman karmaşıklığı $O(n)$, ek bellek kullanımı $O(1)$'dir.
+\end{itemize}
+\end{proof}
+
+\begin{example}
+Aşağıdaki C kodunun ekran çıktısını bulunuz:
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int main() {
+    char s[] = "BAP2024";
+    char *p = s;
+    while (*p) {
+        if (*p >= 'A' && *p <= 'Z')
+            *p = *p + ('a' - 'A');
+        p++;
+    }
+    printf("%s", s);
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+ASCII tablosunda büyük harfler ('A'-'Z') ile küçük harfler ('a'-'z') ardışık bloklar halinde sıralanmıştır. Bir büyük harfin koduna \texttt{'a' - 'A'} (yani $97 - 65 = 32$) eklendiğinde doğrudan küçük harf karşılığı elde edilir.
+\begin{itemize}
+    \item $p$ işaretçisi dizinin ilk karakteri olan \texttt{'B'} ile başlar.
+    \item Karakter büyük harf aralığındaysa küçük harfe dönüştürülür.
+    \item Karakter rakam ise (\texttt{'2', '0', '2', '4'}) koşul sağlanmaz ve değer korunur.
+    \item \texttt{*p} sonlandırıcı karaktere (\texttt{'\textbackslash 0'}) ulaştığında döngü biter.
+\end{itemize}
+Dönüşümler:
+\[
+\text{'B'} \to \text{'b'}, \quad \text{'A'} \to \text{'a'}, \quad \text{'P'} \to \text{'p'}
+\]
+Rakamlar aynen kalır. Sonuç olarak ekrana \texttt{bap2024} yazdırılır.
+\end{proof}
+
+\section{Pointer ve Hafıza}
+
+Programlama dilleri değişken kavramı üzerinden belleği soyutlar. Bir değişkene \texttt{x = 5} değeri atandığında donanım düzeyinde "x" ismi bulunmaz; sistem yalnızca o değişkenin ayrıldığı bellek adresini tanır.
+
+\textbf{Pointer} (işaretçi), doğrudan bir veri değerini değil, \textbf{başka bir değişkenin bellek adresini} saklayan bir değişkendir. TÜBİTAK Bilgisayar Olimpiyatı 1. Aşama sınavlarında pointer aritmetiği ve bellek yönetimi önemli bir yer tutar.
+
+\subsection{Adres Operatörü (\texttt{\&}) ve Dolaylı Erişim Operatörü (\texttt{*})}
+
+Her değişkenin iki temel niteliği bulunur:
+\begin{enumerate}
+    \item \textbf{Değeri (r-value):} Hücrede saklanan içerik (örneğin 42).
+    \item \textbf{Adresi (l-value):} Bellekte ayrılan yerin başlangıç konumu (örneğin 0x7ffd).
+\end{enumerate}
+
+C dilinde bu iki nitelik iki temel tekli operatörle yönetilir:
+\begin{itemize}
+    \item \texttt{\&} (Adres Operatörü): Değişkenin bellekteki başlangıç adresini üretir.
+    \item \texttt{*} (Dolaylı Erişim Operatörü): Verilen adresteki bellek hücresine ulaşarak oradaki değeri okur ya da günceller.
+\end{itemize}
+
+\begin{definition}[Pointer Tanımlama]
+$T$ tipindeki bir verinin adresini saklayacak bir pointer değişkeni:
+\[
+T\text{ } *p;
+\]
+şeklinde bildirilir. Burada $p$ adresin kendisidir; $*p$ ise o adreste saklanan $T$ tipindeki veridir.
+\end{definition}
+
+Temel bir örnek üzerinden inceleyelim:
+\begin{lstlisting}[language=CTemel]
+int a = 10;
+int *p = &a; // p, a'nin bellek adresini tutar
+*p = 25;     // p'nin gosterdigi adrese git ve oraya 25 yaz
+\end{lstlisting}
+
+Bu işlem sonucunda $a$'nın değeri $25$ olur; çünkü $*p$ ifadesi doğrudan $a$'nın ayrıldığı bellek hücresine erişir.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \node[kutu, minimum width=2.4cm, minimum height=1.1cm] (a) at (0,0) {25};
+  \node[etiket, above=1.5mm of a] {a (int)};
+  \node[etiket, below=1.5mm of a] {\texttt{0x2000}};
+  \node[kutu, minimum width=2.8cm, minimum height=1.1cm, fill=black!5] (p) at (4.8,0) {\texttt{0x2000}};
+  \node[etiket, above=1.5mm of p] {p (int*)};
+  \node[etiket, below=1.5mm of p] {\texttt{0x3000}};
+  \draw[kitap-ok, draw=kitapvurgu] (p.west) .. controls (3.1,0.8) and (1.5,0.8) .. (a.north east)
+        node[etiket, above, pos=0.55] {\texttt{\&a}};
+\end{tikzpicture}
+\caption{Pointer ve bellek ilişkisi: $p$ değişkeni $a$'nın adresi olan \texttt{0x2000}
+değerini tutar; $\&a$ bu adresin nasıl üretildiğini gösterir.}
+\end{figure}
+
+\subsection{Pointer Aritmetiği}
+
+Pointer'lar üzerinde toplama ve çıkarma işlemleri yapılabilir. Ancak bu aritmetik, yalın tam sayı işlemlerinden farklı kurallarla işler. Bir pointer'a $1$ eklemek, sayısal adres değerini 1 bayt artırmak anlamına \textbf{gelmez}.
+
+\begin{theorem}[Pointer Aritmetiği Kuralı]
+$T$ tipinde bir nesneyi gösteren bir $p$ pointer'ı ve bir $k \in \mathbb{Z}$ tam sayısı verilsin. Bu durumda:
+\[
+\operatorname{SayısalAdres}(p + k) = \operatorname{SayısalAdres}(p) + k \times \operatorname{sizeof}(T)
+\]
+olur. Benzer şekilde aynı dizi içerisindeki iki hücreyi gösteren aynı türden $p$ ve $q$ pointer'ları arasındaki fark:
+\[
+q - p = \frac{\operatorname{SayısalAdres}(q) - \operatorname{SayısalAdres}(p)}{\operatorname{sizeof}(T)}
+\]
+eleman sayısını verir.
+\end{theorem}
+
+\begin{proof}
+Pointer aritmetiğinin amacı, baytları tek tek saymak yerine ardışık veri blokları arasında eleman bazında adım atmaktır. Bir sonraki elemana geçmek ($p+1$), geçerli elemanın kapladığı alan kadar ilerlemek demektir. Dolayısıyla adım boyutu, işaret edilen türün bayt boyutu olan $\operatorname{sizeof}(T)$ kadardır. $k$ adım ilerlemek $k \times \operatorname{sizeof}(T)$ bayt yer değiştirmeye denk gelir. İki adresin farkı ise aradaki eleman miktarını verir.
+\end{proof}
+
+\begin{example}
+64-bit bir sistemde \texttt{double} türü 8 bayttır.
+\begin{lstlisting}[language=CTemel]
+double arr[5];
+double *ptr1 = &arr[1];
+double *ptr2 = &arr[4];
+\end{lstlisting}
+\texttt{ptr1}'in sayısal bellek adresi $0x1000$ (onluk sistemde $4096$) olduğuna göre:
+\begin{enumerate}
+    \item[a)] \texttt{ptr2}'nin sayısal bellek adresi kaçtır?
+    \item[b)] \texttt{ptr2 - ptr1} işleminin sonucu kaçtır?
+\end{enumerate}
+\end{example}
+
+\begin{proof}[Çözüm]
+a) $ptr1$ adresi $arr[1]$'e, $ptr2$ adresi ise $arr[4]$'e aittir. İki eleman arasında $4 - 1 = 3$ elemanlık fark bulunur. Her \texttt{double} elemanı 8 bayt olduğundan:
+\[
+\operatorname{Adres}(ptr2) = 4096 + (3 \times 8) = 4096 + 24 = 4120
+\]
+Onaltılık tabanda: $4120 = 4096 + 24 = 0x1000 + 0x18 = 0x1018$.
+
+b) Pointer farkı doğrudan aradaki eleman adedini üretir:
+\[
+ptr2 - ptr1 = \frac{4120 - 4096}{8} = \frac{24}{8} = 3
+\]
+Bu işlemin sonucu bayt cinsinden değil, eleman sayısı cinsinden bir tam sayıdır.
+\end{proof}
+
+\subsection{Dizi ve Pointer İkiliği (Duality)}
+
+C dilinde dizi adları ile pointer'lar arasında doğrudan bir bağ bulunur.
+
+\begin{theorem}[Dizinin Pointer'a Bozunumu (Array Decay)]
+Bir ifadenin içerisinde dizi ismi geçtiğinde (\texttt{sizeof} ve \texttt{\&} operatörleri hariç), dizi ismi otomatik olarak \textbf{ilk elemanın bellek adresine} dönüşür:
+\[
+A \equiv \&A[0]
+\]
+\end{theorem}
+
+Bu özelliğin sonucu olarak dizi erişimi ile pointer aritmetiği birbirine denktir:
+\[
+A[i] \iff *(A + i)
+\]
+Toplama işleminin değişme özelliği ($A + i = i + A$) nedeniyle şu eşitlik geçerlidir:
+\[
+A[i] = *(A + i) = *(i + A) = i[A]
+\]
+Dolayısıyla C dilinde \texttt{A[3]} ifadesi ile \texttt{3[A]} ifadesi derleyici nezdinde aynı işlemi ifade eder.
+
+\begin{example}
+Aşağıdaki C kodunun ekran çıktısını bulunuz:
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int main() {
+    int arr[] = {10, 20, 30, 40, 50};
+    int *p = arr;
+    
+    printf("%d ", *(p + 2));
+    printf("%d ", 2[arr]);
+    printf("%d\n", *p + 2);
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Adımları inceleyelim:
+\begin{enumerate}
+    \item \texttt{p}, \texttt{arr}'nin ilk elemanının adresini tutar (\texttt{\&arr[0]}). \texttt{*(p + 2)} ifadesi, 2 eleman ilerideki değeri okur; bu da \texttt{arr[2]} = $30$'dur.
+    \item \texttt{2[arr]} ifadesi derleyici tarafından \texttt{*(2 + arr)} = \texttt{*(arr + 2)} biçiminde çözülür; değer yine $30$'dur.
+    \item \texttt{*p + 2} ifadesinde operatör önceliği devreye girer. \texttt{*} operatörünün önceliği \texttt{+} operatöründen yüksektir. Önce \texttt{*p} değerlendirilir (\texttt{arr[0]} yani $10$), ardından bu değere $2$ eklenir: $10 + 2 = 12$.
+\end{enumerate}
+Program çıktısı: \texttt{30 30 12} olur.
+\end{proof}
+
+\subsection{Kritik Soru Tipi: Artırma Operatörleri ve Pointerlar}
+
+Sınavlarda sıklıkla karşılaşılan kalıplardan biri \texttt{*p++}, \texttt{(*p)++}, \texttt{*++p} ve \texttt{++*p} gibi artırma ifadelerinin oluşturduğu yan etkilerdir. Bu ifadeleri doğru yorumlamak için operatör önceliği ve son ek/ön ek ayrımını iyi kavramak gerekir.
+
+\begin{definition}[Operatör Önceliği Tablosu]
+Tekli son ek operatörleri (\texttt{++}, \texttt{--}) en yüksek önceliğe sahiptir ve soldan sağa işletilir.
+Tekli ön ek operatörleri (\texttt{*}, \texttt{\&}, ön ek \texttt{++}, ön ek \texttt{--}) aynı öncelik düzeyindedir ve \textbf{sağdan sola} değerlendirilir.
+\end{definition}
+
+Bu dört temel durumu karşılaştıralım:
+\begin{enumerate}
+    \item \texttt{*p++}: Son ek \texttt{++} operatörü $p$'ye uygulanır. Son ek olduğundan ifadenin değeri $p$'nin mevcut halidir; işaret edilen değer okunur ve \emph{ardından} $p$ bir sonraki adrese ilerletilir.
+    \item \texttt{(*p)++}: Parantez nedeniyle önce $p$'nin işaret ettiği değer okunur. Ardından bu \textbf{sayısal değer 1 artırılır}. Pointer'ın tuttuğu adres değişmez.
+    \item \texttt{*++p}: Ön ek \texttt{++} önce $p$'yi bir sonraki adrese taşır. Ardından \texttt{*} operatörü yeni adresteki veriyi okur.
+    \item \texttt{++*p}: Sağdan sola öncelik kuralı uyarınca önce \texttt{*p} hesaplanır (işaret edilen değer). Ardından bu değer ön ek \texttt{++} ile 1 artırılır ve yeni değer işlenir.
+\end{enumerate}
+
+\begin{example}
+Aşağıdaki C kod bloğu çalıştırıldığında dizinin elemanlarının son durumu ve ekrana basılan değerler ne olur?
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int main() {
+    int arr[] = {10, 20, 30};
+    int *p = arr;
+
+    int x = *p++;
+    int y = (*p)++;
+    int z = *++p;
+
+    printf("x=%d, y=%d, z=%d\n", x, y, z);
+    printf("arr: %d %d %d\n", arr[0], arr[1], arr[2]);
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+Bellek durumunu adım adım takip eden bir izleme tablosu (trace table) oluşturalım:
+
+\begin{enumerate}
+    \item Başlangıçta: $arr = \{10, 20, 30\}$. $p$, $arr[0]$ hücresini gösterir ($*p = 10$).
+    \item \texttt{int x = *p++;}
+    \begin{itemize}
+        \item $p$'nin geçerli adresindeki değer alınır: $x = 10$.
+        \item Yan etki: $p$ bir eleman ilerler, artık $arr[1]$'i gösterir.
+    \end{itemize}
+    \item \texttt{int y = (*p)++;}
+    \begin{itemize}
+        \item $p$ şu anda $arr[1]$ hücresini göstermektedir; buradaki değer $20$'dir.
+        \item Son ek artırma nedeniyle $y$'ye mevcut değer atanır: $y = 20$.
+        \item Yan etki: $arr[1]$ hücresindeki değer 1 artarak $21$ olur. Pointer adresi değişmez.
+    \end{itemize}
+    \item \texttt{int z = *++p;}
+    \begin{itemize}
+        \item Önce $p$ bir sonraki adrese kaydırılır: $p$ artık $arr[2]$ hücresindedir.
+        \item Ardından bu adresteki değer okunur: $arr[2] = 30$, dolayısıyla $z = 30$.
+    \end{itemize}
+\end{enumerate}
+
+Ekrana yazdırılan sonuçlar:
+\begin{lstlisting}[language=CTemel]
+x=10, y=20, z=30
+arr: 10 21 30
+\end{lstlisting}
+\end{proof}
+
+\subsection{Pointer Dizileri ile Dizi Pointer'ları Arasındaki Ayrım}
+
+Köşeli parantez ile işaretçi bildiriminin birleşimi dikkat gerektiren iki ayrı yapı oluşturur.
+
+\begin{definition}[Pointer Dizisi vs. Dizi Pointer'ı]
+Aşağıdaki iki bildirim farklı türleri ifade eder:
+\begin{enumerate}
+    \item \texttt{int *a[5];} $\implies$ \textbf{Pointer Dizisi (Array of Pointers):} 
+    Köşeli parantezin önceliği yıldızdan yüksek olduğundan bu ifade "5 elemanlı bir dizidir, her elemanı \texttt{int*} türündendir" şeklinde yorumlanır.
+    \item \texttt{int (*b)[5];} $\implies$ \textbf{Dizi Pointer'ı (Pointer to an Array):} 
+    Parantez önceliği belirler. Bu ifade "5 elemanlı bir \texttt{int} dizisini gösteren tek bir pointer'dır" anlamına gelir.
+\end{enumerate}
+\end{definition}
+
+Aralarındaki aritmetik fark belirleyicidir:
+\begin{itemize}
+    \item $a$ bir pointer dizisi olduğunda, $a + 1$ ifadesi bir sonraki pointer adresine ($\operatorname{sizeof}(\text{int*})$ kadar) ilerler (genellikle 4 veya 8 bayt).
+    \item $b$ ise 5 elemanlı bir diziye işaret ettiğinden, $b + 1$ ifadesi tam bir dizi boyutu kadar, yani $5 \times \operatorname{sizeof}(\text{int}) = 20$ bayt birden ilerler.
+\end{itemize}
+
+\begin{example}
+Aşağıdaki program parçasının çıktısını belirleyiniz:
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+int main() {
+    int matris[3][4] = {
+        {1,  2,  3,  4},
+        {5,  6,  7,  8},
+        {9, 10, 11, 12}
+    };
+    int (*ptr)[4] = matris;
+
+    printf("%d ", **ptr);
+    printf("%d ", *(*(ptr + 1) + 2));
+    printf("%d\n", *(*ptr + 5));
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+\texttt{ptr}, 4 elemanlı bir tam sayı dizisini gösteren bir pointer'dır. Başlangıçta 0. satırı (\texttt{matris[0]}) işaret eder.
+\begin{enumerate}
+    \item \texttt{**ptr}: \texttt{*ptr} ifadesi 0. satırın başlangıç adresini verir (\texttt{\&matris[0][0]}). Baştaki \texttt{*} ise o adresteki veriyi okur. Değer $1$'dir.
+    \item \texttt{*(*(ptr + 1) + 2)}: 
+    \begin{itemize}
+        \item \texttt{ptr + 1}, bir satır atlayarak 1. satıra geçer (\texttt{matris[1]}).
+        \item \texttt{*(ptr + 1)}, 1. satırın başlangıç adresidir.
+        \item $+ 2$ eklemek, bu satırda 2 sütun sağa kaydırır ($j = 2$).
+        \item En dıştaki \texttt{*} operatörü \texttt{matris[1][2]} değerini okur. Bu değer $7$'dir.
+    \end{itemize}
+    \item \texttt{*(*ptr + 5)}:
+    \begin{itemize}
+        \item \texttt{*ptr}, 0. satırın başlangıcı olan \texttt{\&matris[0][0]} adresidir.
+        \item Bu eleman adresine doğrudan $+ 5$ eklenmiştir. Satır genişliği 4 eleman olduğundan 5 adım ilerlemek 0. satırı aşarak 1. satırın 1. indisine ($5 = 1 \times 4 + 1$) ulaşır.
+        \item Okunan eleman \texttt{matris[1][1]}'dir ve değeri $6$'dır.
+    \end{itemize}
+\end{enumerate}
+Programın çıktısı: \texttt{1 7 6} olur.
+\end{proof}
+
+\subsection{Fonksiyonlara Parametre Aktarımı: Değer ile mi, Referans ile mi?}
+
+C dilinde fonksiyon argümanları kural olarak \textbf{değeriyle çağrılır} (call by value). Bir fonksiyona değişken gönderildiğinde bellekte o değişkenin bir kopyası oluşturulur ve fonksiyona bu kopya iletilir. Fonksiyon içerisindeki değişiklikler asıl değişkeni etkilemez.
+
+\begin{example}[Klasik Hatalı Swap]
+Aşağıdaki takas fonksiyonu iki değişkenin değerini neden değiştiremez?
+\begin{lstlisting}[language=CTemel]
+void swap_hatali(int a, int b) {
+    int temp = a;
+    a = b;
+    b = temp;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Açıklama]
+Fonksiyon çağrıldığında yığında $a$ ve $b$ isimli yerel değişkenler ayrılır ve argümanların değerleri buraya kopyalanır. Değişiklik yalnızca bu yerel kopyalar üzerinde gerçekleşir. Fonksiyon tamamlandığında yerel değişkenler bellekten silinir; çağıran taraftaki değişkenlerin değerleri aynı kalır.
+\end{proof}
+
+Bir fonksiyonun çağıran taraftaki değişkenleri güncelleyebilmesi için o değişkenlerin \textbf{bellek adreslerini} parametre olarak alması gerekir:
+
+\begin{lstlisting}[language=CTemel]
+void swap_dogru(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+\end{lstlisting}
+
+Çağrı \texttt{swap\_dogru(\&x, \&y);} biçiminde yapılır. Fonksiyon doğrudan verilen adreslerdeki verileri takas ettiğinden çağıran taraftaki $x$ ve $y$ kalıcı olarak yer değiştirir.
+
+\begin{definition}[Dizilerin Fonksiyonlara Aktarımı ve Boyut Yitimi]
+Bir fonksiyon parametresi olarak dizi tanımlandığında:
+\begin{lstlisting}[language=CTemel]
+void f(int arr[])  // veya void f(int arr[100])
+\end{lstlisting}
+derleyici bu ifadeyi otomatik olarak bir pointer bildirimine dönüştürür:
+\begin{lstlisting}[language=CTemel]
+void f(int *arr)
+\end{lstlisting}
+Bu nedenle fonksiyon içinde \texttt{sizeof(arr)} işlemi yapıldığında dizinin boyutu değil, \textbf{pointer'ın boyutu} (64-bit sistemlerde 8 bayt) elde edilir. Dizinin eleman sayısı fonksiyon içinde doğrudan bilinemeyeceğinden, C'de diziler aktarılırken boyut bilgisi de genellikle ek bir parametre olarak (\texttt{int n}) fonksiyona verilir.
+\end{definition}
+
+\begin{example}
+Aşağıdaki C kodunun ekran çıktısını adım adım belirleyiniz:
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+
+void gizemli(int *p, int **q) {
+    p = *q;
+    *p = 40;
+    **q = 50;
+}
+
+int main() {
+    int a = 10, b = 20;
+    int *p1 = &a;
+    int *p2 = &b;
+    
+    gizemli(p1, &p2);
+    
+    printf("a=%d, b=%d, *p1=%d, *p2=%d\n", a, b, *p1, *p2);
+    return 0;
+}
+\end{lstlisting}
+\end{example}
+
+\begin{proof}[Çözüm]
+İki seviyeli pointer (\texttt{int**}) mekanizmasını ve değer aktarımı kurallarını adım adım takip edelim.
+
+\textbf{1. Başlangıç Durumu (main yığını):}
+\begin{itemize}
+    \item $a = 10$, $b = 20$.
+    \item $p1$, $a$'nın adresini tutar ($\&a$).
+    \item $p2$, $b$'nin adresini tutar ($\&b$).
+\end{itemize}
+
+\textbf{2. Fonksiyon Çağrısı: \texttt{gizemli(p1, \&p2)}}
+Fonksiyonun yerel parametreleri tahsis edilir:
+\begin{itemize}
+    \item Yerel $p$ pointer'ı, $p1$'in bir kopyasıdır ve $a$'nın adresini tutar.
+    \item Yerel $q$ pointer'ı ise $p2$'nin \textbf{adresini} saklar ($q = \&p2$). Dolayısıyla $*q$ ifadesi doğrudan \texttt{main}'deki $p2$ pointer'ına karşılık gelir.
+\end{itemize}
+
+\textbf{3. Fonksiyon Gövdesi:}
+\begin{itemize}
+    \item \texttt{p = *q;}: 
+    $*q$, \texttt{main}'deki $p2$'dir ve değeri $\&b$'dir. Yerel $p$ artık $b$'nin adresini tutar. Bu atama yalnızca yerel $p$ üzerinde etkilidir; \texttt{main}'deki $p1$ pointer'ı değişmez.
+    \item \texttt{*p = 40;}: 
+    $p$ şu an $b$'yi gösterdiğinden $b$'nin değeri $40$ olur.
+    \item \texttt{**q = 50;}: 
+    $q$, $p2$'yi; $p2$ ise $b$'yi göstermektedir. Dolayısıyla bu satır $b$'nin değerini $50$ yapar.
+\end{itemize}
+
+\textbf{4. Fonksiyon Bitişi ve Değerler:}
+\begin{itemize}
+    \item $a$ değişkeni değiştirilmemiştir; değeri $10$'dur.
+    \item $b$ değişkeni fonksiyon içinde güncellenerek $50$ olmuştur.
+    \item $p1$ halen $a$'yı göstermektedir; dolayısıyla $*p1 = 10$'dur.
+    \item $p2$ halen $b$'yi göstermektedir; dolayısıyla $*p2 = 50$'dir.
+\end{itemize}
+
+Programın çıktısı:
+\begin{lstlisting}[language=CTemel]
+a=10, b=50, *p1=10, *p2=50
+\end{lstlisting}
+\end{proof}
+
+\subsection{Vahşi ve Sarkan Pointer Tehlikeleri}
+
+Bellek güvenliği açısından iki kavrama dikkat edilmelidir:
+
+\begin{definition}[Vahşi Pointer (Wild Pointer)]
+Tanımlanmış fakat geçerli bir adresle ilklendirilmemiş (uninitialized) pointer'lara \textbf{vahşi pointer} denir:
+\begin{lstlisting}[language=CTemel]
+int *p; // p rastgele bir cop adres tutmaktadir!
+*p = 100; // TANIMSIZ DAVRANIS! Cok tehlikeli bir bellek bolgesini bozabilir.
+\end{lstlisting}
+Pointer tanımlandığında doğrudan geçerli bir adrese atanmalı veya en azından \texttt{NULL} ile ilklendirilmelidir.
+\end{definition}
+
+\begin{definition}[Sarkan Pointer (Dangling Pointer)]
+Geçerli bir nesneyi gösterirken o nesnenin ömrü sona erdikten sonra (örneğin yerel değişkenin bulunduğu fonksiyondan çıkıldığında veya tahsis edilen alan serbest bırakıldığında) eski adresi tutmaya devam eden pointer'a \textbf{sarkan pointer} denir:
+\begin{lstlisting}[language=CTemel]
+int* hatali_fonksiyon() {
+    int x = 10;
+    return &x; // HATA! x fonksiyon bitince yok olur.
+}
+\end{lstlisting}
+Bu fonksiyonun döndürdüğü adrese erişmeye çalışmak tanımsız davranışa yol açar.
+\end{definition}

@@ -1,0 +1,25 @@
+{
+  "file": "25_rekursiyon_ve_dp.tex",
+  "findings": [
+    {
+      "file": "25_rekursiyon_ve_dp.tex",
+      "line_hint": 5,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "\\textbf{rekürsiyon (rekürsiyon)}",
+      "issue": "Terminoloji sözleşmesine göre rekürsiyon terimi ilk geçtiğinde İngilizce karşılığı parantez içinde verilmelidir: 'rekürsiyon (recursion)'. Metinde sehven 'rekürsiyon (rekürsiyon)' yazılmıştır.",
+      "suggested_fix": "\\textbf{rekürsiyon (recursion)} olarak düzeltilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "25_rekursiyon_ve_dp.tex",
+      "line_hint": 5,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "\\textbf{memoization (bellekleme)}",
+      "issue": "Terminoloji sözleşmesinde memoization terimi Kategori A (İngilizce korunur, Türkçe karşılığı KULLANILMAZ) altındadır. 'belleklenmiş arama, belleklenme, bellekleme' gibi Türkçe karşılıkların kullanılması yasaktır; doğrudan 'memoization' kullanılmalıdır.",
+      "suggested_fix": "'\\textbf{memoization (bellekleme)}' yerine yalnızca '\\textbf{memoization}' yazılmalıdır (aynı durum Tanım 2'deki tanım başlığında da düzeltilmelidir).",
+      "confidence": "high"
+    }
+  ]
+}

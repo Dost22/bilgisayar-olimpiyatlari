@@ -1,0 +1,35 @@
+{
+  "file": "26_greedy_yaklasimi.tex",
+  "findings": [
+    {
+      "file": "26_greedy_yaklasimi.tex",
+      "line_hint": 61,
+      "type": "notation_violation",
+      "severity": "major",
+      "excerpt": "\\begin{definition}[Açgözlü Seçim Özelliği / Greedy Choice Property]",
+      "issue": "Terminoloji sözleşmesine göre 'greedy' terimi İngilizce olarak korunmalıdır; 'açgözlü' Türkçe karşılığı kesinlikle kullanılmamalıdır.",
+      "suggested_fix": "\\begin{definition}[Greedy Seçim Özelliği / Greedy Choice Property] olarak güncellenmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "26_greedy_yaklasimi.tex",
+      "line_hint": 264,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "grafın \\textbf{tüm} minimum kapsayan ağaçlarında yer almak zorundadır.",
+      "issue": "Terminoloji sözleşmesinde 'MST (minimum spanning tree)' ve 'spanning tree' terimlerinin İngilizce olarak korunması gerektiği belirtilmiştir. Metinde 'minimum kapsayan ağaç' ve 'kapsayan ağaç' terimleri kullanılmıştır.",
+      "suggested_fix": "'minimum kapsayan ağaçlarında' yerine 'MST'lerinde' (ve ilgili yerlerde 'spanning tree' / 'MST') ifadesi kullanılmalıdır.",
+      "confidence": "high"
+    },
+    {
+      "file": "26_greedy_yaklasimi.tex",
+      "line_hint": 280,
+      "type": "logic_gap",
+      "severity": "major",
+      "excerpt": "Tanım gereği $e$, kesiti kesen \\textbf{en hafif} kenar olduğundan $w(e) \\le w(e')$'dir. Dolayısıyla $w(T') \\le w(T)$ olur. $T$ zaten minimum ağırlıklı olduğundan $w(T') < w(T)$ olamaz. Şu halde $w(T') = w(T)$ olmalıdır; yani $e$ kenarını içeren $T'$ de bir minimum kapsayan ağaçtır (kenar ağırlıkları birbirinden farklıysa $w(e) < w(e')$ olacağından doğrudan çelişki çıkar).",
+      "issue": "Teorem ifadesinde $e$'nin kesiti kesen kenarlar arasında ağırlığı 'kesin olarak en küçük' (strictly minimal) olduğu belirtilmiştir. $e' \\ne e$ kesiti kesen bir başka kenar olduğundan, teorem hipotezi doğrudan $w(e) < w(e')$ olmasını gerektirir. Dolayısıyla $w(T') < w(T)$ elde edilerek doğrudan çelişkiye ulaşılır. İspattaki 'w(e) <= w(e') olduğundan w(T') = w(T) olmalıdır' ve parantez içindeki 'kenar ağırlıkları birbirinden farklıysa' açıklaması teorem hipoteziyle çelişmekte ve mantıksal bir pürüz oluşturmaktadır.",
+      "suggested_fix": "Adım doğrudan kesin eşitsizlikle ifade edilmelidir: '$e$ kesiti kesen kenarlar arasında kesin olarak en küçük ağırlığa sahip olduğundan ve $e' \\ne e$ kesiti kestiğinden $w(e) < w(e')$'dir. Buradan $w(T') = w(T) - w(e') + w(e) < w(T)$ elde edilir; bu ise $T$'nin bir MST olmasıyla çelişir. Dolayısıyla her MST $e$ kenarını içermek zorundadır.'",
+      "confidence": "high"
+    }
+  ]
+}

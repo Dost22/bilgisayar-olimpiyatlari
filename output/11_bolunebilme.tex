@@ -1,0 +1,692 @@
+\chapter[Bölünebilme · \textit{Temel}]{Bölünebilme}
+\chaptermark{Bölünebilme}
+
+Bilgisayar biliminde ve algoritma tasarımında tam sayıların birbiriyle kurduğu ilişkiler temel bir yer tutar. Bir döngünün kaç adımda bir tetikleneceğini belirlemekten karma (hash) tablolarına, asallık testlerinden kriptografik anahtar üretimine kadar pek çok alanda tam sayıların katları ve kalanlarıyla karşılaşırız. 
+
+Bu bölümde tam sayılar kümesinde bölünebilme bağıntısını, basamak çözümlemelerine dayanan pratik bölünebilme kurallarını ve aritmetiğin temel taşlarından biri olan Bölme Algoritması'nı algoritmik yansımalarıyla ele alacağız.
+
+\section{Bölünebilme ve Gösterim}
+
+\subsection{Motivasyon: Hangi Sorunu Çözer?}
+Elimizde 24 adet özdeş bellek hücresi olduğunu ve bunları eşit büyüklükte bloklara ayırmak istediğimizi varsayalım. Blok boyutunu 3 seçersek $24 = 3 \times 8$ yazabiliriz; hiçbir hücre açıkta kalmaz. Blok boyutunu 4 seçersek $24 = 4 \times 6$ olur; yine açıkta hücre kalmaz. Fakat blok boyutunu 5 seçtiğimizde $24 = 5 \times 4 + 4$ elde ederiz ve 4 hücre tam bir blok oluşturamaz.
+
+İlk iki durumda 24'ün 3'e ve 4'e \emph{tam bölündüğünü}, son durumda ise 5'e \emph{tam bölünmediğini} söyleriz. Gerçek dünyada disk bloklarının sektörlere yerleştirilmesi, bellek hizalaması (alignment) veya paralel işlemciler arasında iş yükünün paylaştırılması gibi senaryolar, bir tam sayının diğerine kalansız bölünüp bölünmediği sorusuna dayanır. Bu ilişkiyi cebirsel işlemlerle yürütülebilir biçimde tanımlamak gerekir.
+
+\subsection{Tanım ve Temel Gösterim}
+
+\begin{definition}[Bölünebilme]
+$a$ ve $b$ iki tam sayı olsun. Eğer $b = a \cdot k$ eşitliğini sağlayan en az bir $k \in \mathbb{Z}$ tam sayısı varsa, \textbf{$a$, $b$'yi böler} (veya \textbf{$b$, $a$'nın bir katıdır}) denir ve bu durum
+\[
+a \mid b
+\]
+biçiminde gösterilir. Eğer böyle bir $k$ tam sayısı yoksa, \textbf{$a$, $b$'yi bölmez} denir ve $a \nmid b$ şeklinde yazılır.
+\end{definition}
+
+Burada $a$'ya $b$'nin bir \emph{böleni} (veya çarpanı), $b$'ye ise $a$'nın bir \emph{katı} denir.
+
+Somut örneklere bakalım:
+\begin{itemize}
+    \item $3 \mid 24$ çünkü $24 = 3 \times 8$ ve $8 \in \mathbb{Z}$'dir.
+    \item $-4 \mid 20$ çünkü $20 = (-4) \times (-5)$ ve $-5 \in \mathbb{Z}$'dir.
+    \item $7 \mid -35$ çünkü $-35 = 7 \times (-5)$ ve $-5 \in \mathbb{Z}$'dir.
+    \item $5 \nmid 24$ çünkü $24 = 5k$ eşitliğini sağlayan bir $k$ tam sayısı yoktur ($k = 4.8 \notin \mathbb{Z}$).
+\end{itemize}
+
+\begin{figure}[h!]
+\centering
+\fbox{\parbox{0.92\textwidth}{
+\textbf{En Sık Yapılan Hata: Bölme İşareti ile Bölünebilme Çizgisini Karıştırmak} \\
+Düz çizgi ($|$) ile bölü işareti ($/$) veya kesir çizgisi sıkça karıştırılır:
+\begin{itemize}
+    \item $a / b$ veya $\frac{a}{b}$ bir \textbf{sayıdır} (örneğin $6 / 2 = 3$ bir sayıdır).
+    \item $a \mid b$ ise doğru ya da yanlış değeri alabilen bir \textbf{önermedir} (bağıntı bildirir). $2 \mid 6$ ifadesi "2, 6'yı böler" anlamına gelen \emph{doğru} bir önermedir.
+    \item Terimlerin sırası da farklıdır: $a \mid b$ yazıldığında bölen \emph{solda}, bölünen \emph{sağdadır}. Kesirde ise pay üstte (veya solda), payda altta (veya sağdadır): $\frac{b}{a}$. Dolayısıyla $3 \mid 12$ doğru bir önermeyken $12 \mid 3$ yanlıştır.
+\end{itemize}
+}}
+\end{figure}
+
+\subsubsection{Uç Değerler: Sıfır ve Bir}
+Bölünebilme tanımını sıfır ve bir için inceleyelim:
+\begin{enumerate}
+    \item \textbf{Her $a \in \mathbb{Z}$ için $1 \mid a$ ve $-1 \mid a$}: Çünkü $a = 1 \cdot a$ ve $a = (-1) \cdot (-a)$ her zaman yazılabilir.
+    \item \textbf{Her $a \in \mathbb{Z}$ için $a \mid 0$}: Çünkü $0 = a \cdot 0$ olup $0 \in \mathbb{Z}$'dir. Yani her tam sayı sıfırı böler.
+    \item \textbf{0 kimi böler?}: Tanıma göre $0 \mid b$ olması için $b = 0 \cdot k$ olmalıdır. Sağ taraf her zaman 0 olduğundan, bu eşitlik yalnızca $b = 0$ iken sağlanır. Dolayısıyla $0 \mid 0$ teknik olarak doğrudur ($0 = 0 \cdot k$ her $k$ için geçerlidir), fakat $b \neq 0$ ise $0 \nmid b$. Sıfıra bölme işlemi aritmetikte tanımsız olsa da, çarpan ilişkisi üzerinden tanımlanan $0 \mid 0$ ifadesi bu biçimsel kurala uyar; ancak belirsizlik yaratmamak adına aksi belirtilmedikçe bölenin sıfırdan farklı olduğu varsayılır.
+\end{enumerate}
+
+\subsection{Bölünebilmenin Temel Özellikleri}
+
+Bölünebilme bağıntısı, cebirsel sadeleştirmelerde sıkça başvurulan doğrusal özelliklere sahiptir.
+
+\begin{theorem}[Bölünebilmenin Cebirsel Özellikleri]
+$a, b, c, d \in \mathbb{Z}$ olsun. Aşağıdaki özellikler geçerlidir:
+\begin{enumerate}
+    \item \textbf{Yansıma (Reflexivity):} Her $a$ için $a \mid a$.
+    \item \textbf{Geçişme (Transitivity):} $a \mid b$ ve $b \mid c$ ise $a \mid c$.
+    \item \textbf{Çarpımsal Büyüme:} $a \mid b$ ise her $m \in \mathbb{Z}$ için $a \mid bm$.
+    \item \textbf{Doğrusal Kombinasyon:} $a \mid b$ ve $a \mid c$ ise, her $x, y \in \mathbb{Z}$ için
+    \[
+    a \mid (bx + cy)
+    \]
+    olur. Özel olarak $a \mid (b+c)$ ve $a \mid (b-c)$ sağlanır.
+    \item \textbf{Çarpım Kuralı:} $a \mid b$ ve $c \mid d$ ise $ac \mid bd$.
+    \item \textbf{Sınırlandırma İlkesi:} $b \neq 0$ ve $a \mid b$ ise $|a| \le |b|$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Özellikleri tanım üzerinden doğrulayalım:
+\begin{itemize}
+    \item \emph{Geçişme:} $a \mid b \implies b = a k_1$ ve $b \mid c \implies c = b k_2$ ($k_1, k_2 \in \mathbb{Z}$). O halde $c = (a k_1) k_2 = a (k_1 k_2)$. $k_1 k_2 \in \mathbb{Z}$ olduğundan $a \mid c$.
+    \item \emph{Doğrusal Kombinasyon:} $b = a k_1$ ve $c = a k_2$ ise,
+    \[
+    bx + cy = (a k_1)x + (a k_2)y = a(k_1 x + k_2 y).
+    \]
+    $x, y, k_1, k_2$ tam sayı olduğundan $k_1 x + k_2 y$ de bir tam sayıdır. Tanım gereği $a \mid (bx + cy)$.
+    \item \emph{Sınırlandırma:} $b = a k$ ve $b \neq 0$ ise $k \neq 0$'dır. $k$ bir tam sayı olduğundan $|k| \ge 1$'dir. Eşitliğin her iki tarafının mutlak değerini alırsak:
+    \[
+    |b| = |a| \cdot |k| \ge |a| \cdot 1 = |a|.
+    \]
+\end{itemize}
+\end{proof}
+
+Sınırlandırma ilkesi, sonsuz bir arama uzayını sonlu bir aralığa indirmek için en etkili araçlardan biridir. Bir $a$ bilinmeyeninin sabit bir $b$ sayısını böldüğü belirlendiğinde, $a$'nın alabileceği değerler $b$'nin sonlu sayıdaki bölenleriyle kısıtlanır.
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Her $n$ tam sayısı için $2 \mid (n^2 + n)$ olduğunu gösteriniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+İfadeyi çarpanlarına ayırırsak $n^2 + n = n(n+1)$ elde ederiz. Bu çarpım art arda gelen iki tam sayıyı temsil eder. Bölüm 17'de ayrıntılı inceleyeceğimiz parite (teklik-çiftlik) durumlarını ele alalım:
+\begin{itemize}
+    \item \textbf{Durum 1:} $n$ çift olsun. Bir $k \in \mathbb{Z}$ için $n = 2k$ yazılabilir.
+    \[
+    n(n+1) = 2k(2k+1) = 2 \cdot [k(2k+1)]
+    \]
+    $k(2k+1)$ bir tam sayı olduğundan $2 \mid n(n+1)$'dir.
+    \item \textbf{Durum 2:} $n$ tek olsun. Bir $k \in \mathbb{Z}$ için $n = 2k+1$ yazılabilir.
+    \[
+    n(n+1) = (2k+1)(2k+2) = (2k+1) \cdot 2(k+1) = 2 \cdot [(2k+1)(k+1)]
+    \]
+    Burada da çarpım 2'nin tam katıdır.
+\end{itemize}
+Her iki durumda da $2 \mid n(n+1)$ elde edilir.
+\end{proof}
+
+\begin{example}
+$\frac{n+3}{n-1}$ kesrini bir tam sayı yapan tüm $n \in \mathbb{Z}$ değerlerini bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Kesrin tam sayı olması, paydanın payı kalansız bölmesini gerektirir: $(n-1) \mid (n+3)$. Doğrusal kombinasyon özelliğinden yararlanarak bölünen kısımdaki $n$ değişkenini eleyebiliriz.
+
+$(n-1) \mid (n-1)$ olduğu açıktır. İki terimin farkını alırsak:
+\[
+(n-1) \mid \Big( (n+3) - 1 \cdot (n-1) \Big) \implies (n-1) \mid 4.
+\]
+Böylece değişken elenmiş ve $n-1$'in 4'ün bir böleni olması gerektiği sonucuna varılmıştır. 4'ün tam sayı bölenleri $\pm 1, \pm 2, \pm 4$'tür:
+\begin{align*}
+n - 1 = 1 &\implies n = 2 \\
+n - 1 = -1 &\implies n = 0 \\
+n - 1 = 2 &\implies n = 3 \\
+n - 1 = -2 &\implies n = -1 \\
+n - 1 = 4 &\implies n = 5 \\
+n - 1 = -4 &\implies n = -3
+\end{align*}
+Çözüm kümesi $n \in \{-3, -1, 0, 2, 3, 5\}$ olarak bulunur.
+\end{proof}
+
+\begin{example}
+$a, b \in \mathbb{Z}$ olmak üzere, $13 \mid (3a + 4b)$ olduğu veriliyor. $13 \mid (7a + 5b)$ olduğunu kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+$A = 3a + 4b$ ve $B = 7a + 5b$ diyelim. $13 \mid A$ verildiğinde $13 \mid B$ olduğunu göstermek için $B$'yi $A$ ve 13'ün katları cinsinden ifade etmeyi deneriz. 
+
+$A$'yı 2 ile çarpıp $B$ ile toplayalım:
+\[
+2A + B = 2(3a + 4b) + (7a + 5b) = (6a + 8b) + (7a + 5b) = 13a + 13b = 13(a + b).
+\]
+Buradan $B$ çekildiğinde:
+\[
+B = 13(a + b) - 2A
+\]
+elde edilir. Hipotezden $13 \mid A$ olduğundan $13 \mid 2A$'dır. Doğal olarak $13 \mid 13(a+b)$ de geçerlidir. Doğrusal kombinasyon özelliği gereğince 13 bu iki terimin farkını da böler:
+\[
+13 \mid \Big(13(a+b) - 2A\Big) \implies 13 \mid B \implies 13 \mid (7a + 5b).
+\]
+\end{proof}
+
+\begin{example}
+$n$ pozitif bir tam sayı olmak üzere, $(2n+1) \mid (n^2 + 5)$ şartını sağlayan tüm $n$ değerlerini bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölen doğrusal, bölünen ise kareseldir. Bölünen terimden $n$'i aşama aşama yok etmek için ifadeyi 2 ile genişleterek $2n$ katsayısını yakalayalım.
+
+$(2n+1) \mid (n^2 + 5)$ ise çarpımsal büyüme gereğince:
+\[
+(2n+1) \mid 2(n^2 + 5) \implies (2n+1) \mid (2n^2 + 10).
+\]
+$2n^2$ terimini yok etmek için bu ifadeden $n(2n+1)$ çıkaralım:
+\[
+(2n+1) \mid \Big( (2n^2 + 10) - n(2n+1) \Big) \implies (2n+1) \mid (-n + 10).
+\]
+Kalan terimde $n$ katsayısını 2 yapmak için tekrar 2 ile çarpalım:
+\[
+(2n+1) \mid 2(-n + 10) \implies (2n+1) \mid (-2n + 20).
+\]
+Bu ifadeye $(2n+1)$ eklersek:
+\[
+(2n+1) \mid \Big( (-2n + 20) + (2n+1) \Big) \implies (2n+1) \mid 21.
+\]
+Böylece değişken tamamen ortadan kalkar. $n$ pozitif bir tam sayı olduğundan $2n+1 \ge 3$'tür. Dolayısıyla $2n+1$, 21'in 1'den büyük pozitif bölenlerinden biri olmalıdır:
+\[
+2n+1 \in \{3, 7, 21\}.
+\]
+Bu durumları çözersek:
+\begin{align*}
+2n + 1 = 3 &\implies n = 1, \\
+2n + 1 = 7 &\implies n = 3, \\
+2n + 1 = 21 &\implies n = 10.
+\end{align*}
+İfadeyi 2 ile çarptığımız için elde edilen adayları ilk bağıntıda sınayalım:
+\begin{itemize}
+    \item $n = 1$: $2(1)+1 = 3$ ve $1^2+5 = 6$. $3 \mid 6$ sağlanır.
+    \item $n = 3$: $2(3)+1 = 7$ ve $3^2+5 = 14$. $7 \mid 14$ sağlanır.
+    \item $n = 10$: $2(10)+1 = 21$ ve $10^2+5 = 105$. $105 = 21 \times 5$ olduğundan $21 \mid 105$ sağlanır.
+\end{itemize}
+Tüm çözümler $n \in \{1, 3, 10\}$ olarak belirlenir.
+\end{proof}
+
+\subsection{Algoritmik Bakış: Bölünebilirlik Testi}
+
+Programlamada $a$'nın $b$'yi bölüp bölmediğini kontrol etmek için mod operatöründen (``\%'') yararlanılır. $b$'nin $a$'ya bölümünden kalan 0 ise $a \mid b$'dir.
+
+\begin{lstlisting}[language=CTemel]
+#include <stdbool.h>
+
+// a, b'yi boler mi? (a != 0 varsayimiyla)
+bool boler_mi(long long a, long long b) {
+    if (a == 0) {
+        return b == 0;
+    }
+    return (b % a) == 0;
+}
+\end{lstlisting}
+
+Bu kontrol $O(1)$ zamanda yürütülür. Donanım seviyesinde işlemci tek bir bölme talimatı (``idiv``) ile hem bölümü hem de kalanı aynı anda hesaplar.
+
+\section{Bölünebilme Kuralları}
+
+\subsection{Motivasyon: Hangi Sorunu Çözer?}
+Elimizde 50 basamaklı bir sayı olduğunu varsayalım:
+\[
+N = 74829104857201948572019485720194857201948572019488
+\]
+Bu sayının 2, 3, 4 ya da 9'a bölünüp bölünmediğini belirlemek için uzun bölme yapmak gereksiz işlem maliyeti doğurur. 
+
+Günlük matematikte başvurduğumuz "son basamağı çiftse 2'ye bölünür" veya "rakamları toplamı 3'ün katıysa 3'e bölünür" gibi kurallar, kullandığımız \textbf{10 tabanlı sayı sisteminin} cebirsel özelliklerinden kaynaklanır. 10'un çarpanları ile kuvvetlerinin belirli sayılara göre kalanları bu kuralların temelini oluşturur.
+
+\subsection{Onluk Basamak Açılımı}
+Bir $N$ pozitif tam sayısının 10 tabanındaki basamakları sağdan sola doğru $d_0, d_1, d_2, \dots, d_k$ olsun ($0 \le d_i \le 9$ ve $d_k \neq 0$). Sayının değeri:
+\[
+N = \overline{d_k d_{k-1} \dots d_1 d_0} = d_k 10^k + d_{k-1} 10^{k-1} + \dots + d_2 10^2 + d_1 10^1 + d_0 10^0
+\]
+biçiminde ifade edilir. Bölünebilme kuralları, $10^m$ terimlerini incelenen bölen cinsinden ayrıştırmaya dayanır.
+
+\subsection{Kurallar ve İspatları}
+
+\subsubsection{2, 5 ve 10 ile Bölünebilme (Son Basamak)}
+$10 = 2 \times 5$ olduğundan, her $m \ge 1$ için $10^m = 10 \cdot 10^{m-1}$ sayısı 2, 5 ve 10'un katıdır. Sayıyı şu şekilde ayrıştıralım:
+\[
+N = 10 \cdot (d_k 10^{k-1} + \dots + d_1) + d_0.
+\]
+Parantez içindeki kısım 10 ile çarpıldığından 2, 5 ve 10 ile kalansız bölünür. Dolayısıyla $N$'nin bu sayılara bölünebilmesi birler basamağı $d_0$'a bağlıdır:
+\begin{itemize}
+    \item $2 \mid N \iff 2 \mid d_0 \iff d_0 \in \{0, 2, 4, 6, 8\}$.
+    \item $5 \mid N \iff 5 \mid d_0 \iff d_0 \in \{0, 5\}$.
+    \item $10 \mid N \iff 10 \mid d_0 \iff d_0 = 0$.
+\end{itemize}
+
+\subsubsection{4, 25 ve 100 ile Bölünebilme (Son İki Basamak)}
+$100 = 10^2 = 4 \times 25$ olduğundan, her $m \ge 2$ için $10^m$ terimi 4, 25 ve 100'e kalansız bölünür. Sayıyı son iki basamağından ayıralım:
+\[
+N = 100 \cdot (d_k 10^{k-2} + \dots + d_2) + (10 d_1 + d_0).
+\]
+100 çarpanını içeren blok bu sayılara bölündüğünden:
+\begin{itemize}
+    \item $4 \mid N \iff 4 \mid \overline{d_1 d_0}$.
+    \item $25 \mid N \iff 25 \mid \overline{d_1 d_0} \iff \overline{d_1 d_0} \in \{00, 25, 50, 75\}$.
+\end{itemize}
+
+Bu yaklaşım genelleştirilebilir: $2^m$ ve $5^m$ için sayının son $m$ basamağına bakmak yeterlidir. Örneğin $8 = 2^3$ için son üç basamak incelenir ($8 \mid N \iff 8 \mid \overline{d_2 d_1 d_0}$).
+
+\subsubsection{3 ve 9 ile Bölünebilme (Rakamlar Toplamı)}
+10'un kuvvetlerini inceleyelim:
+\begin{align*}
+10 &= 9 + 1 \\
+100 &= 99 + 1 \\
+1000 &= 999 + 1 \\
+10^m &= \underbrace{99\dots9}_{m \text{ tane}} + 1 = 9 \cdot \underbrace{11\dots1}_{m \text{ tane}} + 1.
+\end{align*}
+Her $10^m$ sayısı 9'un bir katı ile 1'in toplamıdır. $N$ sayısının basamak açılımında bu eşitliği yerine yazalım:
+\begin{align*}
+N &= \sum_{i=0}^k d_i 10^i = \sum_{i=0}^k d_i (9 K_i + 1) \quad (\text{burada } K_i = \underbrace{11\dots1}_{i \text{ tane}}, K_0 = 0) \\
+&= \sum_{i=0}^k 9 K_i d_i + \sum_{i=0}^k d_i \\
+&= 9 \cdot \left(\sum_{i=0}^k K_i d_i\right) + \sum_{i=0}^k d_i.
+\end{align*}
+İlk terim 9'un katıdır. $S(N) = \sum_{i=0}^k d_i$ sayının rakamları toplamı olmak üzere:
+\[
+N = 9M + S(N)
+\]
+yazılabilir. Bu eşitlik şu sonuçları verir:
+\begin{itemize}
+    \item $9 \mid N \iff 9 \mid S(N)$.
+    \item $3 \mid N \iff 3 \mid S(N)$ (çünkü $9M$ terimi 3'ün de katıdır).
+    \item Bir sayının 9'a (veya 3'e) bölümünden kalan, rakamları toplamının 9'a (veya 3'e) bölümünden kalana eşittir.
+\end{itemize}
+
+\subsubsection{11 ile Bölünebilme (Alternatif Toplam)}
+10 sayısı $11 - 1$ biçiminde yazılabilir. Kuvvetleri alındığında:
+\begin{align*}
+10^0 &= 1 \\
+10^1 &= 11 - 1 \\
+10^2 &= 99 + 1 = 11 \times 9 + 1 \\
+10^3 &= 1001 - 1 = 11 \times 91 - 1 \\
+10^4 &= 9999 + 1 = 11 \times 909 + 1
+\end{align*}
+Bölüm 6'da incelediğimiz binom açılımından:
+\[
+10^m = (11 - 1)^m = 11 \cdot L_m + (-1)^m
+\]
+yazılabilir. $10^m$'in 11'e bölümünden kalan $m$ çift ise $+1$, $m$ tek ise $-1$'dir. Bu ifadeyi basamak açılımına uygularsak:
+\begin{align*}
+N &= \sum_{i=0}^k d_i 10^i = \sum_{i=0}^k d_i \Big(11 L_i + (-1)^i\Big) \\
+&= 11 \cdot \left(\sum_{i=0}^k L_i d_i\right) + \sum_{i=0}^k (-1)^i d_i \\
+&= 11 M' + \Big(d_0 - d_1 + d_2 - d_3 + \dots + (-1)^k d_k\Big).
+\end{align*}
+Parantez içindeki ifade sayının \textbf{işaretli basamak toplamıdır}:
+\[
+\operatorname{Alt}(N) = d_0 - d_1 + d_2 - d_3 + \dots
+\]
+Dolayısıyla:
+\[
+11 \mid N \iff 11 \mid \operatorname{Alt}(N).
+\]
+
+\begin{figure}[h!]
+\centering
+\fbox{\parbox{0.92\textwidth}{
+\textbf{En Sık Yapılan Hata: 11 Kuralında İşaret Sırasını Karıştırmak} \\
+İşaretleme sağdan sola yapılırken \textbf{birler basamağı daima pozitif ($+$)} seçilmelidir:
+\[
+\dots - d_3 + d_2 - d_1 + d_0
+\]
+Soldan sağa başlandığında basamak sayısı çift ise işaretler ters döner. Her ne kadar $11 \mid X \iff 11 \mid (-X)$ olduğundan sadece bölünebilirlik testinde işaret yönü sonucu etkilemese de, \emph{11'e bölümden kalanı bulurken} hatalı sonuca yol açar.
+}}
+\end{figure}
+
+\subsubsection{7, 11 ve 13 İçin Blok Kuralı: 1001 Çarpanı}
+1001 sayısının asal çarpanları şunlardır:
+\[
+1001 = 7 \times 11 \times 13.
+\]
+Buna göre $10^3 = 1000 = 1001 - 1$ sayısı 7, 11 ve 13 modüllerinde $-1$ kalanını verir. Tıpkı 11 kuralında basamakların tek tek $+ / -$ şeklinde işaretlenmesi gibi, sayı \textbf{sağdan sola doğru üçerli bloklara} ayrılıp $+ / -$ ile toplandığında elde edilen sonuç 7, 11 ve 13 ile bölünebilmeyi tek seferde sınar.
+
+Örneğin $N = \overline{A_2 A_1 A_0}$ (üçer basamaklı bloklar) biçimindeyse:
+\[
+N \equiv A_0 - A_1 + A_2 \pmod{7, 11, 13}.
+\]
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Altı basamaklı $N = \overline{52x41y}$ sayısı 72 ile tam bölünebildiğine göre, $x$ ve $y$ rakamlarının alabileceği değerleri bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm]
+$72 = 8 \times 9$ olup 8 ve 9 aralarında asaldır. Sayının 72'ye bölünmesi hem 8'e hem de 9'a bölünmesini gerektirir. 8 ile bölünebilme son üç basamağa ($\overline{41y}$) bağlı olduğundan önce $y$ belirlenebilir.
+
+\textbf{Adım 1: 8 ile bölünebilme.}
+Kural gereği $8 \mid \overline{41y}$ olmalıdır:
+\[
+\overline{41y} = 400 + 10 + y = 8 \times 50 + (10 + y) = 8 \times 51 + (y + 2).
+\]
+Buradan $8 \mid (y + 2)$ elde edilir. $0 \le y \le 9$ olduğundan $y + 2 \in \{2, 3, \dots, 11\}$ aralığındadır. Bu aralıkta 8'in katı olan tek değer 8'dir:
+\[
+y + 2 = 8 \implies y = 6.
+\]
+Sayımız $\overline{52x416}$ halini alır.
+
+\textbf{Adım 2: 9 ile bölünebilme.}
+Rakamlar toplamı 9'un katı olmalıdır:
+\[
+S(N) = 5 + 2 + x + 4 + 1 + 6 = 18 + x.
+\]
+$9 \mid (18 + x)$ olması için $9 \mid x$ gereklidir. $x$ bir rakam olduğundan $x = 0$ veya $x = 9$ olabilir.
+
+Çözüm çiftleri:
+\[
+(x, y) \in \{(0, 6), (9, 6)\}.
+\]
+\end{proof}
+
+\begin{example}
+Basamak sayısı çift olan ve rakamları simetrik dizilen tüm palindrom sayıların (örneğin 1221, 743347) 11 ile kalansız bölündüğünü kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Palindrom sayının basamak sayısı $2k$ olsun. Simetri özelliği gereği baştan $i$'nci basamak ile sondan $i$'nci basamak birbirine eşittir.
+
+Sayıyı basamaklarıyla yazalım:
+\[
+N = \overline{a_k a_{k-1} \dots a_2 a_1 a_1 a_2 \dots a_{k-1} a_k}.
+\]
+Sayının işaretli toplamını birler basamağından başlayarak oluşturalım:
+\begin{align*}
+\operatorname{Alt}(N) &= d_0 - d_1 + d_2 - d_3 + \dots + (-1)^{2k-1} d_{2k-1} \\
+&= a_k - a_{k-1} + a_{k-2} - \dots + (-1)^{k-1} a_1 - (-1)^{k-1} a_1 + \dots - a_k.
+\end{align*}
+Daha açık görmek için $2k = 4$ durumuna bakalım. $\overline{a_2 a_1 a_1 a_2}$ sayısı için:
+\[
+\operatorname{Alt}(N) = a_2 - a_1 + a_1 - a_2 = (a_2 - a_2) + (-a_1 + a_1) = 0.
+\]
+Genel durumda her $m \in \{1, 2, \dots, k\}$ için $a_m$ rakamı iki kez geçer. Basamakları birler basamağından başlayarak numaralandıralım (birler basamağının indeksi $0$ olsun):
+\begin{itemize}
+    \item Sağ yarıda sondan $m$'nci basamak olarak yer alır; indeksi $k-m$ olduğundan işareti $(-1)^{k-m}$'dir.
+    \item Sol yarıda sondan $k-1+m$'nci basamak olarak yer alır; işareti $(-1)^{k-1+m}$'dir.
+\end{itemize}
+$k-1+m$ ile $k-m$ ardışık tam sayılar olduğundan bu iki işaret zıttır; dolayısıyla $a_m$'nin iki katkısı birbirini sıfırlar:
+\[
+\operatorname{Alt}(N) = \sum_{m=1}^k a_m \Big( (-1)^{k-m} + (-1)^{k-1+m} \Big) = \sum_{m=1}^k a_m \cdot 0 = 0.
+\]
+$11 \mid 0$ olduğundan çift basamaklı tüm palindrom sayılar 11'e tam bölünür.
+\end{proof}
+
+\begin{example}
+Yalnızca 1 rakamı kullanılarak yazılan $R_n = \underbrace{11\dots1}_{n \text{ tane}}$ sayılarına \emph{repunit} denir. $R_n$'in 27 ile bölünebilmesi için gerek ve yeter şartın $27 \mid n$ olduğunu gösteriniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+$R_n$ sayısının rakamları toplamı $n \times 1 = n$'dir. Buradan $9 \mid R_n \iff 9 \mid n$ olduğu bilinir. 27 için durumu basamak bloklama yöntemiyle inceleyelim.
+
+$n$ sayısı 3'ün katı olduğunda $R_n$ sayısını üçerli bloklara ayıralım:
+$R_3 = 111 = 3 \times 37$.
+$R_9 = \underbrace{111}_{R_3} \underbrace{111}_{R_3} \underbrace{111}_{R_3} = R_3 \times 1001001$.
+Burada $1001001$'in rakamları toplamı $1+0+0+1+0+0+1 = 3$ olduğundan 3'e bölünür, fakat 9'a bölünmez.
+$R_{27}$ için:
+\[
+R_{27} = R_9 \times (10^{18} + 10^9 + 1)
+\]
+yazılabilir. Parantez içindeki sayının rakamları toplamı 3'tür; dolayısıyla 3'e bölünür ama 9'a bölünmez.
+
+$R_n$'deki 3 çarpanlarının sayısı, $n$'in içerdiği 3 çarpanlarına bağlıdır:
+\begin{itemize}
+    \item $R_n$'in 3'e bölünmesi için rakamlar toplamı olan $n$'in 3'e bölünmesi gerekir ($3 \mid n$).
+    \item $R_n$'in 9'a bölünmesi için rakamlar toplamı olan $n$'in 9'a bölünmesi gerekir ($9 \mid n$).
+    \item $n = 9k$ olduğunda $R_n$ sayısı $R_9$'un katıdır. $R_9 = 111111111 = 9 \times 12345679$'dur. $12345679$'un rakamları toplamı $37$ olup 3'e bölünmez. Dolayısıyla $R_9$ sayısı 9'a bölünür, fakat 27'ye bölünmez.
+    \item $R_{9k}$ sayısını $R_9$ blokları cinsinden yazarsak:
+    \[
+    R_{9k} = R_9 \times \Big( 10^{9(k-1)} + 10^{9(k-2)} + \dots + 10^9 + 1 \Big).
+    \]
+    $R_9$'un çarpanlarında $3^2$ bulunur ($3^3$ bulunmaz). $R_{9k}$'nin 27'ye ($3^3$) bölünebilmesi için parantezli ifadenin 3'e bölünmesi gerekir. Sağdaki ifade $k$ adet terimin toplamıdır ve her $10^{9m} \equiv 1 \pmod 3$ sağlandığından, parantez 3'e bölündüğünde $k$ kalanını verir:
+    \[
+    \text{Parantez} \equiv \underbrace{1 + 1 + \dots + 1}_{k \text{ tane}} = k \pmod 3.
+    \]
+    İfadenin 3 ile bölünmesi için $3 \mid k$ olmalıdır.
+\end{itemize}
+$n = 9k$ ve $3 \mid k$ olduğunda $n = 9(3m) = 27m$, yani $27 \mid n$ elde edilir.
+\end{proof}
+
+\subsection{Algoritmik Uygulama: Büyük Sayılarda Mod Hesabı}
+
+Büyük boyutlu sayılar programlamada dizgi (string) olarak saklanabilir. Böyle bir sayının küçük bir $M$ tam sayısına bölümünden kalanı Horner yöntemiyle döngü içinde hesaplayabiliriz:
+
+\begin{lstlisting}
+FUNCTION largeNumberMod(numberStr, M)
+    remainder = 0
+    FOR EACH char IN numberStr DO
+        digit = TO_INTEGER(char)
+        remainder = (remainder * 10 + digit) MOD M
+    END FOR
+    RETURN remainder
+END FUNCTION
+
+number = "74829104857201948572019485720194857201948572019488"
+OUTPUT "Remainder: ", largeNumberMod(number, 11)\end{lstlisting}
+
+Bu algoritma basamak sayısı $L$ olmak üzere $O(L)$ zamanda çalışır ve tam sayı taşması yaratmaz.
+
+\section{Bölme Algoritması}
+
+\subsection{Motivasyon: Hangi Sorunu Çözer?}
+Şimdiye kadar kalanın 0 olduğu durumları inceledik. Ancak iki tam sayının bölümü her zaman tam sayı üretmez. 23 elmayı 5 kişiye paylaştırdığımızda kişi başı 4 elma düşer ve 3 elma artar: $23 = 5 \times 4 + 3$.
+
+Tam sayılar kümesinde bölme işleminin bir tam sayı \textbf{bölüm} ve negatif olmayan bir \textbf{kalan} üretecek şekilde tek bir biçimde yapılabileceğini garanti eden teorem \textbf{Bölme Algoritması}dır (Division Algorithm). Adında "algoritma" geçmesine karşın bu ifade temel bir varlık ve teklik teoremidir.
+
+\subsection{Teorem ve İspatı}
+
+\begin{theorem}[Bölme Algoritması]
+$a$ ve $b$ iki tam sayı ve $b > 0$ olsun. Bu durumda,
+\[
+a = b \cdot q + r \quad \text{ve} \quad 0 \le r < b
+\]
+şartlarını sağlayan \textbf{bir ve yalnız bir} $(q, r)$ tam sayı ikilisi vardır.
+\end{theorem}
+
+Burada $a$'ya \emph{bölünen}, $b$'ye \emph{bölen}, $q$'ya \emph{bölüm} (quotient), $r$'ye ise \emph{kalan} (remainder) denir.
+
+\begin{proof}
+İspat iki adımdan oluşur: Varlık ve Teklik. Bu ispat, Bölüm 19'da ele alacağımız \textbf{İyi Sıralılık İlkesi}'nin (negatif olmayan tam sayılardan oluşan boş olmayan her kümenin en küçük bir elemanı vardır) doğrudan bir uygulamasıdır.
+
+\textbf{1. Varlık:}
+Şu kümeyi kuralım:
+\[
+S = \{a - b k : k \in \mathbb{Z} \text{ ve } a - bk \ge 0\}.
+\]
+Bu küme, $a$'dan $b$'nin katları çıkarıldığında elde edilen negatif olmayan tam sayılardan oluşur.
+$S$'nin boş olmadığını gösterelim:
+\begin{itemize}
+    \item $a \ge 0$ ise $k = 0$ seçildiğinde $a - b(0) = a \ge 0$ olur, yani $a \in S$.
+    \item $a < 0$ ise $k = a$ seçilebilir. $b \ge 1$ olduğundan $b \cdot a \le a$ ve $a - ba = a(1-b) \ge 0$ elde edilir. Buradan $a - ba \in S$.
+\end{itemize}
+Her iki durumda da $S$ boş değildir ve elemanları negatif olmayan tam sayılardır. 
+
+İyi Sıralama İlkesi uyarınca $S$ kümesinin \textbf{en küçük bir elemanı} bulunur. Bu elemana $r$ diyelim. $r \in S$ olduğundan bir $q \in \mathbb{Z}$ için:
+\[
+r = a - bq \implies a = bq + r \quad (r \ge 0).
+\]
+$r < b$ olduğunu göstermek için aksini varsayalım: $r \ge b$ olsun.
+$r' = r - b$ sayısını ele alalım. $r \ge b$ olduğundan $r' \ge 0$'dır ve:
+\[
+r' = (a - bq) - b = a - b(q + 1).
+\]
+Bu durumda $r' \in S$ olur. Fakat $b > 0$ olduğundan $r' = r - b < r$ elde edilir. Bu ise $r$'nin $S$'deki en küçük eleman olmasıyla çelişir. Dolayısıyla $r < b$ sağlanmalıdır.
+
+\textbf{2. Teklik:}
+İki farklı gösterim bulunduğunu varsayalım:
+\[
+a = b q_1 + r_1 \quad (0 \le r_1 < b)
+\]
+\[
+a = b q_2 + r_2 \quad (0 \le r_2 < b).
+\]
+Taraf tarafa çıkarırsak:
+\[
+0 = b(q_1 - q_2) + (r_1 - r_2) \implies b(q_2 - q_1) = r_1 - r_2.
+\]
+Buradan $b \mid (r_1 - r_2)$ gelir. 
+Ancak $0 \le r_1 < b$ ve $0 \le r_2 < b$ aralıkları gereğince:
+\[
+-b < r_1 - r_2 < b.
+\]
+Bu açık aralıkta $b$'nin katı olan tek sayı 0'dır.
+Dolayısıyla $r_1 - r_2 = 0 \implies r_1 = r_2$ olmalıdır.
+Eşitlikte yerine yazıldığında $b(q_2 - q_1) = 0$ ve $b > 0$ olduğundan $q_1 = q_2$ çıkar. Gösterim tektir.
+\end{proof}
+
+\subsection{Negatif Sayılarda Bölme ve Alt Taban İlişkisi}
+Teoremde $b > 0$ koşulu aranırken $a$ pozitif, negatif ya da sıfır olabilir. $a$ negatif olduğunda $0 \le r < b$ şartına dikkat edilmelidir.
+
+Örneğin $a = -23$ ve $b = 5$ için:
+\begin{itemize}
+    \item $-23 = 5 \times (-4) - 3$ yazıldığında $r = -3$ olur; kalan negatif olamayacağından bu yazım Bölme Algoritması'na uymaz.
+    \item Doğru yazım için bölüm bir azaltılır ve kalan pozitif yapılır:
+    \[
+    -23 = 5 \times (-5) + 2.
+    \]
+    Burada $q = -5$ ve $r = 2$ olup $0 \le 2 < 5$ şartı sağlanır.
+\end{itemize}
+
+Bölüm ve kalan, \textbf{alt taban} (floor, $\lfloor x \rfloor$) fonksiyonu aracılığıyla tanımlanabilir:
+\[
+q = \left\lfloor \frac{a}{b} \right\rfloor, \qquad r = a - b \left\lfloor \frac{a}{b} \right\rfloor.
+\]
+$-23 / 5 = -4.6$ olduğundan $q = \lfloor -4.6 \rfloor = -5$ ve $r = -23 - 5(-5) = 2$ bulunur.
+
+\begin{figure}[h!]
+\centering
+\fbox{\parbox{0.92\textwidth}{
+\textbf{En Sık Yapılan Hata: C/C++ ile Python'da Negatif Mod İşlemi Farkı} \\
+Yarışma programlamasında dillerin ``\%'' operatörünü işleme biçimi farklılık gösterir:
+\begin{itemize}
+    \item \textbf{C / C++ (C99 standardı):} Bölme işlemini sıfıra doğru yuvarlar (truncate). Dolayısıyla ``-23 / 5`` ifadesi ``-4``, ``-23 \% 5`` ifadesi ise ``-3`` sonucunu verir. Matematiksel tanımın aksine kalan negatif çıkabilir.
+    \item \textbf{Python:} Taban fonksiyonunu ($\lfloor \cdot \rfloor$) esas alır. ``-23 // 5`` sonucu ``-5``, ``-23 \% 5`` sonucu ise ``+2`` çıkar.
+\end{itemize}
+C/C++ ortamında matematiksel kalanı elde etmek için şu kalıp tercih edilir:
+\[
+\text{mat\_mod}(a, b) = ((a \% b) + b) \% b
+\]
+}}
+\end{figure}
+
+\subsection{Tam Sayıların Sınıflandırılması}
+Bölme Algoritması, tam sayılar kümesini ($\mathbb{Z}$) bir $b$ bölenine göre sonlu sayıda ayrık kalan sınıfına böler:
+\begin{itemize}
+    \item $b = 2$ için her tam sayı $2k$ (çift) ya da $2k+1$ (tek) biçimindedir.
+    \item $b = 3$ için her tam sayı $3k$, $3k+1$ veya $3k+2$ biçimindedir.
+    \item $b = 4$ için her tam sayı $4k, 4k+1, 4k+2, 4k+3$ biçimindedir.
+\end{itemize}
+İspatlarda tüm tam sayıları tek tek incelemek yerine bu sonlu sayıdaki kalan sınıflarını ele almak yeterli olur.
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Herhangi bir tam sayının karesinin 3 ile bölümünden kalanın yalnızca 0 veya 1 olabileceğini (asla 2 olamayacağını) kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Bölme Algoritması'na göre her $n$ tam sayısı $3k$, $3k+1$ veya $3k+2$ biçimindedir. Bu durumların karelerini inceleyelim:
+\begin{itemize}
+    \item \textbf{Durum 1 ($n = 3k$):}
+    \[
+    n^2 = (3k)^2 = 9k^2 = 3(3k^2).
+    \]
+    Kalan 0'dır.
+    \item \textbf{Durum 2 ($n = 3k+1$):}
+    \[
+    n^2 = (3k+1)^2 = 9k^2 + 6k + 1 = 3(3k^2 + 2k) + 1.
+    \]
+    Kalan 1'dir.
+    \item \textbf{Durum 3 ($n = 3k+2$):}
+    \[
+    n^2 = (3k+2)^2 = 9k^2 + 12k + 4 = 9k^2 + 12k + 3 + 1 = 3(3k^2 + 4k + 1) + 1.
+    \]
+    Kalan yine 1'dir.
+\end{itemize}
+Hiçbir durumda kalan 2 olamaz; kareler mod 3'te yalnızca 0 veya 1 değerini alabilir.
+\end{proof}
+
+\begin{example}
+$x^2 + y^2 = 2023$ denklemini sağlayan $x, y \in \mathbb{Z}$ tam sayılarının bulunmadığını kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Tam sayı katsayılı denklemlerde kalan analizi pratik bir eleme sağlar. Tam karelerin 4 ile bölümünden kalanlarına bakalım:
+\[
+(2k)^2 = 4k^2 \implies \text{kalan } 0,
+\]
+\[
+(2k+1)^2 = 4k^2 + 4k + 1 = 4(k^2+k) + 1 \implies \text{kalan } 1.
+\]
+Bir tam karenin 4 ile bölümünden kalan yalnızca 0 ya da 1 olabilir.
+
+Sol taraftaki $x^2 + y^2$ ifadesinin 4 ile bölümünden kalan olası değerler:
+\begin{itemize}
+    \item $0 + 0 = 0$,
+    \item $0 + 1 = 1$,
+    \item $1 + 1 = 2$.
+\end{itemize}
+İki karenin toplamı 4 ile bölündüğünde asla 3 kalanını veremez.
+
+Sağ taraftaki 2023 sayısına Bölme Algoritması uygulandığında:
+\[
+2023 = 4 \times 505 + 3
+\]
+elde edilir; yani kalan 3'tür. Sol taraf 4 modunda 3 değerini alamazken sağ taraf 3'tür. Bu çelişki nedeniyle denklemi sağlayan hiçbir $(x, y)$ tam sayı çifti yoktur.
+\end{proof}
+
+\begin{example}
+Ardışık $n$ tane tam sayının çarpımının her zaman $n!$ ile kalansız bölündüğünü gösteriniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Ardışık $n$ tam sayıyı $k+1, k+2, \dots, k+n$ olarak gösterelim. Çarpımları:
+\[
+P = (k+1)(k+2)\dots(k+n)
+\]
+olur. $n! \mid P$ olduğunu göstermek, $\frac{P}{n!}$ ifadesinin tam sayı olduğunu göstermekle eşdeğerdir. Bölüm 5'te tanımladığımız kombinasyon bağıntısını hatırlayalım.
+
+$k \ge 0$ için:
+\[
+\frac{P}{n!} = \frac{(k+1)(k+2)\dots(k+n)}{n!} = \frac{(n+k)!}{n! \, k!} = \binom{n+k}{n}.
+\]
+$\binom{n+k}{n}$ katsayısı, $(n+k)$ elemanlı bir kümeden seçilen $n$ elemanlı alt küme sayısını temsil ettiğinden bir tam sayıdır. 
+
+Dolayısıyla $\frac{P}{n!} \in \mathbb{Z}$ olup $n! \mid P$ sağlanır. Sayılar negatif veya sıfır içeriyorsa:
+\begin{itemize}
+    \item Çarpımda 0 bulunuyorsa $P = 0$ olur ve $n! \mid 0$ geçerlidir.
+    \item Terimlerin tümü negatif ise $(-1)^n$ çarpanı paranteze alınarak pozitif duruma indirgenir.
+\end{itemize}
+Böylece ardışık $n$ tam sayının çarpımının daima $n!$ ile bölündüğü görülür.
+\end{proof}
+
+\begin{example}
+Her $n$ tam sayısı için $n^3 - n$ sayısının $6$ ile tam bölündüğünü kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+İfadeyi çarpanlarına ayıralım:
+\[
+n^3 - n = n(n^2 - 1) = (n - 1)\,n\,(n + 1).
+\]
+Elde edilen çarpım, ardışık üç tam sayının çarpımıdır. Yukarıda kanıtladığımız
+sonuca göre ardışık $k$ tam sayının çarpımı daima $k!$ ile bölünür; $k = 3$ için bu
+$3! = 6$ demektir. Dolayısıyla $(n-1)n(n+1)$ çarpımı $6$ ile tam bölünür ve istenen
+gösterilmiş olur.
+\end{proof}
+
+\subsection{C/C++ İçin Güvenli Mod Fonksiyonu}
+
+Negatif sayılarla çalışırken Bölme Algoritması'nın matematiksel tanımını korumak adına aşağıdaki fonksiyon yapısı tercih edilir:
+
+\begin{lstlisting}[language=CTemel]
+// Matematiksel bolme algoritmasi: 0 <= kalan < b
+long long guvenli_mod(long long a, long long b) {
+    long long r = a % b;
+    if (r < 0) {
+        r += b;
+    }
+    return r;
+}
+
+// Bolum q'yu hesaplamak icin: a = b*q + r
+long long guvenli_bolum(long long a, long long b) {
+    long long r = guvenli_mod(a, b);
+    return (a - r) / b;
+}
+\end{lstlisting}
+
+Bu fonksiyonlar sayesinde $a = -23$ ve $b = 5$ girildiğinde \texttt{guvenli\_mod(-23, 5)} çağrısı \texttt{2}, \texttt{guvenli\_bolum(-23, 5)} çağrısı ise \texttt{-5} değerini üretir.

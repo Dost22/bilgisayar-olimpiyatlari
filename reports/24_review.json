@@ -1,0 +1,55 @@
+{
+  "file": "24_temel_veri_yapilari.tex",
+  "findings": [
+    {
+      "file": "24_temel_veri_yapilari.tex",
+      "line_hint": 55,
+      "type": "bad_reference",
+      "severity": "major",
+      "excerpt": "Bölüm 19'da gördüğümüz fonksiyon çağrıları bellekte tam olarak bir yığın gibi saklanır",
+      "issue": "Bölüm 19'da (Algoritma Nedir) fonksiyonlar veya fonksiyon çağrıları (call stack) işlenmemektedir. Fonksiyonlar ve çağrı yığını Bölüm 29'da (Döngüler ve Fonksiyonlar), rekürsiyon ise Bölüm 25'te anlatılmaktadır.",
+      "suggested_fix": "Atıf Bölüm 29'a (veya Bölüm 25'e) yönlendirilmeli ya da \"ilerleyen bölümlerde göreceğimiz fonksiyon çağrıları\" şeklinde düzeltilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "24_temel_veri_yapilari.tex",
+      "line_hint": 235,
+      "type": "math_error",
+      "severity": "minor",
+      "excerpt": "Her eleman toplamda en fazla 3 yığın işlemine tabi tutulur.",
+      "issue": "İki stack ile queue simülasyonunda bir eleman: 1) Y1'e push, 2) Y1'den pop, 3) Y2'ye push, 4) Y2'den pop olmak üzere toplamda en fazla 4 stack işlemine tabi tutulur. Y1'den Y2'ye aktarım tek bir işlem değil, bir pop ve bir push olmak üzere iki işlemdir.",
+      "suggested_fix": "\"en fazla 3 yığın işlemine\" ifadesi \"en fazla 4 stack işlemine (2 push, 2 pop)\" olarak düzeltilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "24_temel_veri_yapilari.tex",
+      "line_hint": 254,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "çift uçlu kuyruk (\\texttt{deque})",
+      "issue": "Terminoloji sözleşmesi Kategori A uyarınca \"deque\" terimi İngilizce korunmalı, Türkçe karşılığı (\"iki uçlu kuyruk\" veya \"çift uçlu kuyruk\") kullanılmamalıdır.",
+      "suggested_fix": "\"çift uçlu kuyruk (\\texttt{deque})\" yerine doğrudan \"\\texttt{deque}\" kullanılmalıdır.",
+      "confidence": "high"
+    },
+    {
+      "file": "24_temel_veri_yapilari.tex",
+      "line_hint": 309,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "Karma Tablosu (Hash Table)",
+      "issue": "Terminoloji sözleşmesinde \"karma tablosu\" terimi Kategori A'da (Kullanılmayacak Türkçe) açıkça listelenmiştir; terimin \"hash table\" olarak korunması gerekmektedir.",
+      "suggested_fix": "\"Karma Tablosu (Hash Table)\" yerine doğrudan \"Hash Table\" yazılmalıdır.",
+      "confidence": "high"
+    },
+    {
+      "file": "24_temel_veri_yapilari.tex",
+      "line_hint": 18,
+      "type": "notation_violation",
+      "severity": "major",
+      "excerpt": "\\section{Stack (Yığın)}",
+      "issue": "Terminoloji sözleşmesi Kategori A'da \"stack\", \"queue\", \"set / map\" terimlerinin İngilizce korunması ve Türkçe karşılıklarının (\"yığın\", \"kuyruk\", \"küme (set) / eşlem (map)\") kullanılmaması açıkça belirtilmiştir. Bölüm başlıklarında ve gövde metninde bu Türkçe karşılıklar birincil terim olarak kullanılmıştır.",
+      "suggested_fix": "Başlıklar ve metin boyunca \"yığın\" yerine \"stack\", \"kuyruk\" yerine \"queue\", \"eşlem/sözlük\" yerine \"map\" terimleri kullanılmalıdır.",
+      "confidence": "high"
+    }
+  ]
+}

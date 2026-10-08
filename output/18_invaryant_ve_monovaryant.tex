@@ -1,0 +1,486 @@
+\chapter[İnvaryant ve Monovaryant · \textit{İleri}]{İnvaryant ve Monovaryant}
+\chaptermark{İnvaryant ve Monovaryant}
+
+Olimpiyat matematiğinde ve algoritmik düşüncede sıkça karşılaşılan problemlerin önemli bir kısmı dinamik süreçlerle ilgilidir: Tahtaya sayılar yazılır, belirli kurallara göre silinip yerlerine yenileri konur; bir adada yaşayan farklı renkteki bukalemunlar karşılaşıp renk değiştirir; ya da bir grafın düğümleri arasındaki bağlantılar adım adım güncellenir. Bu tür süreçlerde karşımıza genellikle iki temel soru çıkar:
+\begin{enumerate}
+    \item Belirli bir başlangıç durumundan arzu edilen bir hedef duruma ulaşmak mümkün müdür?
+    \item Bu süreç sonsuza kadar devam edebilir mi, yoksa sonlu sayıda adım sonra durmak zorunda mıdır?
+\end{enumerate}
+
+Tüm olası hamle kombinasyonlarını denemek (kaba kuvvet / brute-force), durum uzayının hızla dallanıp büyümesi sebebiyle olanaksızdır. Bu noktada iki temel analitik araç devreye girer: Süreç boyunca hiçbir zaman değişmeyen bir büyüklüğü takip eden \textbf{değişmez (invaryant)} ve her adımda tek bir yönde (sürekli artan ya da sürekli azalan) değişen bir büyüklüğü izleyen \textbf{yarı-değişmez (monovaryant)}.
+
+\section{İnvaryant}
+
+Bir sürecin karmaşıklığı içinde kaybolmamak için, her hamlede korunan bir denge ararız. Bu yöntem, özellikle ``$A$ durumundan $B$ durumuna ulaşılamayacağını'' (imkânsızlığı) göstermek için en uygun araçtır.
+
+\subsection{Motivasyon ve Sezgi: Tahtadaki Sayılar}
+
+Fikri somut bir örnekle ele alalım:
+
+\begin{quote}
+Tahtada $1, 2, 3, \dots, 10$ sayıları yazılıdır. Her adımda herhangi iki $a$ ve $b$ sayısını silip yerlerine $|a - b|$ farkını yazıyoruz. Tahtada tek bir sayı kalana kadar bu işleme devam ediliyor. Son kalan sayının $0$ olması mümkün müdür?
+\end{quote}
+
+Birkaç rastgele deneme yapalım:
+\begin{itemize}
+    \item İlk adımda $1$ ve $2$ silinip yerine $|1 - 2| = 1$ yazılabilir. Sayılarımız: $1, 3, 4, 5, 6, 7, 8, 9, 10$ olur.
+    \item Başka bir tercihle $9$ ve $10$ silinip $|9 - 10| = 1$ yazılabilir.
+\end{itemize}
+Olası eşlemelerin sayısı çok fazladır. Fakat hamlenin sayıların toplamı üzerindeki etkisine odaklanalım. Tahtadaki tüm sayıların toplamını $S$ ile gösterelim. İki sayı seçip ($a$ ve $b$), bunları silip $|a - b|$ eklediğimizde yeni toplam $S'$ ne olur?
+\[
+S' = S - a - b + |a - b|
+\]
+Burada mutlak değerden kurtulmak için genelliği bozmadan $a \ge b$ kabul edebiliriz. O halde $|a - b| = a - b$ olur:
+\[
+S' = S - a - b + (a - b) = S - 2b
+\]
+Bu sonuç belirleyicidir: Yeni toplam, eski toplamdan çift bir sayı ($2b$) çıkarılarak elde edilmiştir. Başka bir deyişle:
+\[
+S' \equiv S \pmod 2
+\]
+Hamle ne olursa olsun, tahtadaki sayıların toplamının tekliği ya da çiftliği (Bölüm 17'de incelediğimiz parite özelliği) asla değişmez.
+
+Başlangıçtaki toplamı hesaplayalım:
+\[
+S_0 = 1 + 2 + 3 + \dots + 10 = \frac{10 \times 11}{2} = 55
+\]
+Görüldüğü üzere $S_0 = 55$ tek bir sayıdır ($55 \equiv 1 \pmod 2$). Sürecin her adımında parite korunduğundan, tahtada kalan son sayının da tek olması zorunludur. Bizden son sayının $0$ olup olamayacağı sorulmuştu. $0$ çift bir sayı olduğundan ($0 \equiv 0 \pmod 2$), bu hedefe ulaşmak \textbf{imkânsızdır}.
+
+\subsection{Tanım ve Temel Teorem}
+
+\begin{definition}[İnvaryant / Değişmez]
+Bir dinamik sistemde, izin verilen herhangi bir durum geçişi (hamle) altında değerini koruyan matematiksel bir büyüklüğe ya da özelliğe \textbf{değişmez (invaryant)} denir. 
+
+Daha biçimsel olarak; durumlar kümesi $\mathcal{S}$, izin verilen hamle bağıntısı $T \subseteq \mathcal{S} \times \mathcal{S}$ olmak üzere, her $(s, s') \in T$ için $f(s) = f(s')$ koşulunu sağlayan bir $f: \mathcal{S} \to X$ fonksiyonuna sistemin bir invaryantı denir.
+\end{definition}
+
+\begin{theorem}[İmkânsızlık Prensibi]
+Bir sistemin başlangıç durumu $s_0$, ulaşılmak istenen hedef durumu $s_{\text{hedef}}$ ve sistemin bir invaryantı $f$ olsun. Eğer
+\[
+f(s_0) \neq f(s_{\text{hedef}})
+\]
+ise, izin verilen kurallarla $s_0$ durumundan $s_{\text{hedef}}$ durumuna ulaşmak imkânsızdır.
+\end{theorem}
+
+\begin{proof}
+Tümevarım ile açıktır. Başlangıçta $f(s_0) = c$ olsun. Yapılan her $k$. hamle sonunda ulaşılan durum $s_k$ ise, invaryant tanımı gereği $f(s_k) = f(s_{k-1}) = \dots = f(s_0) = c$ olur. Dolayısıyla sistemin ulaşabileceği tüm durumların $f$ altındaki görüntüsü $c$ olmak zorundadır. $f(s_{\text{hedef}}) \neq c$ olduğundan, hedef duruma hiçbir sonlu adımda ulaşılamaz.
+\end{proof}
+
+\subsection{Bukalemun Problemi}
+
+Olimpiyatlarda sıkça anılan klasik invaryant sorularından biri ``üç renk'' ya da bilinen adıyla ``bukalemun'' problemidir.
+
+\begin{example}[Bukalemun Problemi (Kvant Dergisi, 1985)]
+Bir adada 13 sarı, 15 yeşil ve 17 kırmızı bukalemun yaşamaktadır. Farklı renkteki iki bukalemun karşılaştığında, her ikisi de renklerini üçüncü renge dönüştürmektedir (örneğin bir sarı ile bir yeşil karşılaşırsa ikisi de kırmızı olur). Aynı renkteki iki bukalemun karşılaştığında ise renk değişimi olmamaktadır. Zaman içinde tüm bukalemunların aynı renge dönüşmesi mümkün müdür?
+\end{example}
+
+\begin{proof}[Çözüm]
+Sarı, yeşil ve kırmızı bukalemunların anlık sayılarını sırasıyla $s$, $y$, $k$ ile gösterelim. Başlangıçta $(s, y, k) = (13, 15, 17)$'dir. Toplam bukalemun sayısı $13 + 15 + 17 = 45$'tir. 
+
+Hedeflenen durumlar şunlardır:
+\begin{itemize}
+    \item Hepsi sarı: $(45, 0, 0)$
+    \item Hepsi yeşil: $(0, 45, 0)$
+    \item Hepsi kırmızı: $(0, 0, 45)$
+\end{itemize}
+
+Olası bir hamleyi inceleyelim. Bir sarı ve bir yeşil bukalemun karşılaştığında sayılar şu şekilde değişir:
+\[
+s' = s - 1, \quad y' = y - 1, \quad k' = k + 2
+\]
+Gruplar arasındaki farklara bakalım:
+\begin{align*}
+s' - y' &= (s - 1) - (y - 1) = s - y \\
+s' - k' &= (s - 1) - (k + 2) = s - k - 3 \\
+y' - k' &= (y - 1) - (k + 2) = y - k - 3
+\end{align*}
+Farkların doğrudan korunduğu söylenemez; ancak farklar ya hiç değişmemekte ($s - y$) ya da tam olarak $3$ azalmaktadır ($s - k$ ve $y - k$). Bu durum Bölüm 14'te ele aldığımız modüler aritmetik yaklaşımına işaret eder. Herhangi iki renk grubunun sayısı arasındaki fark modulo 3'te sabit kalır:
+\[
+s' - y' \equiv s - y \pmod 3, \quad s' - k' \equiv s - k \pmod 3, \quad y' - k' \equiv y - k \pmod 3
+\]
+
+Başlangıç durumundaki farkları hesaplayalım:
+\begin{align*}
+s - y &= 13 - 15 = -2 \equiv 1 \pmod 3 \\
+y - k &= 15 - 17 = -2 \equiv 1 \pmod 3 \\
+k - s &= 17 - 13 = 4 \equiv 1 \pmod 3
+\end{align*}
+Görüldüğü gibi başlangıçta hiçbir iki grubun farkı $0 \pmod 3$ değildir.
+
+Oysa hedeflenen durumlarda (örneğin hepsi sarı olduğunda $(45, 0, 0)$):
+\[
+y - k = 0 - 0 = 0 \equiv 0 \pmod 3
+\]
+olmalıdır. Benzer şekilde diğer iki hedef durumda da sıfıra eşit olan iki grup bulunacağından, aralarındaki fark $0 \equiv 0 \pmod 3$ olmak zorundadır.
+
+Sistemin invaryantı gereği, hiçbir adımda farkların modulo 3'teki değeri $1$'den $0$'a dönüşemez. Dolayısıyla tüm bukalemunların tek bir renkte toplanması imkânsızdır.
+\end{proof}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}[Kesilmiş Satranç Tahtası (Max Black, 1946)]
+$8 \times 8$ boyutundaki standart bir satranç tahtasının karşılıklı iki çapraz köşesi kesilip atılıyor. Kalan $62$ kareyi, her biri $1 \times 2$ boyutunda olan domino taşlarıyla eksiksiz örtmek neden imkânsızdır?
+\end{example}
+
+\begin{proof}[Çözüm]
+Bu problemi Bölüm 17'de renklendirme yöntemiyle çözmüştük; aynı sonuca bir \emph{değişmez} kurarak da ulaşabiliriz. Tahta standart olarak boyandığında $32$ beyaz ve $32$ siyah kare bulunur. Karşılıklı iki çapraz köşe aynı renkte olduğundan kesilmiş tahtada fark $2$'dir.
+
+Her domino tam olarak bir siyah ve bir beyaz kare örter. Dolayısıyla kaç domino kullanılırsa kullanılsın örtülen siyah ve beyaz kare sayıları eşit kalır; bu, sürecin bir \textbf{değişmezidir}. Örtmenin tamamlanabilmesi için farkın $0$ olması gerekirdi; oysa başlangıçtaki fark $2$'dir. Demek ki böyle bir örtme yoktur.
+\end{proof}
+
+\begin{example}
+Dairesel bir masanın etrafında 6 adet madeni para bulunmaktadır. Başlangıçta 5 tanesi tura ($T$), 1 tanesi yazı ($Y$) gelmiştir. Bir adımda, yan yana bulunan herhangi iki parayı aynı anda ters çevirme hakkına sahibiz (yani $T \leftrightarrow Y$). Sonlu sayıda adım sonunda tüm paraları tura yapmak mümkün müdür?
+\end{example}
+
+\begin{proof}[Çözüm]
+Paraları saat yönünde $1, 2, 3, 4, 5, 6$ olarak numaralandıralım. Bir paranın durumunu $T = 0$ ve $Y = 1$ olarak kodlayalım. Yan yana iki paranın ters çevrilmesi durumunda toplam yazı sayısı nasıl değişir?
+\begin{itemize}
+    \item İkisi de $Y$ ise, ikisi de $T$ olur: Yazı sayısı 2 azalır.
+    \item Biri $Y$, biri $T$ ise, durumlar yer değiştirir: Yazı sayısı değişmez.
+    \item İkisi de $T$ ise, ikisi de $Y$ olur: Yazı sayısı 2 artar.
+\end{itemize}
+Her üç durumda da yazıların toplam sayısı $\Delta Y \in \{-2, 0, +2\}$ kadar değişir. Yani toplam yazı sayısının paritesi bir invaryanttır.
+
+Başlangıçta tam olarak 1 adet yazı vardır (tek sayı). Tüm paraların tura olması durumunda ise 0 adet yazı olacaktır (çift sayı). Parite asla değişmeyeceğinden, tek sayıda yazıdan 0 yazıya ulaşmak imkânsızdır.
+\end{proof}
+
+\begin{example}
+Tahtada sırasıyla $(a, b)$ sayı ikilisi yazılıdır. Bir adımda bu ikili silinip yerine $(a+b, a-b)$ ikilisi yazılabilmektedir. Başlangıçta tahtada $(1, \sqrt{2})$ ikilisi yazılı ise, sonlu sayıda adım sonra $(2, 2\sqrt{2})$ ikilisine ulaşılabilir mi?
+\end{example}
+
+\begin{proof}[Çözüm]
+Adımları cebirsel olarak inceleyelim. Sayılar doğrusal bir dönüşüme uğramaktadır. Kareler toplamına bakacak olursak:
+\[
+(a+b)^2 + (a-b)^2 = a^2 + 2ab + b^2 + a^2 - 2ab + b^2 = 2(a^2 + b^2)
+\]
+Karelerin toplamı her adımda 2 katına çıkmaktadır. Bu tam bir invaryant olmasa da her $k$ adımda bir $2^k$ çarpanı üretir.
+
+Şimdi doğrudan katsayı yapısını izleyelim. İlk ikili $(1, \sqrt{2})$'dir.
+\begin{enumerate}
+    \item adım: $(1 + \sqrt{2}, 1 - \sqrt{2})$
+    \item adım: Bu ikiliden $((1+\sqrt{2}) + (1-\sqrt{2}), (1+\sqrt{2}) - (1-\sqrt{2})) = (2, 2\sqrt{2})$.
+\end{enumerate}
+
+Görüldüğü gibi ikinci adımda doğrudan hedefe ulaşılır. 
+
+Bu örnek önemli bir yöntemsel uyarı barındırır: Her problemde doğrudan imkânsızlık göstermeye odaklanmamak gerekir. İnvaryant yöntemi imkânsızlık ispatlarında oldukça güçlüdür; ancak soru ``ulaşılabilir mi?'' diye sorduğunda yanıt olumlu da olabilir ve bu durumda yapılması gereken, hamle dizisini doğrudan inşa etmektir.
+\end{proof}
+
+\begin{example}
+Bir çember üzerinde 2024 tane sayı yazılıdır. Bu sayıların her biri ya $+1$ ya da $-1$'dir. Her adımda her sayının yerine, kendisi ile saat yönündeki komşusunun çarpımı aynı anda yazılmaktadır. Başlangıçtaki sayıların çarpımı $-1$ iken sonlu adım sonra tüm sayıların $+1$ olduğu bir duruma ulaşılabileceğini gösteriniz. Bu hedefe ulaşan somut bir başlangıç durumu kurunuz ve çarpım invaryantının bu soruyu neden çözmediğini açıklayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Çemberdeki sayıları saat yönünde $x_1, x_2, \dots, x_n$ ($n = 2024$) olarak adlandıralım (indisler mod $n$ alınmaktadır). Bir adım uygulandığında yeni sayılar $x'_i = x_i x_{i+1}$ olur. Tüm sayıların çarpımını inceleyelim:
+\[
+P' = (x_1 x_2)(x_2 x_3)\cdots(x_n x_1) = x_1^2 x_2^2 \cdots x_n^2 = 1
+\]
+Her bir $x_i \in \{-1, 1\}$ olduğundan $x_i^2 = 1$'dir. Dolayısıyla ilk adımdan sonra sayıların çarpımı her zaman $1$ olur. Ancak hedef durum olan ``tüm sayıların $+1$ olması'' halinde de çarpım $1$ olduğundan, bu çarpım invaryantı hedefe ulaşmayı yasaklamaz; invaryantın yetersizliği tam olarak buradadır.
+
+Dönüşümü ardışık adımlar için inceleyelim. İki adım üst üste uygulandığında:
+\[
+x_i^{(2)} = x'_i x'_{i+1} = (x_i x_{i+1})(x_{i+1} x_{i+2}) = x_i x_{i+1}^2 x_{i+2} = x_i x_{i+2}
+\]
+elde edilir. Benzer biçimde ilerletilirse, genel olarak $2^k$ adım sonra:
+\[
+x_i^{(2^k)} = x_i \cdot x_{i+2^k}
+\]
+olur.
+
+Şimdi başlangıç çarpımı $-1$ iken sonlu adımda tüm sayıların $+1$ yapılabileceğini somut bir örnekle gösterelim. $n = 2024$ için, indisleri $i \equiv 0 \pmod 8$ olan konumlara $-1$, diğer tüm konumlara $+1$ yerleştirelim. $2024 = 8 \cdot 253$ olduğundan dizilimde $253$ tane $-1$ vardır ve başlangıçtaki çarpım:
+\[
+P = (-1)^{253} = -1
+\]
+olur. Tanımlanan dizilim $8$'li periyodik olduğundan her $i$ için $x_{i+8} = x_i$ eşitliği sağlanır. Buradan $k = 3$ seçilirse, elde ettiğimiz bağıntı gereği $8$ adım sonra:
+\[
+x_i^{(8)} = x_i \cdot x_{i+8} = x_i^2 = +1
+\]
+bulunur. Demek ki yalnızca $8$ adım sonra çemberdeki tüm sayılar $+1$ olur. Böylece hedefe ulaşılamayacağı yönündeki iddia çürütülmüş olur; istenen durum mümkündür.
+\end{proof}
+
+\subsection{Kod ile Simülasyon}
+
+İnvaryantın korunduğunu doğrulamak ve sezgi geliştirmek için bir simülasyon yazabiliriz. Bukalemun problemini simüle eden aşağıdaki sözde kodu inceleyelim:
+
+\begin{lstlisting}
+FUNCTION chameleon_simulation(yellow, green, red, max_steps = 1000):
+    state = [yellow, green, red]
+
+    FOR step FROM 1 TO max_steps DO
+        available_colors = empty list
+        FOR index FROM 0 TO 2 DO
+            IF state[index] > 0 THEN
+                APPEND index TO available_colors
+            END IF
+        END FOR
+
+        IF LENGTH(available_colors) < 2 THEN
+            BREAK
+        END IF
+
+        SELECT TWO DISTINCT elements i, j RANDOMLY FROM available_colors
+
+        state[i] = state[i] - 1
+        state[j] = state[j] - 1
+        state[3 - i - j] = state[3 - i - j] + 2
+
+        d1 = (state[0] - state[1]) MOD 3
+        d2 = (state[1] - state[2]) MOD 3
+
+        ASSERT d1 == (yellow - green) MOD 3
+        ASSERT d2 == (green - red) MOD 3
+    END FOR
+
+    RETURN state
+END FUNCTION
+
+initial_yellow = 13
+initial_green = 15
+initial_red = 17
+
+final_state = chameleon_simulation(initial_yellow, initial_green, initial_red)
+OUTPUT "Reached final state:", final_state\end{lstlisting}
+
+\subsection{En Sık Yapılan Hatalar}
+\begin{itemize}
+    \item \textbf{Yalancı İnvaryant:} Bir özelliğin sadece birkaç hamlede korunduğunu görüp tüm hamlelerde geçerli olduğunu varsaymak. Bir ifadenin invaryant olduğunu iddia ediyorsanız, izin verilen istisnasız her hamle altında değerinin korunduğunu cebirsel olarak göstermelisiniz.
+    \item \textbf{Ters Yön Hatası:} $f(s_{\text{hedef}}) = f(s_0)$ olmasının hedefe ulaşılabileceğini garantilemediğini unutmak. İnvaryant yalnızca imkânsızlığı kanıtlar; ulaşılabilirliği göstermek için açık bir hamle dizisi (yapıcı algoritma) ortaya konmalıdır.
+\end{itemize}
+
+\section{Monovaryant}
+
+İnvaryant bir büyüklüğün sabitliğini kullanırken, \textbf{yarı-değişmez (monovaryant)} her adımda tek bir yöne doğru (monoton) değişen bir niceliktir. 
+
+Monovaryantın en temel işlevi, algoritmik süreçlerin \textbf{sonlanacağını (termination)} ispatlamasıdır. Bilgisayar biliminde bir algoritmanın sonsuz döngüye girmeden duracağını kanıtlamak, olimpiyatlarda ise verilen bir oyunun veya sürecin nihayete ereceğini göstermek monovaryant yaklaşımıyla çözüme kavuşturulur.
+
+\subsection{Motivasyon ve Sezgi: Komşularla Barışma}
+
+Klasik bir örnekle başlayalım:
+\begin{quote}
+Bir mecliste $n$ parlamenter bulunmaktadır. Her parlamenterin meclis içinde en fazla 3 tane düşmanı vardır. Meclis başkanı, parlamenterleri iki farklı komisyona öyle bir ayırmak istemektedir ki, her parlamenterin kendi komisyonunda en fazla 1 düşmanı bulunsun. Böyle bir ayrım her zaman mümkün müdür?
+\end{quote}
+
+Parlamenterleri $A$ ve $B$ komisyonlarına gelişigüzel dağıtarak başlayalım. Muhtemelen bazı parlamenterlerin kendi komisyonlarında 2 veya 3 düşmanı bulunacaktır.
+
+Durumu düzeltmek için Bölüm 27'de ayrıntılarını ele alacağımız greedy bir kural belirleyelim:
+\begin{quote}
+``Kendi komisyonunda 2 veya daha fazla düşmanı bulunan herhangi bir parlamenteri alıp diğer komisyona aktar.''
+\end{quote}
+
+Bir parlamenterin kendi grubunda $\ge 2$ düşmanı varsa ve toplamda en fazla 3 düşmanı olabiliyorsa, diğer grupta en fazla $3 - 2 = 1$ düşmanı bulunabilir. Dolayısıyla bu geçiş yapıldığında, o kişi kendi açısından daha az çatışmalı bir ortama geçmiş olur.
+
+Burada temel soru şudur: Bir parlamenteri karşıya geçirdiğimizde, karşı gruptakilerin düşman sayısı artabilir; bu durum zincirleme bir etkiyle parlamenterlerin gruplar arasında sonsuza kadar gidip gelmesine yol açabilir mi?
+
+Sonsuz döngü ihtimalini elemek için sistemin tamamını niteleyen bir büyüklük tanımlayalım:
+\[
+E = \text{Aynı komisyonda bulunan düşman parlamenter çiftlerinin toplam sayısı}
+\]
+Bir parlamenter $P$, kendi komisyonunda $d_{\text{iç}} \ge 2$ düşmana ve karşı komisyonda $d_{\text{dış}} \le 1$ düşmana sahipken karşıya geçtiğinde $E$ nasıl değişir?
+\begin{itemize}
+    \item $P$'nin eski komisyonundaki $d_{\text{iç}}$ adet düşmanıyla olan bağı kopar ($E$ değeri $d_{\text{iç}}$ kadar azalır).
+    \item $P$'nin yeni komisyonundaki $d_{\text{dış}}$ adet kişiyle olan düşmanlıkları aynı komisyon içine girer ($E$ değeri $d_{\text{dış}}$ kadar artar).
+\end{itemize}
+Yeni toplam düşmanlık sayısı $E'$:
+\[
+E' = E - d_{\text{iç}} + d_{\text{dış}}
+\]
+Burada $d_{\text{iç}} \ge 2$ ve $d_{\text{dış}} \le 1$ olduğundan:
+\[
+E' \le E - 2 + 1 = E - 1
+\]
+Her hamlede $E$ değeri \textbf{en az 1 azalmaktadır}.
+
+$E$ sayısı negatif olamaz ($E \ge 0$). Bir tam sayı her adımda azalarak alttan sınırlı bir kümede sonsuza kadar hareket edemez; bu nedenle süreç sonlu sayıda adım sonra durmak zorundadır. Süreç durduğunda kuralı uygulayacak hiçbir parlamenter kalmamış olur ki bu da her parlamenterin kendi komisyonunda en fazla 1 düşmanının kaldığı hedef durumun sağlandığını gösterir.
+
+\subsection{Tanım ve Teorem}
+
+\begin{definition}[Monovaryant / Yarı-Değişmez]
+Bir sistemin her durum geçişinde monoton olarak kesin biçimde azalan (veya artan) ve alttan (veya üstten) sınırlı olan bir büyüklüğe \textbf{yarı-değişmez (monovaryant)} veya \textbf{Lyapunov fonksiyonu} denir.
+\end{definition}
+
+\begin{theorem}[Sonlanma İlkesi]
+Bir ayrık durum uzayında tanımlı $M$ monovaryantı tam sayı değerler alsın. Eğer her adımda:
+\[
+M(s_{k+1}) \le M(s_k) - 1
+\]
+ve her durum $s$ için $M(s) \ge C$ (alttan sınırlı) ise, süreç en fazla $M(s_0) - C$ adım sonra durmak zorundadır.
+\end{theorem}
+
+\begin{proof}
+$k$ adım sonra $M(s_k) \le M(s_0) - k$ olur. Eğer süreç $k > M(s_0) - C$ adım devam edebilseydi,
+$M(s_k) < M(s_0) - (M(s_0) - C) = C$
+elde edilirdi ki bu durum $M$'nin alttan $C$ ile sınırlı olmasıyla çelişir. Dolayısıyla süreç durmak zorundadır.
+\end{proof}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Düzlemde $n$ adet kırmızı nokta ve $n$ adet mavi nokta bulunmaktadır. Hiçbir üç nokta doğrusal değildir. Kırmızı noktalar ile mavi noktaları, çizilen doğru parçaları birbirini kesmeyecek şekilde birebir eşleyen doğru parçaları çizmenin daima mümkün olduğunu kanıtlayınız.
+\end{example}
+
+\begin{proof}[Çözüm]
+Kırmızı noktalar kümesi $K$, mavi noktalar kümesi $M$ olsun. Bölüm 4'te gördüğümüz permütasyon kavramı uyarınca toplam $n!$ farklı birebir eşleme yapılabilir ve durum uzayı sonludur.
+
+Olası herhangi bir eşlemede, kırmızı $R_i$ noktası ile mavi $B_{\pi(i)}$ noktası birleştirilsin ($\pi$, $\{1, \dots, n\}$ kümesinin bir permütasyonudur). 
+
+İki doğru parçası kesiştiğinde üçgen eşitsizliğini kullanarak mesafeleri kısaltma yoluna gidebiliriz. Diyelim ki $R_1 B_1$ ve $R_2 B_2$ doğru parçaları bir $X$ noktasında kesişiyor olsun. Eşleşmeyi değiştirip $R_1$'i $B_2$'ye, $R_2$'yi $B_1$'e bağlayalım.
+
+Tüm doğru parçalarının uzunlukları toplamını monovaryant olarak seçelim:
+\[
+L = \sum_{i=1}^n |R_i B_{\pi(i)}|
+\]
+Kesişen iki doğru parçasının uzunlukları toplamı:
+\begin{multline*}
+|R_1 B_1| + |R_2 B_2| = (|R_1 X| + |X B_1|) + (|R_2 X| + |X B_2|) \\
+= (|R_1 X| + |X B_2|) + (|R_2 X| + |X B_1|)
+\end{multline*}
+Üçgen eşitsizliğine göre, $R_1, X, B_2$ doğrusal olmadığından:
+\[
+|R_1 B_2| < |R_1 X| + |X B_2|
+\]
+ve benzer şekilde:
+\[
+|R_2 B_1| < |R_2 X| + |X B_1|
+\]
+Taraf tarafa toplarsak:
+\[
+|R_1 B_2| + |R_2 B_1| < |R_1 B_1| + |R_2 B_2|
+\]
+Kesişen iki parçanın çapraz bağlanması durumunda, toplam uzunluk $L$ kesin olarak azalır.
+
+Olası tüm eşlemelerin sayısı $n!$ olup sonludur. Her permütasyona karşılık gelen $L$ değerleri kümesi de sonlu bir kümedir. Sonlu bir reel sayı kümesinin mutlaka bir minimum elemanı vardır. Toplam uzunluğu minimum yapan eşlemede hiçbir kesişme bulunamaz; çünkü bir kesişme olsaydı yukarıdaki işlemle uzunluğu daha da azaltabilirdik. Bu da kesişimsiz bir eşlemenin varlığını ispatlar.
+\end{proof}
+
+\begin{example}
+Bir beşgenin köşelerine, toplamı pozitif olan beş tam sayı yazılmıştır. Ardışık üç köşede sırasıyla $x, y, z$ sayıları bulunsun. Eğer $y < 0$ ise şu hamle yapılabilir: bu üç sayı sırasıyla $x + y$, $-y$ ve $z + y$ ile değiştirilir. Bu hamle, köşelerden en az biri negatif olduğu sürece tekrarlanır. Sürecin her zaman sonlu sayıda adımda durduğunu kanıtlayınız. (Bu problem, 1986 Uluslararası Matematik Olimpiyatı'nın 3. sorusudur.)
+\end{example}
+
+\begin{proof}[Çözüm]
+Köşelerdeki sayıları saat yönünde $x_1, x_2, \dots, x_5$ ile gösterelim ve indeksleri mod $5$'te ele alalım ($x_6 = x_1$ ve benzeri).
+
+Önce toplamın değişmediğini görelim. $x_i < 0$ seçildiğinde $x_i$ yerine $-x_i$ yazılırken iki komşusuna $x_i$ eklenir; toplamdaki net değişim
+\[
+\Delta S = (-x_i - x_i) + x_i + x_i = 0
+\]
+olduğundan $S = x_1 + \dots + x_5$ bir \textbf{değişmezdir} (invariant). Varsayım gereği $S > 0$'dır.
+
+Şimdi pentagramın köşegenleri üzerinde
+\[
+\Phi = \frac{1}{2}\sum_{i=1}^{5} (x_i - x_{i+2})^2
+\]
+niceliğini tanımlayalım. Sayılar tam sayı olduğundan $\Phi$ negatif olmayan bir tam sayıdır.
+
+Bir hamlenin $\Phi$ üzerindeki etkisini hesaplayalım. $D_j = x_j - x_{j+2}$ ve $t = -x_i > 0$ olsun. Hamlede $x_i$ yerine $-x_i$ yazıldığından $\Delta x_i = 2t$; komşularına $x_i = -t$ eklendiğinden $\Delta x_{i\pm 1} = -t$ olur, diğer köşeler değişmez. Buradan
+\[
+\Delta D_i = 2t, \quad \Delta D_{i+1} = -t, \quad \Delta D_{i+2} = t, \quad \Delta D_{i+3} = -2t, \quad \Delta D_{i+4} = 0
+\]
+elde edilir. İkinci derece fark terimleri açıldığında
+\[
+\Delta\Phi = \frac{1}{2}\Big( 2t\,(2D_i - D_{i+1} + D_{i+2} - 2D_{i+3}) + 10t^2 \Big)
+\]
+olur. Terimler yazıldığında $x_i$ dışındaki her değişkenin tam olarak bir kez geldiği görülür:
+\[
+2D_i - D_{i+1} + D_{i+2} - 2D_{i+3} = 5x_i - S .
+\]
+$x_i = -t$ olduğundan
+\[
+\Delta\Phi = t\,(5x_i - S) + 5t^2 = 5t x_i - tS + 5t^2 = -5t^2 - tS + 5t^2 = -tS < 0
+\]
+bulunur; yani $\Phi$ her hamlede kesin olarak azalır. $\Phi$ negatif olmayan bir tam sayı, azalma miktarı $tS$ ise en az $1$ olduğundan süreç en fazla $\Phi_0$ adım sürer ve sonlu adımda durmak zorundadır.
+\end{proof}
+
+\begin{example}
+Bir $8 \times 8$ satranç tahtasında başlangıçta bazı kareler doludur. Her saniye, en az iki dolu komşusu (ortak kenara sahip) bulunan boş bir kare daha dolmaktadır. Tahtanın tamamının dolabilmesi için başlangıçta en az kaç karenin dolu olması gerektiğini gösteriniz.
+\end{example}
+
+\begin{proof}[Çözüm]
+Dolan kare sayısı her hamlede arttığı için taş sayısının kendisi bir yarı-değişmez olarak kullanılamaz; bunun yerine dolgulu bölgenin \textbf{çevre uzunluğunu} ($P$) izleyelim.
+
+Bir karenin 4 kenarı vardır. Boş bir kare dolduğunda:
+\begin{itemize}
+    \item Yeni karenin $k$ adet dolu komşusu varsa, bu $k$ kenar daha önce dış çevreye aitti; hamleyle birlikte içeride kalır.
+    \item Yeni karenin geriye kalan $4 - k$ kenarı çevreye eklenir.
+\end{itemize}
+Çevredeki net değişim:
+\[
+\Delta P = (4 - k) - k = 4 - 2k
+\]
+Yeni bir karenin dolabilmesi kural gereği $k \ge 2$ olmasını gerektirir; bu durumda
+\begin{itemize}
+    \item $k = 2$ ise: $\Delta P = 4 - 4 = 0$ (çevre değişmez).
+    \item $k = 3$ ise: $\Delta P = 4 - 6 = -2$ (çevre 2 azalır).
+    \item $k = 4$ ise: $\Delta P = 4 - 8 = -4$ (çevre 4 azalır).
+\end{itemize}
+Görüldüğü gibi çevre hiçbir zaman artmaz: $P' \le P$. Yani $P$ bir yarı-değişmezdir.
+
+Tahtanın tamamı dolduğunda oluşan $8 \times 8$ büyük karenin çevresi $4 \times 8 = 32$'dir. Başlangıçtaki $m$ dolu karenin her birinin çevreye katkısı en fazla $4$ olabileceğinden $P_0 \le 4m$'dir. Çevre artamadığına göre:
+\[
+32 = P_{\text{son}} \le P_0 \le 4m \implies 4m \ge 32 \implies m \ge 8
+\]
+elde edilir. Böylece başlangıçta en az $8$ karenin dolu olması gerektiği gösterilmiş olur.
+\end{proof}
+
+\subsection{C Kodu ile Monovaryant Simülasyonu}
+
+Parlamenter probleminin sonlanmasını modelleyen algoritmanın C dilindeki temel karşılığı:
+
+\begin{lstlisting}[language=CTemel]
+#include <stdio.h>
+#include <stdbool.h>
+#define N 6 // Parlamenter sayisi
+
+// Dusmanlik matrisi (1: dusman, 0: dost)
+int dusman[N][N] = {
+    {0, 1, 1, 1, 0, 0},
+    {1, 0, 1, 1, 0, 0},
+    {1, 1, 0, 1, 0, 0},
+    {1, 1, 1, 0, 1, 0},
+    {0, 0, 0, 1, 0, 1},
+    {0, 0, 0, 0, 1, 0}
+};
+
+int grup[N]; // 0: Komisyon A, 1: Komisyon B
+
+// Monovaryant: Ayni gruptaki toplam dusman cifti sayisi
+int monovaryant_hesapla() {
+    int toplam = 0;
+    for (int i = 0; i < N; i++) {
+        for (int j = i + 1; j < N; j++) {
+            if (grup[i] == grup[j] && dusman[i][j] == 1) {
+                toplam++;
+            }
+        }
+    }
+    return toplam;
+}
+
+void coz() {
+    bool degisim = true;
+    while (degisim) {
+        degisim = false;
+        for (int i = 0; i < N; i++) {
+            int ic_dusman = 0;
+            int dis_dusman = 0;
+            for (int j = 0; j < N; j++) {
+                if (dusman[i][j]) {
+                    if (grup[i] == grup[j]) ic_dusman++;
+                    else dis_dusman++;
+                }
+            }
+            // Eger kendi grubunda 2 veya daha fazla dusman varsa diger gruba gec
+            if (ic_dusman > dis_dusman) {
+                grup[i] = 1 - grup[i]; // Grubu degistir
+                degisim = true;
+                printf("Monovaryant (Ic Dusmanliklar Toplami): %d\n", monovaryant_hesapla());
+                break; // Her seferinde tek transfer yap
+            }
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection{En Sık Yapılan Hatalar}
+\begin{itemize}
+    \item \textbf{Tükenme Garantisi Olmayan Azalma:} Sonsuz bir kümede bir büyüklüğün sürekli azalması sürecin sonlanacağını tek başına garanti etmez. Örneğin $x_{k+1} = \frac{x_k}{2}$ dizisinde değerler sürekli azalır ve alttan 0 ile sınırlıdır; ancak adım sayısı sonsuzdur. Monovaryantın sonlanmayı garanti etmesi için adımlardaki azalma miktarının alttan pozitif bir sabitle sınırlı olması (örneğin tam sayılarda en az $1$ azalması) ya da durum uzayının \textbf{sonlu} olması gerekir.
+    \item \textbf{Zayıf Monotonluk:} $M(s_{k+1}) \le M(s_k)$ olması sistemin bir döngüye girmesine engel olmayabilir ($M$ sabit kalırken durumlar değişebilir). Sonlanmayı kesinleştirmek için kesin eşitsizlik ($M(s_{k+1}) < M(s_k)$) sağlanmalı ya da eşitlik durumunda döngü oluşmadığı ayrıca gösterilmelidir.
+\end{itemize}

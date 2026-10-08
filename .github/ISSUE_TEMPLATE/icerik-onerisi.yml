@@ -1,0 +1,54 @@
+name: İçerik önerisi
+description: Kitaba eklenmesini istediğiniz konu, bölüm ya da çözümlü örnek.
+title: "[Öneri] "
+labels: ["öneri"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Öneriniz için teşekkürler. Kitap, yazarın belirlediği müfredat ve kalite
+        çıtasıyla yapay zekâ ajanları tarafından yazılır; bu yüzden öneriler
+        **issue olarak** alınır, metni yazar kararından sonra bir ajan yazar
+        (kurallar: depodaki `CONTRIBUTING.md`).
+  - type: textarea
+    id: oneri
+    attributes:
+      label: Ne eklenmeli?
+      description: Konuyu, kavramı ya da örnek problemi kısaca tanımlayın.
+    validations:
+      required: true
+  - type: textarea
+    id: gerekce
+    attributes:
+      label: Neden gerekli?
+      description: |
+        Hangi boşluğu kapatıyor? Çıkmış bir sınav sorusuyla mı ilişkili,
+        önkoşul zincirinde mi eksik, yoksa mevcut anlatım mı yetersiz?
+    validations:
+      required: true
+  - type: input
+    id: yeri
+    attributes:
+      label: Nereye eklenmeli?
+      description: Varsa bölüm/alt konu; yoksa "yeni bölüm" yazın.
+      placeholder: "Bölüm 8 · İçerme-Dışarma İlkesi, çözümlü örnek olarak"
+    validations:
+      required: false
+  - type: textarea
+    id: kaynak
+    attributes:
+      label: Kaynak ya da örnek problem
+      description: |
+        Klasik bir problem veya bir olimpiyat/yarışma sorusu öneriyorsanız
+        kaynağını (yarışma adı, yıl) yazın. Kitap kaynak uydurmaz.
+    validations:
+      required: false
+  - type: checkboxes
+    id: uygunluk
+    attributes:
+      label: Onaylar
+      options:
+        - label: Öneri TÜBİTAK 1. Aşama kapsamına uygun (test case / grader / online judge mantığı içermiyor).
+          required: true
+        - label: Bir kaynak belirttiysem emin olduğum bir kaynak (uydurma değil).
+          required: true

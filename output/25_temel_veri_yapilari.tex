@@ -1,0 +1,621 @@
+\chapter[Temel Veri Yapıları · \textit{Temel}]{Temel Veri Yapıları}
+\chaptermark{Temel Veri Yapıları}
+
+Bölüm 22'de incelediğimiz diziler, bellekte ardışık yer kaplayan ve herhangi bir elemanına $O(1)$ zamanda doğrudan erişebildiğimiz temel yapılardır. Ancak problem çözerken veriyi yalnızca bir sıra halinde saklamak çoğu zaman yetmez; verilere hangi sırayla eriştiğimiz, hangisini ne zaman çıkarıp yerine yenisini eklediğimiz algoritmanın verimliliğini doğrudan belirler.
+
+Bir kutu düşünelim: İçine üst üste kitaplar koyuyoruz. En son koyduğumuz kitabı en önce alabiliriz; en alttakini çekip almak içinse üsttekileri tek tek kaldırmak gerekir. Şimdi de bir fırın kuyruğunu göz önüne getirelim: İlk gelen ilk ekmeği alır, sıraya sonradan katılan en arkada bekler.
+
+Burada, bilgisayar biliminin ve yarışma programlamasının temelini oluşturan üç veri yapısını ele alacağız: Son giren ilk çıkar mantığıyla çalışan \textbf{yığın} (stack), ilk giren ilk çıkar mantığıyla çalışan \textbf{kuyruk} (queue) ve eleman sorgulamalarını hızlandıran \textbf{küme} (set) ile \textbf{sözlük / eşlem} (map) yapıları.
+
+% =========================================================================
+% BÖLÜM 1: STACK (YIĞIN)
+% =========================================================================
+\section{Stack (Yığın)}
+
+\subsection{Motivasyon: Tersine Çevirme ve Geri İzleme}
+Diyelim ki bir metin düzenleyicide yazı yazıyorsunuz. Klavyeden sırasıyla 'A', 'B', 'C' harflerine bastınız. Sonra bir hata yaptığınızı fark edip ``Geri Al'' (Undo) tuşuna bastınız. Sistem hangi işlemi geri almalıdır? Elbette en son yaptığınız işlemi, yani 'C' harfini yazmayı. İkinci kez geri alırsanız 'B' silinir. 
+
+İşte bu davranış biçimi—en son eklenen elemana ilk olarak ihtiyaç duyma durumu—günlük hayatta olduğu gibi algoritmalarda da sürekli karşımıza çıkar. Bu yapıyı düz bir diziyle yönetmeye kalktığımızda, her ekleme veya çıkarma işleminde dizinin kalan elemanlarını kaydırmak zorunda kalabiliriz; bu da işlem başına $O(n)$ maliyet getirir. Oysa bize yalnızca en üstteki elemanla ilgilenen ve tüm işlemlerini $O(1)$ zamanda tamamlayan bir yapı gerekir.
+
+\subsection{Kavramsal Tanım ve LIFO Prensibi}
+
+\begin{definition}[Yığın / Stack]
+Yığın (stack), eleman ekleme ve çıkarma işlemlerinin yalnızca tek bir uçtan—\textbf{tepe} (top) noktasından—yapıldığı doğrusal bir veri yapısıdır. Bu işleyiş kuralına \textbf{LIFO} (\emph{Last-In, First-Out} — Son Giren İlk Çıkar) prensibi denir.
+\end{definition}
+
+Bir yığının sunduğu temel işlemler şunlardır:
+\begin{itemize}
+    \item $\operatorname{push}(x)$: $x$ elemanını yığının tepesine koyar.
+    \item $\operatorname{pop}()$: Yığının tepesindeki elemanı kaldırır ve bu elemanı döndürür (yığın boşken yapılırsa taşma/hata oluşur).
+    \item $\operatorname{top}()$ veya $\operatorname{peek}()$: Yığının tepesindeki elemana bakar, fakat onu yığından çıkarmaz.
+    \item $\operatorname{empty}()$: Yığının boş olup olmadığını kontrol eder (boşsa doğru, değilse yanlış).
+    \item $\operatorname{size}()$: Yığındaki anlık eleman sayısını verir.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \node[kutu] (s1) at (0,-0.85) {3};
+  \node[kutu] (s2) at (0,0) {7};
+  \node[kutu] (s3) at (0,0.85) {5};
+  \draw[kitap-ok] (-1.5,0.85) -- (s3.west);
+  \node[etiket, anchor=east] at (-1.55,0.85) {tepe};
+  \draw[kitap-ok] (1.6,1.15) -- (s3.east);
+  \node[etiket] at (1.05,1.4) {push($x$)};
+  \draw[kitap-ok] (s3.east) -- (1.6,0.55);
+  \node[etiket] at (1.05,0.3) {pop()};
+\end{tikzpicture}
+\caption{Yığın (LIFO): ekleme ve çıkarma yalnızca tepeden yapılır;
+son giren (5) ilk çıkar.}
+\end{figure}
+
+\begin{theorem}[Yığın İşlemlerinin Zaman Karmaşıklığı]
+Boyutu dinamik olarak ayarlanabilen bir dizi (veya bağlı liste) ile gerçeklenen bir yığında; $\operatorname{push}$, $\operatorname{pop}$, $\operatorname{top}$, $\operatorname{empty}$ ve $\operatorname{size}$ işlemlerinin her biri en kötü durumda ya da amortize edilmiş olarak $O(1)$ zamanda çalışır.
+\end{theorem}
+
+\begin{proof}
+Bir $A$ dizisi ve yığının tepe noktasının indisini tutan bir $t$ işaretçisi (pointer) tanımlayalım. Başlangıçta yığın boştur, $t = -1$.
+\begin{itemize}
+    \item $\operatorname{push}(x)$ işleminde önce $t \leftarrow t + 1$ yapılır, ardından $A[t] \leftarrow x$ atanır. Dizi indisine doğrudan erişim $O(1)$ adımdır.
+    \item $\operatorname{pop}()$ işleminde $A[t]$ değeri saklanır, ardından $t \leftarrow t - 1$ yapılır. Bu işlem de $O(1)$ adımdır.
+    \item $\operatorname{top}()$ işlemi doğrudan $A[t]$ değerini okur ($O(1)$).
+    \item Boyut $t + 1$ formülüyle $O(1)$ zamanda hesaplanır; boşluk kontrolü $t == -1$ ifadesidir.
+\end{itemize}
+Hiçbir işlemde dizinin diğer elemanlarını kaydırmak gerekmediğinden tüm işlemler $O(1)$ zamanda tamamlanır.
+\end{proof}
+
+\subsection{Kullanım Senaryoları ve Çözümlü Örnekler}
+
+Yığın yapısı matematikte ve bilgisayar biliminde özellikle şu problemlerde sıkça kullanılır:
+\begin{enumerate}
+    \item \textbf{Parantez Eşleme (Balancing Symbols):} İç içe açılan parantezlerin doğru sırada kapanıp kapanmadığını denetleme.
+    \item \textbf{Monoton Yığın (Monotonic Stack):} Bir dizideki her eleman için kendisinden sonraki ``ilk büyük'' veya ``ilk küçük'' elemanı bulma.
+    \item \textbf{İfade Değerlendirme (Expression Parsing):} Postfix (ters Leh notasyonu) ifadeleri hesaplama.
+    \item \textbf{Çağrı Yığını (Call Stack):} Rekürsif fonksiyonların çalışma mekanizması (Bölüm 30'da göreceğimiz fonksiyon çağrıları bellekte tam olarak bir yığın gibi saklanır).
+\end{enumerate}
+
+Şimdi bu kullanım alanlarını somut örneklerle ele alalım.
+
+\begin{example}[Dengeli Parantez Dizisi]
+Sadece '(', ')', '[', ']', '\{', '\}' karakterlerinden oluşan bir metin veriliyor. Bu parantez diziliminin geçerli (dengeli) olup olmadığını belirleyiniz. Örneğin:
+\begin{itemize}
+    \item $S = \text{``\{[()]\}\}''}$ geçerlidir.
+    \item $S = \text{``[(])''}$ geçersizdir (çünkü '[' kapatılmadan önce ')' gelmiştir).
+    \item $S = \text{``(()''}$ geçersizdir (açık kalan parantez vardır).
+\end{itemize}
+\end{example}
+
+\begin{proof}[Çözüm ve Akıl Yürütme]
+Parantezlerin kapanma kuralı şudur: Bir kapama parantezi geldiğinde, en son açılmış olan ve henüz eşleşmemiş olan parantez ile aynı türde olmalıdır. ``En son açılan'' şartı doğrudan LIFO mantığını, yani yığını işaret eder.
+
+Metni soldan sağa tarayalım:
+\begin{enumerate}
+    \item Bir açma parantezi ('(', '[', '\{') gördüğümüzde, ileride kapatılmak üzere yığına $\operatorname{push}$ ederiz.
+    \item Bir kapama parantezi (')', ']', '\}') gördüğümüzde:
+    \begin{itemize}
+        \item Yığın boşsa, kapatılacak hiçbir açma parantezi yoktur; dizi dengesizdir.
+        \item Yığın boş değilse, tepedeki elemana bakarız ($\operatorname{top}$). Bu eleman gelen kapama parantezinin türdeşi ise yığından çıkarırız ($\operatorname{pop}$). Değilse (örneğin tepede '[' varken ')' geldiyse), sıra bozulmuştur; dizi geçersizdir.
+    \end{itemize}
+    \item Metin bittiğinde yığında hâlâ kapatılmamış parantez kalmışsa (örneğin ``(()'' durumundaki ilk parantez), dizi yine geçersizdir. Yalnızca yığın tamamen boşaldıysa dizi dengelidir.
+\end{enumerate}
+
+$n$ karakterlik bir metinde her karakter yığına en fazla 1 kez girer ve en fazla 1 kez çıkar. Dolayısıyla toplam zaman karmaşıklığı $O(n)$, alan karmaşıklığı ise en kötü durumda $O(n)$ olur.
+\end{proof}
+
+\begin{example}[Sonraki Büyük Eleman - Next Greater Element]
+$A = [4, 5, 2, 25]$ dizisi verilsin. Dizideki her eleman için, kendisinden sonra (sağında) gelen ve kendisinden kesinlikle büyük olan ilk elemanı bulunuz. Eğer sağında kendisinden büyük bir eleman yoksa $-1$ yazınız.
+\end{example}
+
+\begin{proof}[Çözüm ve Akıl Yürütme]
+Kaba kuvvet yaklaşımı, her $i$ elemanı için sağdaki $j > i$ indislerini tek tek taramaktır; bu da en kötü durumda $O(n^2)$ karşılaştırma gerektirir. $n = 10^5$ gibi tipik yarışma sınırlarında bu yöntem zaman aşımına uğrar.
+
+Sorunu tersten ele alalım (Bölüm 19'daki tersine çalışma yaklaşımıyla): Diziyi sağdan sola doğru tarayalım. Diyelim ki $A[i]$ elemanındayız. Sağımızdaki elemanlar arasından bize en yakın ve bizden büyük olanı arıyoruz. Eğer sağda kalan bazı elemanlar $A[i]$'den küçük ya da ona eşitse, $A[i]$'nin solundaki herhangi bir eleman için bu küçük elemanlar asla ``ilk büyük eleman'' olamaz; çünkü $A[i]$ hem daha soldadır hem de onlardan daha büyüktür. Küçük elemanlar artık $A[i]$'nin ardında gizlenmiştir.
+
+O halde sağdan sola ilerlerken elemanları bir yığında tutalım; öyle ki yığın tepeden aşağıya doğru kesin artan sırada kalsın (buna \textbf{monoton yığın} denir):
+\begin{enumerate}
+    \item $i = 3$, $A[3] = 25$: Yığın boştur. Sağında büyük eleman yoktur $\to -1$. Yığına $25$ eklenir. (Yığın: $[25]$).
+    \item $i = 2$, $A[2] = 2$: Tepedeki eleman $25 > 2$. Demek ki 2'den sonraki ilk büyük eleman $25$'tir. Yığına $2$ eklenir. (Yığın: $[25, 2]$).
+    \item $i = 1$, $A[1] = 5$: Tepedeki eleman $2 \le 5$'tir; 2 elenir ($\operatorname{pop}$). Yeni tepe $25 > 5$'tir. Demek ki 5'ten sonraki ilk büyük eleman $25$'tir. Yığına $5$ eklenir. (Yığın: $[25, 5]$).
+    \item $i = 0$, $A[0] = 4$: Tepedeki eleman $5 > 4$'tür. Cevap $5$. Yığına $4$ eklenir. (Yığın: $[25, 5, 4]$).
+\end{enumerate}
+
+Sonuç dizisi: $[5, 25, 25, -1]$ bulunur.
+
+\textbf{Karmaşıklık Analizi:} İç içe bir döngü varmış gibi görünse de, $n$ elemanın her biri yığına tam 1 kez eklenir ($\operatorname{push}$) ve en fazla 1 kez çıkarılır ($\operatorname{pop}$). Toplam yığın işlemi sayısı $2n$'i aşamaz; dolayısıyla algoritma $O(n)$ zamanda çalışır.
+\end{proof}
+
+\begin{lstlisting}[language=CTemel]
+// C dilinde dizi ile Monoton Yigin yaklasimi
+#include <stdio.h>
+
+void sonrakiBuyukEleman(int A[], int n, int sonuc[]) {
+    int yigin[n];
+    int top = -1; // Yigin bos
+
+    for (int i = n - 1; i >= 0; i--) {
+        // Guncel elemandan kucuk veya esit olanlari yigindan at
+        while (top >= 0 && yigin[top] <= A[i]) {
+            top--;
+        }
+        // Yigin bossa saginda buyuk eleman yoktur
+        if (top == -1) {
+            sonuc[i] = -1;
+        } else {
+            sonuc[i] = yigin[top];
+        }
+        // Guncel elemani yigina ekle
+        yigin[++top] = A[i];
+    }
+}
+\end{lstlisting}
+
+\begin{example}[Aritmetik İfadeleri Hesaplama - Postfix Notasyonu]
+Günlük kullanımda tercih ettiğimiz $3 + 4 \times 2$ gösterimi \textbf{infix} (içten) notasyondur ve işlem önceliğini belirtmek için parantez gerektirebilir. Bilgisayarlar için parantez ihtiyacını ortadan kaldıran \textbf{postfix} (sondan) notasyon çok daha uygundur. Aynı işlem postfix biçiminde şöyle ifade edilir:
+\[ \text{``3 4 2 * +''} \]
+Bu ifadenin değerini hesaplayınız.
+\end{example}
+
+\begin{proof}[Çözüm ve Akıl Yürütme]
+Soldan sağa okuma yaparken bir sayı gördüğümüzde henüz hangi işleme gireceğini bilmediğimizden sayıları biriktiririz. Bir operatör ($+$, $*$) ile karşılaştığımızda ise bu işlem, en son gördüğümüz iki sayıya uygulanmalıdır. Son görülen iki sayıyı geri çağırma ihtiyacı doğrudan LIFO düzenini gerektirir:
+\begin{enumerate}
+    \item '3' oku: yığına at. (Yığın: $[3]$)
+    \item '4' oku: yığına at. (Yığın: $[3, 4]$)
+    \item '2' oku: yığına at. (Yığın: $[3, 4, 2]$)
+    \item '*' oku: İki eleman çek: $b = 2$, $a = 4$. Çarp: $a \times b = 4 \times 2 = 8$. Sonucu yığına at. (Yığın: $[3, 8]$)
+    \item '+' oku: İki eleman çek: $b = 8$, $a = 3$. Topla: $a + b = 3 + 8 = 11$. Sonucu yığına at. (Yığın: $[11]$)
+\end{enumerate}
+İfade bittiğinde yığında kalan son eleman ($11$), işlemin sonucudur. $n$ terimli bir ifade $O(n)$ sürede hesaplanır.
+\end{proof}
+
+\begin{lstlisting}
+FUNCTION evaluatePostfix(expression)
+    stack = EMPTY_STACK
+    tokens = SPLIT expression BY whitespace
+
+    FOR EACH token IN tokens DO
+        IF token IS "+", "-", "*", OR "/" THEN
+            b = POP(stack)
+            a = POP(stack)
+            IF token == "+" THEN
+                PUSH(stack, a + b)
+            ELSE IF token == "-" THEN
+                PUSH(stack, a - b)
+            ELSE IF token == "*" THEN
+                PUSH(stack, a * b)
+            ELSE IF token == "/" THEN
+                PUSH(stack, TRUNCATE(a / b))
+            END IF
+        ELSE
+            PUSH(stack, TO_INTEGER(token))
+        END IF
+    END FOR
+
+    RETURN stack[0]
+END FUNCTION\end{lstlisting}
+
+\paragraph{En Sık Yapılan Hatalar (Stack):}
+\begin{itemize}
+    \item \textbf{Boş Yığından Eleman Çekmek (Stack Underflow):} Yığının boş olup olmadığını ($\operatorname{empty}()$) kontrol etmeden $\operatorname{top}()$ veya $\operatorname{pop}()$ çağırmak tanımsız davranışa ve programın çökmesine yol açar. Özellikle parantez eşleme problemlerinde kapama parantezi başta geldiğinde bu hataya sık rastlanır.
+    \item \textbf{İşlem Sırasını Karıştırmak:} Postfix çıkarmada yığından ilk çekilen eleman ikinci terimdir ($b$), sonra çekilen birinci terimdir ($a$). $a - b$ yerine $b - a$ yazmak sonucu tamamen bozar.
+\end{itemize}
+
+% =========================================================================
+% BÖLÜM 2: QUEUE (KUYRUK)
+% =========================================================================
+\section{Queue (Kuyruk)}
+
+\subsection{Motivasyon: Sıralı İşleme ve Genişlik Öncelikli Arama}
+Bir bilet gişesi düşünelim: İnsanlar sıraya girer ve gişedeki görevli ilk kim geldiyse önce ona hizmet verir; araya girmek ya da son gelene öncelik tanımak sıranın düzenini bozar.
+
+Bilgisayar biliminde bir görevi geliş sırasına göre işleme alma ihtiyacı doğduğunda dizi üzerinde eleman kaydırmak ciddi bir verim kaybına yol açar. Örneğin sıradan bir dizide en öndeki elemanı çıkardığınızda, arkadaki tüm elemanları birer basamak sola kaydırmanız gerekir; bu da $O(n)$ zaman alır. Bize hem en arkaya eklemenin hem de en önden çıkarmanın $O(1)$ olduğu bir veri yapısı lazımdır.
+
+\subsection{Kavramsal Tanım ve FIFO Prensibi}
+
+\begin{definition}[Kuyruk / Queue]
+Kuyruk (queue), elemanların yalnızca bir uçtan—\textbf{arka} (rear/back)—eklendiği ve diğer uçtan—\textbf{ön} (front)—çıkarıldığı doğrusal bir veri yapısıdır. Bu işleyişe \textbf{FIFO} (\emph{First-In, First-Out} — İlk Giren İlk Çıkar) prensibi denir.
+\end{definition}
+
+Temel kuyruk işlemleri:
+\begin{itemize}
+    \item $\operatorname{push}(x)$ veya $\operatorname{enqueue}(x)$: $x$ elemanını kuyruğun sonuna ekler.
+    \item $\operatorname{pop}()$ veya $\operatorname{dequeue}()$: Kuyruğun en önündeki elemanı çıkarır.
+    \item $\operatorname{front}()$: Kuyruğun başındaki elemanı okur.
+    \item $\operatorname{empty}()$: Kuyrukta eleman olup olmadığını bildirir.
+    \item $\operatorname{size}()$: Kuyruktaki toplam eleman sayısını verir.
+\end{itemize}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \node[kutu] (q0) at (0,0) {2};
+  \node[kutu] (q1) at (1.15,0) {4};
+  \node[kutu] (q2) at (2.3,0) {9};
+  \draw[kitap-ok] (q0.west) -- (-1.4,0);
+  \node[etiket, anchor=east] at (-1.55,0) {dequeue()};
+  \draw[kitap-ok] (3.2,0) -- (q2.east);
+  \node[etiket, anchor=west] at (3.35,0) {enqueue($x$)};
+  \node[etiket] at (0,-0.75) {ön (front)};
+  \node[etiket] at (2.3,-0.75) {arka (rear)};
+\end{tikzpicture}
+\caption{Kuyruk (FIFO): ekleme arkadan, çıkarma önden yapılır; ilk giren (2)
+ilk çıkar.}
+\end{figure}
+
+\subsection{Dairesel Dizi (Circular Array) ile Kuyruk Tasarımı}
+Düz bir dizide baştan eleman sildikçe önceki bellek alanları atıl kalır. Ön işaretçi ($front$) sürekli sağa kayar ve dizi sınırına ulaşıldığında yer kalmamış gibi görünür. Bu problemi çözmek için diziyi bir çember gibi düşünebiliriz: İndis dizinin sonuna ($C-1$) ulaştığında, Bölüm 14'te ele aldığımız modüler aritmetik sayesinde sıradaki indis tekrar $0$'a döner.
+
+\begin{definition}[Dairesel Kuyruk İndis Aritmetiği]
+Kapasitesi $C$ olan bir dizide, bir $i$ indisinin ardılı:
+\[ \operatorname{sonraki}(i) = (i + 1) \pmod C \]
+formülüyle elde edilir.
+\end{definition}
+
+\begin{theorem}[Dairesel Kuyruk İşlemleri Karmaşıklığı]
+Sabit kapasiteli $C$ boyutunda bir dairesel dizi üzerinde gerçeklenen kuyrukta; ekleme, silme ve öndeki elemanı okuma işlemleri en kötü durumda $O(1)$ zamanda çalışır.
+\end{theorem}
+
+\begin{proof}
+$front$ (başlangıç indisi), $rear$ (bitiş indisi) ve anlık eleman sayısını tutan $size$ değişkenlerini saklayalım:
+\begin{itemize}
+    \item $\operatorname{enqueue}(x)$: Eğer $size == C$ ise kuyruk doludur (taşma). Aksi halde $rear \leftarrow (rear + 1) \pmod C$ yapılır, $A[rear] \leftarrow x$ yazılır ve $size \leftarrow size + 1$ artırılır. Bu adımların her biri $O(1)$ aritmetik işlemidir.
+    \item $\operatorname{dequeue}()$: Eğer $size == 0$ ise kuyruk boştur. Aksi halde $front \leftarrow (front + 1) \pmod C$ yapılır ve $size \leftarrow size - 1$ azaltılır. Bellek kaydırma yapılmaz, işlem $O(1)$ sürer.
+\end{itemize}
+Dolayısıyla her iki temel işlem de $O(1)$ zamanda çalışır.
+\end{proof}
+
+\begin{lstlisting}[language=CTemel]
+// Sabit boyutlu dairesel kuyruk yapisi
+#define KAPASITE 100
+
+typedef struct {
+    int veri[KAPASITE];
+    int bas;
+    int son;
+    int elemanSayisi;
+} DaireselKuyruk;
+
+void kuyrukBaslat(DaireselKuyruk *q) {
+    q->bas = 0;
+    q->son = -1;
+    q->elemanSayisi = 0;
+}
+
+void enqueue(DaireselKuyruk *q, int x) {
+    if (q->elemanSayisi == KAPASITE) return; // Dolu
+    q->son = (q->son + 1) % KAPASITE;
+    q->veri[q->son] = x;
+    q->elemanSayisi++;
+}
+
+int dequeue(DaireselKuyruk *q) {
+    if (q->elemanSayisi == 0) return -1; // Bos
+    int deger = q->veri[q->bas];
+    q->bas = (q->bas + 1) % KAPASITE;
+    q->elemanSayisi--;
+    return deger;
+}
+\end{lstlisting}
+
+Aşağıdaki şekil, dört elemanın çıkarılıp üçünün eklendiği bir dairesel kuyruğun
+anlık durumunu gösterir:
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[scale=0.95]
+  \node[kutu, fill=kitapvurgu!12] (k0) at (0,0) {50};
+  \node[kutu, fill=kitapvurgu!12] (k1) at (0.95,0) {60};
+  \node[kutu, fill=kitapvurgu!12] (k2) at (1.9,0) {70};
+  \node[kutu] (k3) at (2.85,0) {};
+  \node[kutu] (k4) at (3.8,0) {};
+  \node[kutu, fill=kitapvurgu!12] (k5) at (4.75,0) {20};
+  \node[kutu, fill=kitapvurgu!12] (k6) at (5.7,0) {30};
+  \node[kutu, fill=kitapvurgu!12] (k7) at (6.65,0) {40};
+  \node[etiket] at (0,-0.6) {0};
+  \node[etiket] at (0.95,-0.6) {1};
+  \node[etiket] at (1.9,-0.6) {2};
+  \node[etiket] at (2.85,-0.6) {3};
+  \node[etiket] at (3.8,-0.6) {4};
+  \node[etiket] at (4.75,-0.6) {5};
+  \node[etiket] at (5.7,-0.6) {6};
+  \node[etiket] at (6.65,-0.6) {7};
+  \node[etiket, kitapvurgu] at (4.75,-1.15) {bas $= 5$};
+  \node[etiket, kitapvurgu] at (1.9,-1.15) {son $= 2$};
+  \draw[kitap-cizgi, dashed] (6.65,0.55) .. controls (6.65,1.3) and (0,1.3) .. (0,0.55);
+  \node[etiket] at (3.325,1.45) {sarma: $(i+1) \bmod C$};
+\end{tikzpicture}
+\caption{$C = 8$ kapasiteli dairesel kuyruk: bas $= 5$, son $= 2$. Kuyruk
+$5, 6, 7$ ve ardından $0, 1, 2$ hücrelerini kullanır; $3$ ve $4$ boştur.
+İndis $7$'den sonra sarma ile $0$'a dönülür.}
+\end{figure}
+
+\subsection{Kullanım Senaryoları ve Çözümlü Örnekler}
+
+Kuyruk veri yapısı özellikle şu senaryoların temel aracıdır:
+\begin{enumerate}
+    \item \textbf{Genişlik Öncelikli Arama (Breadth-First Search - BFS):} Bir başlangıç noktasından itibaren tüm düğümleri en yakın olandan başlayarak katman katman ziyaret etme.
+    \item \textbf{Kayan Pencere Problemleri (Sliding Window):} Zaman içinde gelen ve belli bir pencere genişliğinde saklanması gereken verileri yönetme.
+    \item \textbf{Sıra Tabanlı Simülasyonlar:} İşletim sistemlerinde süreç (process) zamanlama, yazıcı kuyrukları vb.
+\end{enumerate}
+
+\begin{example}[İkili Sayıları Sırayla Üretme]
+$1$'den $n$'e kadar olan tamsayıların ikili (binary) tabandaki karşılıklarını küçükten büyüğe sırayla ekrana yazdıracak bir algoritma tasarlayınız.
+Örneğin $n = 5$ için çıktı: \texttt{1, 10, 11, 100, 101} olmalıdır.
+\end{example}
+
+\begin{proof}[Çözüm ve Akıl Yürütme]
+Her sayıyı tek tek alıp $2$'ye bölerek ikiliye çevirmek $O(n \log n)$ sürer. Oysa üretim mantığına dikkat edersek:
+\begin{itemize}
+    \item ``1'' sayısının arkasına '0' eklersek ``10'' (2), '1' eklersek ``11'' (3) oluşur.
+    \item ``10'' sayısının arkasına '0' eklersek ``100'' (4), '1' eklersek ``101'' (5) oluşur.
+\end{itemize}
+Üretilen her kök sayıdan iki yeni sayı doğar ve önce üretilen sayı önce işlenmelidir. Bu tam olarak bir FIFO (kuyruk) modelidir.
+
+\begin{enumerate}
+    \item Kuyruğa ilk olarak \texttt{"1"} metnini atarız.
+    \item $n$ defa şu işlemi tekrarlarız:
+    \begin{itemize}
+        \item Kuyruğun başındaki elemanı çıkar: $s = \operatorname{pop}()$.
+        \item $s$ değerini yazdır.
+        \item Kuyruğa $s + \text{``0''}$ ekle.
+        \item Kuyruğa $s + \text{``1''}$ ekle.
+    \end{itemize}
+\end{enumerate}
+Her adımda yalnızca $O(1)$ kuyruk işlemi yapıldığından toplam süre $O(n)$ olur.
+\end{proof}
+
+\begin{example}[Josephus Problemi (Flavius Josephus, MS 1. yüzyıl)]
+$n$ kişi ($1, 2, \dots, n$) bir çember oluşturacak şekilde dizilmiştir. $1$ numaralı kişiden başlanarak sayılır ve her $k$'ıncı kişi çemberden çıkarılır. Sayma işlemi son bir kişi kalana kadar bir sonraki kişiden devam eder. Hayatta kalan son kişiyi bulunuz. ($n = 5, k = 2$ için: $2$ elenir, $4$ elenir, $1$ elenir, $5$ elenir, geriye $3$ kalır).
+\end{example}
+
+\begin{proof}[Çözüm ve Akıl Yürütme]
+Çember etrafındaki dönme hareketini bir kuyrukla doğrudan modelleyebiliriz: Sırası gelen kişi elenmeyecekse kuyruğun önünden çıkıp tekrar kuyruğun arkasına girer. Elenecek kişi ise kuyruktan çıkarılır ve bir daha eklenmez.
+
+\begin{enumerate}
+    \item Kuyruğa $1, 2, \dots, n$ sayılarını ekleriz.
+    \item Kuyrukta $1$'den fazla eleman olduğu sürece:
+    \begin{itemize}
+        \item $k - 1$ defa: Kuyruğun başındaki elemanı çıkar ve hemen arkasına ekle ($\operatorname{push}(\operatorname{pop}())$).
+        \item $k$'ıncı elemanı kuyruktan tamamen çıkar ($\operatorname{pop}()$).
+    \end{itemize}
+    \item Kuyrukta tek bir kişi kaldığında o kişi kazanan kişidir.
+\end{enumerate}
+
+Her eleme için $k$ adım atılır, toplam $n - 1$ eleme yapıldığından bu simülasyon $O(n \cdot k)$ zamanda çalışır.
+\end{proof}
+
+\begin{lstlisting}
+FUNCTION josephus(n, k)
+    CREATE queue q
+    FOR i FROM 1 TO n DO
+        ENQUEUE(q, i)
+    END FOR
+
+    WHILE LENGTH(q) > 1 DO
+        FOR step FROM 1 TO k - 1 DO
+            ENQUEUE(q, DEQUEUE(q))
+        END FOR
+        DEQUEUE(q)
+    END WHILE
+
+    RETURN PEEK(q)
+END FUNCTION\end{lstlisting}
+
+\begin{example}[İki Yığın ile Bir Kuyruk Oluşturma]
+Elinizde yalnızca iki adet yığın ($Y_1$ ve $Y_2$) bulunmaktadır. Bu iki yığını kullanarak $O(1)$ amortize edilmiş zamanda çalışan bir kuyruk (FIFO) veri yapısı inşa ediniz.
+\end{example}
+
+\begin{proof}[Çözüm ve Akıl Yürütme]
+Bir yığına eleman eklediğimizde sıralama tersine döner ($A, B \to B, A$). Tersine dönmüş bir yığındaki elemanları alıp ikinci bir yığına aktarırsak sıra bir kez daha tersine döner; yani baştaki haline ($A, B$) geri gelir. İki LIFO yapısının peş peşe işletilmesi böylece bir FIFO oluşturur.
+
+Yapı şöyle çalışır:
+\begin{itemize}
+    \item \textbf{Ekleme ($\operatorname{enqueue}(x)$):} Daima $Y_1$'e $\operatorname{push}(x)$ yapılır. Bu işlem kesinlikle $O(1)$ sürer.
+    \item \textbf{Çıkarma ($\operatorname{dequeue}()$):} En eski elemana ihtiyacımız vardır, oysa o eleman $Y_1$'in tabanındadır. 
+    \begin{itemize}
+        \item Eğer $Y_2$ boş değilse, en eski eleman zaten $Y_2$'nin tepesindedir. Doğrudan $Y_2.\operatorname{pop}()$ yaparız ($O(1)$).
+        \item Eğer $Y_2$ boşsa, $Y_1$'deki tüm elemanları teker teker çekip $Y_2$'ye aktarırız. Böylece $Y_1$'in tabanındaki eleman $Y_2$'nin tepesine gelir. Ardından $Y_2.\operatorname{pop}()$ yaparız.
+    \end{itemize}
+\end{itemize}
+
+\textbf{Amortize Analiz:} Bir eleman sisteme girerken $Y_1$'e 1 kez eklenir. Yapı içinde kaldığı süre boyunca en fazla 1 kez $Y_1$'den $Y_2$'ye aktarılır ve 1 kez $Y_2$'den çıkarılır. Her eleman toplamda en fazla 3 yığın işlemine tabi tutulur. $n$ işlem için toplam maliyet $O(n)$ olduğundan işlem başına amortize maliyet $O(1)$'dir.
+\end{proof}
+
+\paragraph{En Sık Yapılan Hatalar (Queue):}
+\begin{itemize}
+    \item \textbf{Düz Dizide Kaydırma Yaparak Kuyruk Yazmak:} Kuyruktan eleman çıkarmayı dizinin $0$'ıncı elemanını silip döngüyle tüm diziyi sola kaydırarak kodlamak, her silme için $O(n)$ maliyet doğurur. $n$ eleman için toplam süre $O(n^2)$'ye çıkar ve zaman aşımına yol açar. Çözüm, dairesel indisler veya çift uçlu kuyruk (\texttt{deque}) kullanmaktır.
+    \item \textbf{Dairesel Dizide Doluluk-Boşluk Ayrımı:} $front == rear$ durumu hem kuyruğun tamamen boş hem de tamamen dolu olduğu ana denk gelebilir. Bu belirsizliği gidermek için ya bir $size$ sayacı tutulmalı ya da kapasiteden bir hücre daima boş bırakılmalıdır.
+\end{itemize}
+
+% =========================================================================
+% BÖLÜM 3: SET VE MAP
+% =========================================================================
+\section{Set ve Map (Küme ve Sözlük / Eşlem)}
+
+\subsection{Motivasyon: Hızlı Arama ve Frekans Sayma}
+Diyelim ki $10^5$ kelimeden oluşan bir sözlüğünüz var. Kullanıcının girdiği bir kelimenin bu sözlükte yer alıp almadığını kontrol etmek istiyorsunuz. Kelimeleri gelişigüzel bir dizide tutarsanız, her sorgu için diziyi baştan sona taramanız gerekir ($O(n)$). $10^5$ sorgu yapıldığında işlem sayısı $10^{10}$ seviyesine ulaşır ve program gecikir.
+
+Benzer şekilde, bir dizide en çok tekrar eden sayıyı (mod) bulmak istediğimizi düşünelim. Sayıların her birinin kaçar kez geçtiğini (frekansını) nasıl sayarız? Sayılar $0$ ile $100$ arasındaysa dizi indisi yeterlidir. Peki ya sayılar $10^9$ gibi büyük değerlerse veya tamsayı yerine metinlerden oluşuyorsa? 
+
+İşte ``Bir eleman bu topluluğa ait mi?'' ve ``Bu anahtara karşılık gelen değer nedir?'' soruları, bilgisayar biliminde \textbf{Set} (Küme) ve \textbf{Map} (Eşlem / Sözlük) veri modelleriyle çözülür.
+
+\subsection{Kavramsal Modeller}
+
+\begin{definition}[Set / Küme]
+Set (küme), Bölüm 1'de ele aldığımız küme kavramının bilgisayar bilimindeki karşılığıdır. İçerisinde \textbf{aynı elemandan birden fazla bulunamaz} (her eleman tekildir) ve temel görevi bir elemanın kümede \textbf{var olup olmadığını} sorgulamaktır ($\in$).
+\end{definition}
+
+Bir kümenin temel işlemleri:
+\begin{itemize}
+    \item $\operatorname{insert}(x)$: $x$ elemanını kümeye ekler (eleman zaten varsa küme değişmez).
+    \item $\operatorname{erase}(x)$ veya $\operatorname{remove}(x)$: $x$ elemanını kümeden çıkarır.
+    \item $\operatorname{contains}(x)$ veya $\operatorname{count}(x)$: $x$ elemanının kümede bulunup bulunmadığını kontrol eder (1 veya 0).
+\end{itemize}
+
+\begin{definition}[Map / Eşlem / Sözlük]
+Map (eşlem veya sözlük), her biri bir \textbf{anahtar} (key) ve bu anahtara bağlı bir \textbf{değer} (value) çiftinden oluşan $(k, v)$ ikililerini saklayan bir yapıdır. Bir eşlemde her anahtar \textbf{tekildir}.
+\end{definition}
+
+Bir eşlemin temel işlemleri:
+\begin{itemize}
+    \item $\operatorname{set}(k, v)$ veya $M[k] = v$: $k$ anahtarına $v$ değerini atar. $k$ zaten varsa eski değeri güncellenir.
+    \item $\operatorname{get}(k)$ veya $M[k]$: $k$ anahtarına karşılık gelen değeri getirir.
+    \item $\operatorname{erase}(k)$: $k$ anahtarını ve değerini yapıdan kaldırır.
+    \item $\operatorname{contains}(k)$: $k$ anahtarının tabloda tanımlı olup olmadığını söyler.
+\end{itemize}
+
+\subsection{İki Farklı Gerçekleme Felsefesi: Sıralı ve Sırasız}
+Set ve Map soyut veri tipleridir; ne yapmaları gerektiği belirlenmiştir ancak arka plandaki çalışma düzeni dilden dile değişir. Pratikte iki ana mekanizma kullanılır:
+
+\begin{table}[h]
+\centering
+\begin{small}\begin{tabular}{|l|p{4.2cm}|p{4.2cm}|}
+\hline
+\textbf{Özellik} & \textbf{Sıralı (Ağaç Tabanlı)} & \textbf{Sırasız (Özetleme / Hash Tabanlı)} \\
+\hline
+C++ Karşılığı & \texttt{std::set}, \texttt{std::map} & \texttt{std::unordered\_set}, \texttt{std::unordered\_map} \\
+Python Karşılığı & --- & \texttt{set}, \texttt{dict} \\
+Arka Plan Yapısı & Dengeli İkili Arama Ağacı (Red-Black) & Karma Tablosu (Hash Table) \\
+Ekleme Karmaşıklığı & $O(\log n)$ & Ortalama $O(1)$, En Kötü $O(n)$ \\
+Arama Karmaşıklığı & $O(\log n)$ & Ortalama $O(1)$, En Kötü $O(n)$ \\
+Silme Karmaşıklığı & $O(\log n)$ & Ortalama $O(1)$, En Kötü $O(n)$ \\
+Eleman Sıralaması & Küçükten büyüğe sıralıdır & Rastgele / Sırasızdır \\
+\hline
+\end{tabular}\end{small}
+\caption{Sıralı ve Sırasız Veri Yapılarının Karşılaştırması}
+\end{table}
+
+\begin{theorem}[Frekans Sayımının Zaman Karmaşıklığı]
+$n$ elemanlı bir dizideki tüm elemanların frekanslarını bir Hash Map (Python \texttt{dict} veya C++ \texttt{unordered\_map}) kullanarak saymak ortalama $O(n)$ zamanda, bir Dengeli Ağaç Map (C++ \texttt{map}) kullanarak saymak ise kesin olarak $O(n \log n)$ zamanda tamamlanır.
+\end{theorem}
+
+\begin{proof}
+Dizideki her eleman için haritaya bir ekleme veya güncelleme yapılır. Hash tablosunda her işlem ortalama $O(1)$ sürdüğünden $n$ eleman için toplam süre $n \times O(1) = O(n)$ olur. Dengeli ikili ağaçta ise $i$'inci eleman eklenirken ağaçta en fazla $i$ eleman vardır ve arama/ekleme maliyeti $O(\log i) \le O(\log n)$ adımdır. $n$ işlem için toplam maliyet:
+\[ \sum_{i=1}^n O(\log i) = O(\log(n!)) = O(n \log n) \]
+olarak bulunur.
+\end{proof}
+
+\subsection{Kullanım Senaryoları ve Çözümlü Örnekler}
+
+\begin{example}[İki Sayının Toplamı - Two Sum]
+Sıralı olmayan bir $A$ tamsayı dizisi ve bir $T$ hedef değeri veriliyor. Dizi içerisinde toplamları $T$ olan iki farklı elemanın bulunup bulunmadığını $O(n)$ zamanda belirleyiniz.
+\end{example}
+
+\begin{proof}[Çözüm ve Akıl Yürütme]
+Kaba kuvvet yaklaşımı iki döngüyle tüm $(A[i], A[j])$ ikililerini kontrol eder ve $O(n^2)$ zaman alır. 
+
+Oysa $A[i]$ sayısını incelerken kendimize şu soruyu sorabiliriz: ``Toplamın $T$ olması için diğer sayının ne olması gerekir?'' Aradığımız tamamlayıcı değer $T - A[i]$'dir. Böylece soru şuna dönüşür: ``Şu ana kadar gördüğüm sayılar arasında $T - A[i]$ var mı?'' Bir elemanın daha önce görülüp görülmediğini en hızlı sorgulayan yapı bir kümedir (\textbf{Set}).
+
+Algoritma adımları:
+\begin{enumerate}
+    \item Boş bir $gorulenler$ kümesi oluşturulur.
+    \item Dizideki her $x$ elemanı için:
+    \begin{itemize}
+        \item Eğer $(T - x) \in gorulenler$ ise, aranan çift bulunmuştur: $(x, T - x)$. Arama tamamlanır.
+        \item Değilse, $x$ sayısı $gorulenler$ kümesine eklenir.
+    \end{itemize}
+    \item Dizi bittiğinde çift bulunamadıysa sonuç olumsuzdur.
+\end{enumerate}
+Ortalama küme arama ve ekleme süresi $O(1)$ olduğundan, tüm dizi $O(n)$ sürede taranmış olur.
+\end{proof}
+
+\begin{lstlisting}
+FUNCTION two_sum(A, T)
+    seen = EMPTY_SET
+    FOR EACH x IN A DO
+        complement = T - x
+        IF complement IN seen THEN
+            RETURN True, (complement, x)
+        END IF
+        INSERT x INTO seen
+    END FOR
+    RETURN False, NULL
+END FUNCTION\end{lstlisting}
+
+\begin{example}[Farklı Eleman Sayısı - Distinct Elements]
+Boyutu $n = 10^5$ olan bir tamsayı dizisi veriliyor. Dizide kaç farklı (tekrarsız) eleman olduğunu bulunuz.
+\end{example}
+
+\begin{proof}[Çözüm ve Akıl Yürütme]
+Bir küme (Set) matematiksel tanımı gereği aynı elemandan yalnızca bir tane tutabilir. Dolayısıyla dizinin tüm elemanlarını bir kümenin içine aktarırsak kopyalar kendiliğinden elenir. Sonuçta kümenin eleman sayısı ($|S|$), dizideki tekil eleman sayısını verir.
+
+Zaman karmaşıklığı: Hash kümesi kullanılırsa $n$ ekleme işlemi ortalama $O(n)$ sürer; sıralı küme tercih edilirse $O(n \log n)$ zamanda biter.
+\end{proof}
+
+\begin{example}[Kayan Pencerede Farklı Eleman Sayısı]
+$n$ elemanlı bir $A$ dizisi ve bir $k$ pencere genişliği veriliyor. Her $k$ uzunluğundaki ardışık alt dizide (pencerede) kaç farklı eleman olduğunu hesaplayınız.
+\end{example}
+
+\begin{proof}[Çözüm ve Akıl Yürütme]
+Her pencere için sıfırdan küme oluşturmak $(n - k + 1) \times k$ işlem gerektirir ve $O(n \cdot k)$ zaman alır; bu da büyük girdiler için yavaştır.
+
+Bölüm 22'de gördüğümüz kayan pencere tekniğini hatırlayalım: Pencere sağa bir birim kaydığında durum şöyledir:
+\begin{itemize}
+    \item Pencerenin en solundaki eleman pencereden \textbf{çıkar}.
+    \item Pencerenin sağına yeni bir eleman \textbf{girer}.
+    \item Ortadaki $k - 2$ eleman aynen kalır.
+\end{itemize}
+Sadece bir küme (Set) tutarsak, bir elemanı çıkardığımızda o elemandan pencerede başka kopyalar olup olmadığını anlayamayız. Bu yüzden her elemanın pencere içindeki sayısını (frekansını) takip etmek gerekir. Dolayısıyla uygun yapı bir \textbf{Map}'tir:
+
+\begin{enumerate}
+    \item İlk $k$ elemanı bir haritaya ($frekans$) ekleriz. Haritanın boyutu ($|frekans|$), ilk penceredeki farklı eleman sayısını verir.
+    \item $i = k$'den $n - 1$'e kadar:
+    \begin{itemize}
+        \item Pencereden çıkan eleman: $cikan = A[i - k]$. $frekans[cikan]$ değerini 1 azaltırız. Frekansı $0$'a düşerse bu anahtarı haritadan tamamen sileriz ($\operatorname{erase}$).
+        \item Pencereye giren eleman: $giren = A[i]$. $frekans[giren]$ değerini 1 artırırız.
+        \item Haritada kalan anahtar sayısı o anki pencerenin farklı eleman sayısıdır.
+    \end{itemize}
+\end{enumerate}
+Her kaydırmada yalnızca 1 silme ve 1 ekleme yapıldığından, algoritma toplam $O(n)$ zamanda tamamlanır.
+\end{proof}
+
+\begin{lstlisting}
+FUNCTION slidingWindowDistinct(A, k)
+    frequency = empty map with default value 0
+    results = empty list
+
+    FOR i FROM 0 TO k - 1 DO
+        frequency[A[i]] = frequency[A[i]] + 1
+    END FOR
+    APPEND SIZE(frequency) TO results
+
+    FOR i FROM k TO LENGTH(A) - 1 DO
+        outgoing = A[i - k]
+        frequency[outgoing] = frequency[outgoing] - 1
+        IF frequency[outgoing] == 0 THEN
+            REMOVE outgoing FROM frequency
+        END IF
+
+        incoming = A[i]
+        frequency[incoming] = frequency[incoming] + 1
+
+        APPEND SIZE(frequency) TO results
+    END FOR
+
+    RETURN results
+END FUNCTION\end{lstlisting}
+
+\paragraph{En Sık Yapılan Hatalar (Set ve Map):}
+\begin{itemize}
+    \item \textbf{C++ \texttt{map} ile \texttt{unordered\_map} Farkını Unutmak:} C++ dilindeki varsayılan \texttt{std::map} yapısının $O(1)$ olduğu yanılgısına sık rastlanır. \texttt{std::map} kırmızı-siyah ağaç tabanlıdır ve her işlem $O(\log n)$ sürer. Öte yandan \texttt{unordered\_map} kötü niyetli test durumlarında (hash çakışması saldırıları) $O(n)$ düzeyine gerileyebilir.
+    \item \textbf{Olmayan Anahtara Erişerek Boyutu Büyütmek:} C++ dilinde bir \texttt{map}'te bulunmayan bir anahtara \texttt{m[x]} şeklinde erişildiğinde, dil o anahtarı varsayılan değerle ($0$) haritaya otomatik olarak ekler. Bu durum arama sırasında haritanın boyutunu gereksizce artırır ve mantık hatalarına yol açar. Bir anahtarın varlığı denetlenirken \texttt{count(x)} veya \texttt{find(x)} kullanılmalıdır.
+    \item \textbf{Multiset Yerine Set Kullanmak:} Soruda bir elemanın birden fazla kopyasının saklanması gerektiğinde standart \texttt{set} kullanılırsa kopyalar kaybolur. Tekrar eden elemanlar için \emph{multiset} veya bir frekans eşlemi (\emph{map}) tercih edilmelidir.
+\end{itemize}
+
+% =========================================================================
+% BÖLÜM ÖZETİ VE KARŞILAŞTIRMA
+% =========================================================================
+\section*{Bölüm Özeti ve Doğru Veri Yapısını Seçme Rehberi}
+
+Bir yarışma probleminde hangi veri yapısını seçeceğinize karar verirken şu sorulardan yararlanabilirsiniz:
+\begin{enumerate}
+    \item \textbf{``En son eklenen elemanla mı ilgileniyorum?''} 
+    $\to$ Cevap evet ise: \textbf{Stack (Yığın)}. (Parantez denetimi, monoton sıralamalar, geri alma işlemleri).
+    \item \textbf{``Geliş sırasına göre mi işlemeliyim / Katman katman mı yayılmalıyım?''} 
+    $\to$ Cevap evet ise: \textbf{Queue (Kuyruk)}. (BFS arama, simülasyonlar, adil sıra yönetimi).
+    \item \textbf{``Bu eleman daha önce geldi mi / Var mı?''} 
+    $\to$ Cevap evet ise: \textbf{Set (Küme)}. (Tekillik kontrolü, ziyaret edilen düğümler).
+    \item \textbf{``Bu elemandan kaç tane var / Bu nesneye ait ek bilgi nedir?''} 
+    $\to$ Cevap evet ise: \textbf{Map (Eşlem / Sözlük)}. (Frekans sayımı, anahtar-değer ilişkileri).
+\end{enumerate}
+
+Her veri yapısının avantaj sağladığı ve yetersiz kaldığı durumlar vardır. Burada ele aldığımız temel yapılar; ilerleyen bölümlerde göreceğimiz graf algoritmalarının, dinamik programlama optimizasyonlarının ve gelişmiş veri yapılarının zeminini oluşturacaktır.

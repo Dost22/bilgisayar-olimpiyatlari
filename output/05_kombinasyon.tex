@@ -1,0 +1,471 @@
+\chapter[Kombinasyon · \textit{Temel}]{Kombinasyon}
+\chaptermark{Kombinasyon}
+
+Bölüm 4'te ele aldığımız permütasyon problemlerinde diziliş sırası belirleyiciydi: Bir podyumda birinci olmak ile üçüncü olmak arasındaki fark, bir kasanın şifresindeki rakamların dizilişi ya da bir yarışmadaki görev dağılımı doğrudan elemanların sırasına bağlıydı. 
+
+Matematikte ve bilgisayar biliminde ise çoğu zaman nesnelerin hangi sırada dizildiğiyle değil, \textbf{yalnızca hangi nesnelerin seçildiğiyle} ilgileniriz:
+\begin{itemize}
+  \item $10$ kişilik bir sınıftan okul meclisine $3$ temsilci seçerken Ahmet, Ayşe ve Can'ın hangi sırayla belirlendiği temsilciler kurulunun yapısını değiştirmez. Kurul $\{\text{Ahmet}, \text{Ayşe}, \text{Can}\}$ kümesidir.
+  \item Masadan çekilen $5$ iskambil kartının çekiliş sırası elin değerini etkilemez; elde toplanan kartlar kümesi belirleyicidir.
+  \item Bir bilgisayar ağında $n$ sunucu arasından birbirine doğrudan bağlanacak iki sunucu belirlemek, sırasız bir ikili seçmektir.
+\end{itemize}
+
+Nesnelerin seçilme sırasının hesaba katılmadığı bu tür seçimlere \textbf{kombinasyon} (sırasız seçim) denir. Burada kombinasyon kavramını permütasyondan türetecek, $\binom{n}{r}$ binom katsayısını, simetri ve Pascal bağıntısını, ardından özdeş nesnelerin dağıtımında başvurulan ayraç yöntemini adım adım inceleyeceğiz.
+
+% ============================================================
+% 5.1 BİNOM KATSAYISI
+% ============================================================
+\section{Binom Katsayısı}
+
+Küçük bir örnekle başlayalım: Dört kişilik bir arkadaş grubundan ($A, B, C, D$) iki kişilik bir proje ekibi kurmak istiyoruz. Kaç farklı ekip oluşturabiliriz?
+
+Önce Bölüm 4'te gördüğümüz sıralı seçim (permütasyon) yaklaşımını uygulayalım:
+\[ P(4, 2) = 4 \times 3 = 12 \]
+Bu $12$ sıralı ikiliyi açıkça yazalım:
+\begin{align*}
+(A, B), \;\; (A, C), \;\; (A, D), \;\; (B, A), \;\; (B, C), \;\; (B, D), \\
+(C, A), \;\; (C, B), \;\; (C, D), \;\; (D, A), \;\; (D, B), \;\; (D, C)
+\end{align*}
+
+Bir proje ekibi için $(A, B)$ ile $(B, A)$ arasında fark yoktur; her iki sıralı ikili de aynı iki kişiden oluşan $\{A, B\}$ ekibini belirtir. Benzer biçimde $(A, C)$ ile $(C, A)$ aynı ekiptir. 
+
+Her ekip, seçilen $2$ kişinin kendi arasındaki $2! = 2$ farklı diziliminden ötürü listede tam \textbf{$2$ defa} yer almıştır. Farklı ekip sayısını bulmak için sıralı seçimlerin sayısını $2!$'e bölmeliyiz:
+\[ \frac{P(4, 2)}{2!} = \frac{12}{2} = 6 \]
+Elde edilen $6$ sırasız ekip şunlardır:
+\[ \{A, B\}, \;\; \{A, C\}, \;\; \{A, D\}, \;\; \{B, C\}, \;\; \{B, D\}, \;\; \{C, D\} \]
+
+Eğer bu $4$ kişi arasından $3$ kişilik bir ekip seçseydik, seçilen herhangi $3$ kişi kendi arasında $3! = 6$ farklı sırada dizilebilirdi. Dolayısıyla her ekip $P(4, 3) = 24$ sıralı üçlü listesinde tam $6$ defa tekrarlanacaktı. Gerçek ekip sayısı $\frac{P(4, 3)}{3!} = \frac{24}{6} = 4$ olurdu.
+
+Bu gözlem bizi kombinasyonun formülüne ulaştırır:
+
+\begin{definition}[Kombinasyon ve Binom Katsayısı]
+$n$ ve $r$ iki doğal sayı ve $0 \le r \le n$ olsun. $n$ elemanlı bir kümenin $r$ elemanlı her bir alt kümesine $n$'nin $r$'li \textbf{kombinasyonu} denir. Bu alt kümelerin toplam sayısı $\binom{n}{r}$ (veya $C(n, r)$) simgesiyle gösterilir ve ``$n$'nin $r$'lisi'' diye okunur.
+\end{definition}
+
+\begin{theorem}
+Her $0 \le r \le n$ için:
+\[ \binom{n}{r} = \frac{P(n, r)}{r!} = \frac{n!}{r!(n - r)!} \]
+\end{theorem}
+\begin{proof}
+$n$ elemanlı bir kümeden $r$ elemanlı sıralı bir dizi ($P(n, r)$) oluşturma sürecini iki aşamalı bir işlem olarak kurgulayalım:
+\begin{enumerate}
+  \item \textbf{1. Aşama (Kümeyi seçmek):} Sırasına bakılmaksızın hangi $r$ elemanın seçileceğini belirleriz. Bu seçim tanım gereği $\binom{n}{r}$ farklı şekilde yapılabilir.
+  \item \textbf{2. Aşama (Seçilenleri dizmek):} Seçilen $r$ elemanı bir sıraya dizeriz. $r$ farklı nesne kendi arasında $r!$ farklı şekilde sıralanır.
+\end{enumerate}
+Bölüm 3'teki çarpma kuralı uyarınca bu iki aşamanın çarpımı toplam sıralı seçimlerin sayısını ($P(n, r)$) verir:
+\[ \binom{n}{r} \times r! = P(n, r) \]
+Eşitliğin her iki tarafını $r!$'e bölersek:
+\[ \binom{n}{r} = \frac{P(n, r)}{r!} \]
+elde edilir. Bölüm 4'teki $P(n, r) = \frac{n!}{(n-r)!}$ ifadesi yerine konduğunda:
+\[ \binom{n}{r} = \frac{n!}{r!(n - r)!} \]
+bulunur.
+\end{proof}
+
+Sınır durumları inceleyelim:
+\begin{itemize}
+  \item $\binom{n}{0} = \frac{n!}{0!(n-0)!} = \frac{n!}{1 \cdot n!} = 1$ ($n$ elemandan $0$ eleman seçmenin $1$ yolu vardır: boş küme $\emptyset$).
+  \item $\binom{n}{1} = \frac{n!}{1!(n-1)!} = \frac{n \cdot (n-1)!}{(n-1)!} = n$ ($n$ nesneden tek bir nesne seçmenin $n$ yolu vardır).
+  \item $\binom{n}{n} = \frac{n!}{n!(n-n)!} = \frac{n!}{n! \cdot 0!} = 1$ ($n$ nesnenin tamamını seçmenin tek bir yolu vardır: kümenin kendisi).
+\end{itemize}
+
+\subsection{Kümeler Kuramı ile Bağlantı}
+
+Bölüm 1'de $n$ elemanlı bir kümenin toplam $2^n$ adet alt kümesi olduğunu çarpma kuralıyla doğrulamıştık. Kombinasyon bu alt kümeleri eleman sayılarına göre ayrık sınıflara böler:
+\begin{itemize}
+  \item $0$ elemanlı alt küme sayısı: $\binom{n}{0}$
+  \item $1$ elemanlı alt küme sayısı: $\binom{n}{1}$
+  \item $2$ elemanlı alt küme sayısı: $\binom{n}{2}$
+  \item \dots
+  \item $n$ elemanlı alt küme sayısı: $\binom{n}{n}$
+\end{itemize}
+Bu alt küme sınıfları birbirini dışlayan ayrık durumlar olduğundan, Bölüm 3'teki toplama kuralı gereğince tüm alt kümelerin toplamı:
+\[ \sum_{r=0}^n \binom{n}{r} = \binom{n}{0} + \binom{n}{1} + \binom{n}{2} + \dots + \binom{n}{n} = 2^n \]
+eşitliğini sağlar. Bu temel özdeşliği Bölüm 6'da binom teoremi çerçevesinde yeniden ele alacağız.
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Aşağıdaki kombinasyonların değerlerini hesaplayınız:
+a) $\binom{7}{3}$ \quad b) $\binom{10}{2}$ \quad c) $\binom{8}{4}$
+\end{example}
+\begin{proof}[Çözüm]
+Kombinasyon hesaplarken büyük faktöriyelleri açmak yerine, payı $r$ adım geriye açıp paydaya $r!$ yazmak daha pratiktir:
+\begin{itemize}
+  \item a) $\binom{7}{3} = \frac{7 \times 6 \times 5}{3 \times 2 \times 1} = \frac{210}{6} = 35$.
+  \item b) $\binom{10}{2} = \frac{10 \times 9}{2 \times 1} = \frac{90}{2} = 45$.
+  \item c) $\binom{8}{4} = \frac{8 \times 7 \times 6 \times 5}{4 \times 3 \times 2 \times 1} = \frac{8 \times 7 \times 6 \times 5}{24} = 7 \times 2 \times 5 = 70$.
+\end{itemize}
+\end{proof}
+
+\begin{example}
+$12$ üyeli bir öğrenci topluluğundan $4$ kişilik bir disiplin kurulu kaç farklı şekilde seçilebilir?
+\end{example}
+\begin{proof}[Çözüm]
+Kurul üyeleri arasında unvan ya da görev farkı bulunmadığından seçim sırası önemsizdir:
+\[ \binom{12}{4} = \frac{12 \times 11 \times 10 \times 9}{4 \times 3 \times 2 \times 1} \]
+Paydadaki $4 \times 3 = 12$ paydaki $12$ ile sadeleşir. Kalan $2$ ise $10$'u sadeleştirip $5$ yapar:
+\[ = 11 \times 5 \times 9 = 495 \]
+farklı şekilde kurul seçilebilir.
+\end{proof}
+
+\begin{example}
+Bir çember üzerinde birbirinden farklı $8$ nokta işaretlenmiştir.
+\begin{enumerate}
+  \item Köşeleri bu noktalardan seçilen kaç farklı doğru parçası (kiriş) çizilebilir?
+  \item Köşeleri bu noktalardan seçilen kaç farklı üçgen oluşturulabilir?
+\end{enumerate}
+\end{example}
+\begin{proof}[Çözüm]
+Çember üzerindeki noktaların hiçbir üçü doğrusal değildir.
+\begin{enumerate}
+  \item Bir doğru parçası belirlemek için bu $8$ noktadan herhangi $2$ tanesini seçmek yeterlidir. Noktaların seçilme sırası doğru parçasını değiştirmez ($AB$ ile $BA$ aynı kiriştir):
+  \[ \binom{8}{2} = \frac{8 \times 7}{2 \times 1} = 28 \text{ kiriş çizilebilir.} \]
+  
+  \item Bir üçgen belirlemek için bu $8$ noktadan herhangi $3$ tanesini seçmek gerekir:
+  \[ \binom{8}{3} = \frac{8 \times 7 \times 6}{3 \times 2 \times 1} = 56 \text{ farklı üçgen çizilebilir.} \]
+\end{enumerate}
+\end{proof}
+
+\begin{example}
+Dışbükey (konveks) bir $n$ kenarlı çokgenin toplam kaç köşegeni vardır? Formülü kombinasyon yardımıyla elde ediniz.
+\end{example}
+\begin{proof}[Çözüm]
+$n$ kenarlı bir çokgenin $n$ adet köşesi bulunur. Bu $n$ köşe arasından seçilecek herhangi iki köşe bir doğru parçası tanımlar:
+\[ \text{Tüm Doğru Parçaları} = \binom{n}{2} \]
+Bu doğru parçaları iki gruptan oluşur:
+\begin{itemize}
+  \item Çokgenin kenarları (komşu iki köşeyi birleştiren $n$ adet doğru parçası).
+  \item Köşegenler (komşu olmayan iki köşeyi birleştiren doğru parçaları).
+\end{itemize}
+Dolayısıyla köşegen sayısı, tüm doğru parçalarının sayısından kenar sayısı çıkarılarak bulunur:
+\[ \text{Köşegen Sayısı} = \binom{n}{2} - n = \frac{n(n - 1)}{2} - n = \frac{n^2 - n - 2n}{2} = \frac{n(n - 3)}{2} \]
+Örneğin bir altıgen için ($n = 6$): $\frac{6 \times 3}{2} = 9$ köşegen elde edilir.
+\end{proof}
+
+
+% ============================================================
+% 5.2 SİMETRİ VE PASCAL BAĞINTISI
+% ============================================================
+\section{Simetri ve Pascal Bağıntısı}
+
+Kombinasyon katsayıları belirgin cebirsel ve simetrik özellikler taşır. Bu özelliklerin ilkini basit bir soruyla görebiliriz:
+
+$10$ kişilik bir sınıftan kampa gidecek $8$ öğrenciyi mi seçmek daha kolaydır, yoksa geride kalacak $2$ öğrenciyi mi?
+
+Kampa gidecek $8$ kişiyi belirlemek, geride kalacak $2$ kişiyi belirlemekle aynı seçim işlemidir. Gidecekler belirlendiğinde, kalanlar da kendiliğinden belirlenir. Formülle inceleyelim:
+\[ \binom{10}{8} = \frac{10!}{8! \times 2!} = 45 \quad \text{ve} \quad \binom{10}{2} = \frac{10!}{2! \times 8!} = 45 \]
+İki değer birbirine eşittir.
+
+\begin{theorem}[Simetri Özelliği]
+Her $0 \le r \le n$ için:
+\[ \binom{n}{r} = \binom{n}{n - r} \]
+\end{theorem}
+\begin{proof}
+Formülü doğrudan uygulayalım:
+\[ \binom{n}{n - r} = \frac{n!}{(n - r)! \times (n - (n - r))!} = \frac{n!}{(n - r)! \times r!} \]
+Çarpmanın değişme özelliği gereği paydadaki $(n - r)! \times r! = r! \times (n - r)!$'dir. Buradan:
+\[ \binom{n}{n - r} = \frac{n!}{r!(n - r)!} = \binom{n}{r} \]
+sonucuna varılır.
+\end{proof}
+
+Bu özellik hesaplamaları önemli ölçüde sadeleştirir. Örneğin $\binom{100}{98}$ ifadesi doğrudan simetri kuralıyla açılır:
+\[ \binom{100}{98} = \binom{100}{100 - 98} = \binom{100}{2} = \frac{100 \times 99}{2} = 4950 \]
+
+\subsection{Pascal Bağıntısı: Bir Elemanın Durumu}
+
+Şimdi kombinatorik ispatların klasik yaklaşımlarından birini inceleyelim. $n$ kişilik bir gruptan $r$ kişilik bir komite kurmak istiyoruz ($\binom{n}{r}$). 
+
+Bu gruptaki belirli bir kişiye odaklanalım; bu kişi Ahmet olsun. Olası tüm komiteleri Ahmet'in durumuna göre iki ayrık duruma ayırabiliriz:
+\begin{enumerate}
+  \item \textbf{1. Durum (Ahmet'in yer aldığı komiteler):} Ahmet komitededir. Komitenin kalan $r - 1$ üyesi, gruptaki diğer $n - 1$ kişi arasından seçilir:
+  \[ \binom{n - 1}{r - 1} \text{ seçenek.} \]
+  \item \textbf{2. Durum (Ahmet'in yer almadığı komiteler):} Ahmet komitede yer almaz. Dolayısıyla $r$ kişilik komitenin tamamı diğer $n - 1$ kişi arasından seçilmelidir:
+  \[ \binom{n - 1}{r} \text{ seçenek.} \]
+\end{enumerate}
+
+Ahmet bir komitede ya vardır ya da yoktur; bu iki durum ayrıktır. Toplama kuralı gereğince iki durumun toplamı tüm komitelerin sayısını verir.
+
+\begin{theorem}[Pascal Bağıntısı]
+Her $1 \le r \le n$ için:
+\[ \binom{n}{r} = \binom{n - 1}{r - 1} + \binom{n - 1}{r} \]
+\end{theorem}
+\begin{proof}
+Yukarıdaki kombinatorik akıl yürütme doğrudan bir ispattır. Cebirsel olarak doğrulamak için sağ taraftaki terimleri ortak paydaya getirelim:
+\[ \binom{n - 1}{r - 1} + \binom{n - 1}{r} = \frac{(n-1)!}{(r-1)!(n-r)!} + \frac{(n-1)!}{r!(n-1-r)!} \]
+Birinci kesri $r$ ile, ikinci kesri $(n - r)$ ile genişletelim:
+\begin{align*}
+&= \frac{r \cdot (n-1)!}{r!(n-r)!} + \frac{(n-r) \cdot (n-1)!}{r!(n-r)!} \\
+&= \frac{[r + (n - r)] \cdot (n-1)!}{r!(n-r)!} \\
+&= \frac{n \cdot (n-1)!}{r!(n-r)!} = \frac{n!}{r!(n-r)!} = \binom{n}{r}
+\end{align*}
+böylece eşitlik gösterilmiş olur.
+\end{proof}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+$\binom{10}{3} + \binom{10}{4} + \binom{11}{5}$ toplamını tek bir binom katsayısı olarak yazınız.
+\end{example}
+\begin{proof}[Çözüm]
+Pascal bağıntısını adım adım uygulayalım.
+İlk iki terimi ele alalım: $\binom{10}{3} + \binom{10}{4}$. 
+Pascal kuralı gereğince $\binom{n-1}{r-1} + \binom{n-1}{r} = \binom{n}{r}$ olduğundan:
+\[ \binom{10}{3} + \binom{10}{4} = \binom{11}{4} \]
+olur. Bu sonucu üçüncü terimle birleştirelim:
+\[ \binom{11}{4} + \binom{11}{5} \]
+Tekrar Pascal kuralı uygulanırsa ($n = 12, r = 5$):
+\[ \binom{11}{4} + \binom{11}{5} = \binom{12}{5} \]
+elde edilir.
+\end{proof}
+
+\begin{example}[Kombinatorik İspat: Başkanlı Komite Modeli]
+Her $1 \le r \le n$ için aşağıdaki eşitliğin doğruluğunu gösteriniz:
+\[ n \binom{n - 1}{r - 1} = r \binom{n}{r} \]
+\end{example}
+\begin{proof}[Çözüm]
+Bu eşitlik cebirsel yoldan doğrulanabileceği gibi, Bölüm 10'da ayrıntılandıracağımız iki yoldan sayma (çifte sayım) yöntemiyle de kurulabilir.
+
+$n$ kişi arasından $r$ kişilik bir komite ve bu komiteye bir \textbf{başkan} seçeceğimizi varsayalım. Bu seçim iki farklı sırayla yapılabilir:
+
+\begin{itemize}
+  \item \textbf{1. Yol (Önce başkan, sonra üyeler):}
+  $n$ aday arasından başkan seçilir ($n$ seçenek).
+  Kalan $n - 1$ kişi arasından komitenin diğer $r - 1$ üyesi belirlenir ($\binom{n-1}{r-1}$ seçenek).
+  Çarpma kuralıyla:
+  \[ n \times \binom{n-1}{r-1} \]
+  
+  \item \textbf{2. Yol (Önce komite, sonra başkan):}
+  $n$ kişi arasından $r$ kişilik komite oluşturulur ($\binom{n}{r}$ seçenek).
+  Seçilen $r$ kişi arasından bir başkan belirlenir ($r$ seçenek).
+  Çarpma kuralıyla:
+  \[ \binom{n}{r} \times r \]
+\end{itemize}
+Her iki sayım da aynı kümenin eleman sayısını verdiğinden:
+\[ n \binom{n - 1}{r - 1} = r \binom{n}{r} \]
+eşitliği sağlanır.
+\end{proof}
+
+\begin{example}[C Dilinde Pascal Bağıntısıyla Rekürsif Kombinasyon]
+Pascal bağıntısını kullanarak kombinasyon hesaplayan bir C fonksiyonu yazınız ve algoritmayı açıklayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Pascal bağıntısı $\binom{n}{r} = \binom{n-1}{r-1} + \binom{n-1}{r}$ doğal bir rekürsiyon (rekürsiyon) yapısı sunar. Taban durumları ise $r = 0$ ve $r = n$ olduğunda değerin $1$ olmasıdır:
+
+\begin{lstlisting}[language=CTemel]
+// Pascal bagintisi ile kombinasyon hesabi
+long long kombinasyon(int n, int r) {
+    // Taban durumlari (base cases)
+    if (r == 0 || r == n) {
+        return 1;
+    }
+    // Ozyinelemeli adim: Pascal kurali
+    return kombinasyon(n - 1, r - 1) + kombinasyon(n - 1, r);
+}
+\end{lstlisting}
+
+Bu fonksiyon matematiksel tanımı doğrudan uygular; ancak büyük $n$ değerlerinde aynı alt problemleri defalarca hesaplar. Bu verimsizlik Bölüm 26'da dinamik programlama yaklaşımıyla giderilecektir.
+\end{proof}
+
+
+% ============================================================
+% 5.3 AYRAÇ YÖNTEMİ (STARS AND BARS)
+% ============================================================
+\section{Ayraç Yöntemi (Stars and Bars)}
+
+Şimdiye kadar ele aldığımız kombinasyon problemlerinde üzerinde çalışılan nesneler birbirinden ayırt edilebilirdi. Dağıtılacak nesnelerin \textbf{birbiriyle tamamen özdeş} olduğu durumlarda sayım nasıl yapılır?
+
+Somut bir problem ele alalım: Birbirinin tıpatıp aynısı olan $7$ elmayı $3$ çocuğa ($A, B, C$) kaç farklı şekilde paylaştırabiliriz?
+
+Elmalar özdeş olduğundan hangi elmanın kime verildiği değil, \textbf{her çocuğun kaç elma aldığı} önemlidir.
+$A$'nın aldığı elma sayısına $x_1$, $B$'ninkine $x_2$, $C$'ninkine $x_3$ dersek, problem şu denkleme denktir:
+\[ x_1 + x_2 + x_3 = 7 \quad (x_1, x_2, x_3 \in \mathbb{N}, \;\; x_i \ge 0) \]
+
+Bu denklemin çözümlerini tek tek listelemek yerine, kombinatorikte sıkça başvurulan \textbf{ayraç yöntemi} (\textit{Stars and Bars}) modelini kullanırız.
+
+\subsection{Yöntemin Mantığı}
+
+Yöntemin İngilizce adı (\textit{stars and bars}) görseli de açıklar: özdeş nesneleri yıldız ($\star$), grupları ayıran işaretleri ise düşey çizgi ($|$) ile temsil ederiz. $7$ adet özdeş elmayı yan yana dizilmiş $7$ adet yıldız ($\star$) ile gösterelim:
+\[ \star \quad \star \quad \star \quad \star \quad \star \quad \star \quad \star \]
+Bu $7$ yıldızı $3$ gruba ayırmak için araya \textbf{$3 - 1 = 2$ adet ayraç ($|$)} yerleştirmek yeterlidir.
+
+Örnek dizilimler:
+\begin{itemize}
+  \item $\star \; \star \mid \star \; \star \; \star \mid \star \; \star \implies x_1 = 2, \;\; x_2 = 3, \;\; x_3 = 2$
+  \item $\mid \star \; \star \; \star \; \star \mid \star \; \star \; \star \implies x_1 = 0, \;\; x_2 = 4, \;\; x_3 = 3$ (ilk çocuk hiç elma almadı)
+  \item $\star \; \star \; \star \; \star \; \star \; \star \; \star \mid \mid \implies x_1 = 7, \;\; x_2 = 0, \;\; x_3 = 0$ (tüm elmaları ilk çocuk aldı)
+\end{itemize}
+
+Her paylaşım, $7$ yıldız ($\star$) ve $2$ ayraçtan ($|$) oluşan toplam $7 + 2 = 9$ karakterlik bir dizilimle birebir eşleşir.
+
+Soru şuna indirgenir: Yan yana duran $9$ boş pozisyondan hangi $2$ tanesine ayraç ($|$) yerleştirilecektir?
+Geriye kalan yerlere yıldızlar gelecektir. Sıra önemsiz olduğundan bu doğrudan bir kombinasyondur:
+\[ \binom{9}{2} = \frac{9 \times 8}{2 \times 1} = 36 \]
+Demek ki $7$ özdeş elma $3$ çocuğa $36$ farklı şekilde dağıtılabilir.
+
+\begin{theorem}[Ayraç Yöntemi Teoremi — Negatif Olmayan Çözümler]
+$n$ adet özdeş nesnenin $k$ farklı kutuya dağıtılma biçimlerinin (veya $x_1 + x_2 + \dots + x_k = n$ denkleminin $x_i \ge 0$ tam sayı çözümlerinin) toplam sayısı:
+\[ \binom{n + k - 1}{k - 1} \]
+formülüyle hesaplanır.
+\end{theorem}
+\begin{proof}
+$n$ adet yıldız ve kutuları birbirinden ayırmak için $k - 1$ adet ayraç kullanılır. Toplam pozisyon sayısı $n + (k - 1) = n + k - 1$'dir. Bu pozisyonlardan ayraçların yerleşeceği $k - 1$ konumu belirlemenin yolu $\binom{n+k-1}{k-1}$ tanedir.
+\end{proof}
+
+\subsection{Her Kutuya En Az Bir Nesne Düşmesi Durumu (\texorpdfstring{$x_i \ge 1$}{x\_i >= 1})}
+
+Her çocuğun \textbf{en az bir elma} alması koşulu konursa, yani $x_1 + x_2 + \dots + x_k = n$ denkleminin \textbf{pozitif tam sayı} ($x_i \ge 1$) çözümleri aranırsa iki yoldan ilerlenebilir:
+
+\textbf{1. Yol (Önden Dağıtma):}
+$n$ elmadan önce her çocuğa birer tane verilir. Toplam $k$ elma dağıtılmış olur ve geriye $n - k$ elma kalır. Kalan $n - k$ elma çocuklara serbestçe (negatif olmayan biçimde) paylaştırılabilir:
+\[ \binom{(n - k) + k - 1}{k - 1} = \binom{n - 1}{k - 1} \]
+
+\textbf{2. Yol (Aralıklara Ayraç Koyma):}
+$n$ adet yıldız yan yana dizildiğinde aralarında tam $n - 1$ adet boşluk bulunur:
+\[ \star \;\; \underbrace{\quad}_{\text{boşluk}} \;\; \star \;\; \underbrace{\quad}_{\text{boşluk}} \;\; \star \;\; \dots \;\; \star \]
+Hiçbir kutunun boş kalmaması, iki ayracın aynı boşluğa konmaması ve uçlara ayraç yerleştirilmemesi demektir. Dolayısıyla $k - 1$ adet ayraç, bu $n - 1$ boşluk arasından seçilen yerlere konur:
+\[ \binom{n - 1}{k - 1} \]
+
+\begin{theorem}[Pozitif Tam Sayı Çözümleri]
+$x_1 + x_2 + \dots + x_k = n$ denkleminin pozitif tam sayılardaki ($x_i \ge 1$) çözüm sayısı:
+\[ \binom{n - 1}{k - 1} \]
+formülüyle verilir.
+\end{theorem}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+Bir pastanede $4$ çeşit kurabiye (çikolatalı, fındıklı, tarçınlı, vanilyalı) satılmaktadır ve her çeşitten yeterince vardır. Bir müşteri toplam $10$ adet kurabiye seçerek bir paket yaptırmak istediğinde kaç farklı paket oluşturabilir?
+\end{example}
+\begin{proof}[Çözüm]
+Kurabiyeler aynı çeşit içinde özdeştir. Seçilecek miktarlara $x_1, x_2, x_3, x_4$ dersek:
+\[ x_1 + x_2 + x_3 + x_4 = 10 \quad (x_i \ge 0) \]
+Burada $n = 10$ nesne ve $k = 4$ farklı kategori söz konusudur.
+Ayraç yöntemi teoremini uygulayalım:
+\[ \binom{n + k - 1}{k - 1} = \binom{10 + 4 - 1}{4 - 1} = \binom{13}{3} \]
+Değeri hesaplayalım:
+\[ \binom{13}{3} = \frac{13 \times 12 \times 11}{3 \times 2 \times 1} = \frac{13 \times 12 \times 11}{6} = 13 \times 2 \times 11 = 286 \]
+Farklı paket seçeneklerinin sayısı $286$'dır.
+\end{proof}
+
+\begin{example}[Değişken Değiştirme Tekniği]
+$a + b + c = 18$ denkleminin $a \ge 2$, $b \ge 3$ ve $c \ge 0$ koşullarını sağlayan kaç farklı tam sayı çözümü vardır?
+\end{example}
+\begin{proof}[Çözüm]
+Kısıtları standart $\ge 0$ biçimine dönüştürmek için değişken değiştirme uygularız:
+\begin{itemize}
+  \item $a \ge 2 \implies a' = a - 2 \ge 0 \implies a = a' + 2$
+  \item $b \ge 3 \implies b' = b - 3 \ge 0 \implies b = b' + 3$
+  \item $c \ge 0 \implies c' = c \ge 0 \implies c = c'$
+\end{itemize}
+Bu tanımları denklemde yerine koyalım:
+\[ (a' + 2) + (b' + 3) + c' = 18 \implies a' + b' + c' + 5 = 18 \implies a' + b' + c' = 13 \]
+Böylece $n = 13$ ve $k = 3$ parametrelerine sahip standart biçime ulaşırız:
+\[ \binom{13 + 3 - 1}{3 - 1} = \binom{15}{2} = \frac{15 \times 14}{2} = 105 \]
+farklı çözüm vardır.
+\end{proof}
+
+\begin{example}[Üstten Kısıtlı Dağıtım]
+$x_1 + x_2 + x_3 = 9$ denkleminin $0 \le x_i \le 4$ kısıtını sağlayan tam sayı çözüm sayısını bulunuz.
+\end{example}
+\begin{proof}[Çözüm]
+Değişkenlerin alabileceği en büyük değer $4$ olarak sınırlandırılmıştır. Çözümü tümleyen küme üzerinden kuralım:
+\[ \text{İstenen} = \text{Tüm Çözümler} - \text{En az bir değişkenin } \ge 5 \text{ olduğu durumlar} \]
+
+\begin{enumerate}
+  \item \textbf{Tüm Çözümler ($x_i \ge 0$):}
+  \[ \binom{9 + 3 - 1}{3 - 1} = \binom{11}{2} = \frac{11 \times 10}{2} = 55 \]
+  
+  \item \textbf{Bir değişkenin $\ge 5$ olması:}
+  Değişkenlerden biri (örneğin $x_1$) en az $5$ olsun: $x_1 \ge 5$.
+  $x_1' = x_1 - 5 \ge 0$ dönüşümüyle:
+  \[ x_1' + x_2 + x_3 = 9 - 5 = 4 \]
+  Bu denklemin çözüm sayısı:
+  \[ \binom{4 + 3 - 1}{3 - 1} = \binom{6}{2} = 15 \]
+  En az $5$ olacak değişkeni seçmenin $\binom{3}{1} = 3$ yolu vardır ($x_1, x_2$ veya $x_3$).
+  
+  \item \textbf{İki değişken birden $\ge 5$ olabilir mi?}
+  İki değişken aynı anda $\ge 5$ olsaydı toplam en az $5 + 5 = 10$ olurdu; oysa denklem toplamı $9$'dur. Dolayısıyla bu durum gerçekleşemez.
+\end{enumerate}
+
+Koşulu bozan durumların sayısı $3 \times 15 = 45$'tir.
+O hâlde aranan çözüm sayısı:
+\[ 55 - 45 = 10 \]
+olur.
+\end{proof}
+
+
+% ============================================================
+% 5.4 KARIŞIK SEÇME PROBLEMLERİ
+% ============================================================
+\section{Karışık Seçme Problemleri}
+
+Kombinatorik problemlerinde çoğu zaman kombinasyon, permütasyon ve durum analizi bir arada kullanılır. Temel yaklaşım kuralı şudur: \textbf{Önce seçim yapılır (kombinasyon), gerek duyuluyorsa ardından sıralama uygulanır (permütasyon).}
+
+\subsection{Çözümlü Örnekler}
+
+\begin{example}
+$6$ erkek ve $5$ kadın arasından $4$ kişilik bir temsilci heyeti seçilecektir.
+\begin{enumerate}
+  \item Heyette \textbf{en az $2$ kadın} bulunması şartıyla kaç farklı seçim yapılabilir?
+  \item Belirli iki kişinin (Ahmet ve Zeynep) \textbf{birlikte bulunmaması} şartıyla kaç farklı heyet kurulabilir?
+\end{enumerate}
+\end{example}
+\begin{proof}[Çözüm]
+\begin{enumerate}
+  \item Heyetteki kadın sayısı $2, 3$ veya $4$ olabilir. Bu durumlar ayrık olduğundan ayrı ayrı hesaplanıp toplanır:
+  \begin{itemize}
+    \item \textbf{2 Kadın, 2 Erkek:} $\binom{5}{2} \times \binom{6}{2} = 10 \times 15 = 150$
+    \item \textbf{3 Kadın, 1 Erkek:} $\binom{5}{3} \times \binom{6}{1} = 10 \times 6 = 60$
+    \item \textbf{4 Kadın, 0 Erkek:} $\binom{5}{4} \times \binom{6}{0} = 5 \times 1 = 5$
+  \end{itemize}
+  Toplama kuralı gereğince:
+  \[ 150 + 60 + 5 = 215 \text{ farklı heyet kurulabilir.} \]
+
+  \item Tümleyen yaklaşımını kullanalım:
+  \[ \text{İstenen} = \text{Tüm Heyetler} - \text{Ahmet ile Zeynep'in Bulunduğu Heyetler} \]
+  \begin{itemize}
+    \item Toplam $6 + 5 = 11$ kişi vardır. Kısıt olmaksızın $4$ kişi:
+    \[ \binom{11}{4} = \frac{11 \times 10 \times 9 \times 8}{4 \times 3 \times 2 \times 1} = 330 \]
+    \item Ahmet ve Zeynep'in ikisinin de seçildiği durumlar: Bu iki kişi ayrıldıktan sonra kalan $11 - 2 = 9$ kişiden komiteyi tamamlayacak $4 - 2 = 2$ kişi seçilir:
+    \[ \binom{9}{2} = \frac{9 \times 8}{2} = 36 \]
+  \end{itemize}
+  Buna göre Ahmet ve Zeynep'in birlikte yer almadığı heyet sayısı:
+  \[ 330 - 36 = 294 \]
+  olur.
+\end{enumerate}
+\end{proof}
+
+\begin{example}[Izgarada Dikdörtgen Sayma]
+Yatayda $5$ paralel doğru ile düşeyde $7$ paralel doğru birbirini dik kesmektedir. Kenarları bu doğrular üzerinde bulunan kaç farklı dikdörtgen oluşur?
+\end{example}
+\begin{proof}[Çözüm]
+Bir dikdörtgen tanımlamak için:
+\begin{itemize}
+  \item Alt ve üst kenarı belirleyecek \textbf{$2$ adet yatay doğru},
+  \item Sol ve sağ kenarı belirleyecek \textbf{$2$ adet düşey doğru}
+\end{itemize}
+seçmek gerekir. Seçilen her yatay doğru çifti ile düşey doğru çifti tek bir dikdörtgen sınırlar:
+\begin{itemize}
+  \item $5$ yatay doğrudan $2$ tanesini seçmenin yolu: $\binom{5}{2} = 10$.
+  \item $7$ düşey doğrudan $2$ tanesini seçmenin yolu: $\binom{7}{2} = 21$.
+\end{itemize}
+Çarpma kuralı uyarınca toplam dikdörtgen sayısı:
+\[ \binom{5}{2} \times \binom{7}{2} = 10 \times 21 = 210 \]
+olur. Genel olarak $m$ yatay ve $n$ düşey doğru arasında $\binom{m}{2}\binom{n}{2}$ adet dikdörtgen bulunur.
+\end{proof}
+
+\begin{example}[Standart İskambil Eli Sayımı]
+$52$ kartlık standart bir iskambil destesinde her biri $13$'er karttan oluşan $4$ simge (Kupa, Karo, Maça, Sinek) ve her simgede $13$ farklı değer ($A, 2, 3, \dots, 10, J, Q, K$) bulunur. Bu desteden seçilen $5$ kartlık bir elde \textbf{tam olarak bir per} (aynı değerden $2$ kart ve diğer $3$ kartın değerleri hem birbirinden hem de perden farklı) bulunma sayısını hesaplayınız.
+\end{example}
+\begin{proof}[Çözüm]
+Sayım adımlarını sırayla oluşturalım:
+\begin{enumerate}
+  \item \textbf{1. Adım (Perin değerini seçmek):} Perin hangi değerden oluşacağı belirlenir. $13$ farklı değerden biri seçilir: $\binom{13}{1} = 13$ seçenek.
+  \item \textbf{2. Adım (Perin kartlarını seçmek):} Seçilen değerin $4$ simgesinden $2$ tanesi belirlenir: $\binom{4}{2} = 6$ seçenek.
+  \item \textbf{3. Adım (Kalan 3 kartın değerlerini seçmek):} Elin başka bir per içermemesi için diğer $3$ kartın değerleri birbirinden ve ilk değerden farklı olmalıdır. Kalan $12$ değer arasından $3$ farklı değer seçilir: $\binom{12}{3} = \frac{12 \times 11 \times 10}{6} = 220$ seçenek.
+  \item \textbf{4. Adım (Kalan 3 kartın simgelerini seçmek):} Belirlenen $3$ değerin her biri için $4$ simgeden biri seçilir: $\binom{4}{1} \times \binom{4}{1} \times \binom{4}{1} = 4^3 = 64$ seçenek.
+\end{enumerate}
+Çarpma kuralı gereğince tam olarak bir per içeren ellerin sayısı:
+\[ \binom{13}{1} \times \binom{4}{2} \times \binom{12}{3} \times 4^3 = 13 \times 6 \times 220 \times 64 = 1\,098\,240 \]
+olarak hesaplanır.
+\end{proof}

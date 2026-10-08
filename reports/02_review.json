@@ -1,0 +1,15 @@
+{
+  "file": "02_ispat_nasil_yapilir.tex",
+  "findings": [
+    {
+      "file": "02_ispat_nasil_yapilir.tex",
+      "line_hint": 415,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "return n * faktoriyel(n - 1); // Ozyinelemeli adim",
+      "issue": "Terminoloji sözleşmesine göre 'özyineleme' terimi yasaklanmış olup 'rekürsiyon' (rekürsif) standardize edilmiştir.",
+      "suggested_fix": "return n * faktoriyel(n - 1); // Rekursif adim (indirgeme)",
+      "confidence": "high"
+    }
+  ]
+}

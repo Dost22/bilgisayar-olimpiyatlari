@@ -1,0 +1,65 @@
+{
+  "file": "21_diziler_ve_temel_teknikler.tex",
+  "findings": [
+    {
+      "file": "21_diziler_ve_temel_teknikler.tex",
+      "line_hint": 5,
+      "type": "factual",
+      "severity": "minor",
+      "excerpt": "\\emph{prefix sums} (\\emph{prefix sums}) ve \\emph{two pointers} (\\emph{two pointers})",
+      "issue": "Kavramlar tanıtılırken terimler parantez içinde gereksizce ötelenmeden aynen yinelenmiştir ('prefix sums (prefix sums)' ve 'two pointers (two pointers)').",
+      "suggested_fix": "Cümle '\\emph{prefix sums} ve \\emph{two pointers}' şeklinde sadeleştirilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "21_diziler_ve_temel_teknikler.tex",
+      "line_hint": 50,
+      "type": "bad_reference",
+      "severity": "minor",
+      "excerpt": "Bu işlem, Bölüm 17'de incelediğimiz \\emph{yarı-değişmez} (\\emph{monovariant}) mantığını taşır: $k$'ıncı adım tamamlandığında, elimizdeki değer $A[0 \\dots k]$ alt dizisinin en büyük değeridir.",
+      "issue": "'k. adımda elimizdeki değer A[0..k]'nın en büyüğüdür' ifadesi bir yarı-değişmez (monovariant) değil, döngü adımları boyunca korunan bir döngü değişmezidir (loop invariant). Döngü değişmezleri Bölüm 17'de değil, Bölüm 19'da ele alınmıştır.",
+      "suggested_fix": "İfade 'Bölüm 19'da incelediğimiz döngü değişmezi (loop invariant) mantığını taşır' olarak düzeltilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "21_diziler_ve_temel_teknikler.tex",
+      "line_hint": 118,
+      "type": "notation_violation",
+      "severity": "major",
+      "excerpt": "\\section{Kümülatif Toplamlar (Prefix Sums)}",
+      "issue": "Terminoloji sözleşmesinde (Tablo A) 'prefix sum(s)' teriminin İngilizce korunacağı ve Türkçe karşılığı olan 'kümülatif toplam(lar)' ifadesinin kesinlikle kullanılmayacağı belirtilmiştir. Başlıkta ve metin genelinde (örn. tanım başlığı, alt başlıklar ve özet maddesi) 'kümülatif toplam' kullanımı sözleşmeyi ihlal etmektedir.",
+      "suggested_fix": "Bölüm başlığı '\\section{Prefix Sums}' yapılmalı; metin içindeki 'Kümülatif Toplam Dizisi' ve 'kümülatif toplam' ifadeleri 'prefix sum' terimiyle değiştirilmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "21_diziler_ve_temel_teknikler.tex",
+      "line_hint": 175,
+      "type": "math_error",
+      "severity": "minor",
+      "excerpt": "kaç tane \\texttt{\\$1\\$} olduğunu",
+      "issue": "\\texttt{\\$1\\$} yazımı LaTeX çıktısında daktilo yazı tipinde doğrudan '$1$' (dolar simgeleri görünür biçimde) basılmasına neden olur.",
+      "suggested_fix": "'\\texttt{\\$1\\$}' yerine '$1$' veya '\\texttt{1}' yazılmalıdır.",
+      "confidence": "high"
+    },
+    {
+      "file": "21_diziler_ve_temel_teknikler.tex",
+      "line_hint": 181,
+      "type": "notation_violation",
+      "severity": "minor",
+      "excerpt": "dizinin prefix sumını aldığımızda",
+      "issue": "Terminoloji sözleşmesine göre İngilizce teknik terimlere gelen Türkçe ekler apostrofla bağlanmalıdır ('prefix sum'ın', 'prefix sums'ın'). 'prefix sumını' ve 229. satırdaki 'prefix sumı' yazımlarında ekler doğrudan yapıştırılmıştır.",
+      "suggested_fix": "'prefix sum'ını' ve 'prefix sum'ı' şeklinde apostrof eklenmelidir.",
+      "confidence": "high"
+    },
+    {
+      "file": "21_diziler_ve_temel_teknikler.tex",
+      "line_hint": 233,
+      "type": "notation_violation",
+      "severity": "major",
+      "excerpt": "\\section{İki İşaretçi (Two Pointers)}",
+      "issue": "Terminoloji sözleşmesinde (Tablo A) 'two pointers' teriminin İngilizce korunacağı ve Türkçe 'iki işaretçi' karşılığının kullanılmayacağı belirtilmiştir.",
+      "suggested_fix": "Başlık '\\section{Two Pointers}' olarak güncellenmeli; teknik adı olarak geçen 'İki İşaretçi ile İki Toplam' ve benzeri kullanımlar 'Two Pointers' olarak revize edilmelidir (tekil 'işaretçi' kullanımı Tablo B gereği geçerlidir).",
+      "confidence": "high"
+    }
+  ]
+}

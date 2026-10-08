@@ -1,0 +1,11 @@
+# Boş issue açmayı kapatır: her bildirim bir form ile gelsin ki
+# sayfa numarası, alıntı ve ortam bilgisi eksiksiz olsun.
+blank_issues_enabled: false
+
+contact_links:
+  - name: Kitabın sitesi, PDF ve çalışma rehberi
+    url: https://bilgisayar-olimpiyatlari.com
+    about: Kitabı indirin, içindekilere bakın, çıkmış soru eşlemesini görün.
+  - name: Yazarın e-posta adresi ve LinkedIn profili
+    url: https://bilgisayar-olimpiyatlari.com/#iletisim
+    about: Özel bir konuyu doğrudan yazara iletmek isterseniz.
