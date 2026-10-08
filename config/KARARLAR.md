@@ -724,6 +724,17 @@ Bir sözleşmeyi değiştirmeden önce bu dosyayı oku; değiştirdikten sonra y
 - **Etkilenen dosyalar:** `.git` (geçmiş yeniden kuruldu), `scripts/check_secrets.py` (yeni), `.github/workflows/kitap.yml`, `scripts/convert_python.py` (yerel, depoda değil), `config/KARARLAR.md`.
 - **Eski davranış:** Sır iki commit'lik geçmişte duruyordu; sır taraması diye bir kapı yoktu; bir anahtarın koda gömülmesi ancak GitHub tarafından yakalanınca fark ediliyordu.
 
+### D73 — Denetim kapısının kendi hatası bulundu ve düzeltildi: tectonic `--keep-logs` + bayat kayıt koruması
+- **Neyi değiştirdiği:**
+  1. `compile_book.py`, tectonic'i artık **`--keep-logs`** ile çağırır: derleme kaydı saklanır ve **her derlemede tazelenir**.
+  2. `audit_log.py`, kayıt dosyası yoksa ne yapılacağını açıkça yazar (tectonic'in log saklamadığı ve `--keep-logs` gerektiği bilgisiyle).
+  3. `audit_log.py` yeni bir **tazelik denetimi** yapar: kayıt, PDF'ten 6 saatten fazla eskiyse **KRİTİK "bayat kayıt"** sayılır (aynı oturumda motorun log'u PDF'ten birkaç saniye önce yazması normaldir; bu yüzden yalnızca büyük farklar bayat sayılır).
+- **Neden (gerekçe/kanıt):** İlk CI koşusunda 8. adım (**derleme**) geçti, sır taraması geçti, ama 9. adım (**`audit_log.py`**) **düştü**. Kök neden: **tectonic log dosyasını varsayılan olarak saklamaz**, `--keep-logs` gerekir. Yerel deney (kanıt): `rm book_build.log && tectonic book_build.tex` → `exit 0`, ama dosya **oluşmadı**. Daha kötüsü: yerelde `book_build.log` **2026-09-24 00:47** tarihliydi, oysa PDF **2026-10-08 08:58** → yani kapı, **eski bir pdfLaTeX kaydını** denetliyordu; "Overfull 0" hükmü taze tectonic derlemesinden gelmiyordu. Bu, kapının tasarım hatasıydı ve onu **CI yakaladı**: ajanın iddiasını değil, ölçüm düzeltti.
+- **Doğrulama (taze kayıtla):** `--keep-logs` ile derleme → `exit 0`, `book_build.log` tazelendi (56.133 karakter), `book_build.pdf` byte-özdeş (2.101.913 bayt). Taze kayıtta **kritik=0**: TeX hatası, LaTeX Error, eksik karakter, tanımsız kontrol dizisi, tanımsız atıf, kaçak argüman, bulunamayan dosya ve **satır taşması** hepsi **0**; `Underfull` 59 (bilgi; bayat pdfLaTeX kaydında 67 idi — fark, eski kaydın başka bir motordan kalmasıdır). Negatif testler: (a) kayıt yok → **exit 2** açıklamalı hata; (b) kayıt geriye tarihlendirildi (`touch -t 202609010000`) → **"Bayat kayıt: kayıt PDF'ten 906.8 saat eski" → kritik=1, exit 1**; (c) zaman damgası geri alınınca → kritik=0.
+- **Ders:** Bir denetim aracı, denetlediği girdinin **taze** olduğunu kendisi doğrulamalıdır; aksi hâlde "yeşil" hüküm yanıltıcıdır. Bu ders `audit_log.py` içine gömülü bir denetime dönüştürüldü.
+- **Etkilenen dosyalar:** `scripts/compile_book.py`, `scripts/audit_log.py`, `config/KARARLAR.md`.
+- **Eski davranış:** tectonic log saklamıyordu; `audit_log.py` yerelde **bayat**, CI'da **hiç olmayan** bir kaydı okuyordu (CI bu yüzden kırmızıydı).
+
 ## Değişiklik kayıt formatı
 
 Yeni karar/değişiklik için şu bloğu ekle:

@@ -70,8 +70,13 @@ def main() -> int:
 
     log = Path(args.log)
     if not log.is_file():
-        print(f"[HATA] {log} yok; önce derleyin: "
-              "python3 scripts/compile_book.py --compiler tectonic", file=sys.stderr)
+        print(
+            f"[HATA] {log} yok.\n"
+            "  Not: tectonic derleme kaydını VARSAYILAN olarak saklamaz; --keep-logs gerekir.\n"
+            "  Çözüm: python3 scripts/compile_book.py --compiler tectonic\n"
+            "         (bu betik tectonic'i --keep-logs ile çağırır)",
+            file=sys.stderr,
+        )
         return 2
 
     text = log.read_text(encoding="utf-8", errors="replace")
@@ -80,6 +85,20 @@ def main() -> int:
 
     kritik = 0
     bilgi = 0
+
+    # Tazelik denetimi (D73): kayıt, PDF'ten belirgin biçimde eskiyse BAYATTIR.
+    # Gerçek olay: tectonic log saklamadığı için yerelde 2026-09-24 tarihli bir
+    # pdfLaTeX kaydı denetleniyor, taze tectonic derlemesi hiç görülmüyordu.
+    # (Aynı oturumda motorun log'u PDF'ten birkaç saniye önce yazması normaldir;
+    # bu yüzden yalnızca büyük farklar bayat sayılır.)
+    pdf = DEFAULT_LOG.parent / "book_build.pdf"
+    if pdf.is_file():
+        gap_h = (pdf.stat().st_mtime - log.stat().st_mtime) / 3600.0
+        if gap_h > 6:
+            kritik += 1
+            print(f"  [KRİTİK] {'Bayat kayıt':<24}: kayıt PDF'ten {gap_h:.1f} saat eski")
+            print("          Bu kayıt güncel derlemeyi anlatmıyor → yeniden derleyin:"
+                  " python3 scripts/compile_book.py --compiler tectonic")
     sample_left = SAMPLE
     for name, pattern, is_critical, note in RULES:
         rx = re.compile(pattern, re.MULTILINE)
