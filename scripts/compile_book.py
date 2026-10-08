@@ -130,7 +130,9 @@ def run_latex(compiler: str) -> list[int]:
     geçiş yapılır. Tectonic ise gerekli tüm geçişleri tek çağrıda kendisi yapar.
     """
     if compiler == "tectonic":
-        cmd = [compiler, BUILD_TEX.name]
+        # --keep-logs: tectonic log dosyasını VARSAYILAN olarak saklamaz; derleme
+        # kaydını denetleyebilmek (scripts/audit_log.py) için açıkça istenir.
+        cmd = [compiler, "--keep-logs", BUILD_TEX.name]
         print(f"[Derleniyor] {' '.join(cmd)} (tectonic çoklu geçişi otomatik yapar)")
         result = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True)
         if result.returncode != 0:
